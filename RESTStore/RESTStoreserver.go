@@ -5,11 +5,25 @@ import (
 	"net/http"
 	"os"
 	"time"
-
+	"path/filepath"
 	bolt "go.etcd.io/bbolt"
 )
 
 const bucketName = "kv"
+
+func defaultDBPath() string {
+    // Best effort: "C:\Users\<user>\Documents"
+    home, err := os.UserHomeDir()
+    if err != nil || home == "" {
+        // last resort: current directory
+        return "reststore.db"
+    }
+
+    dir := filepath.Join(home, "Documents", "BioWare", "Mass Effect 3")
+    _ = os.MkdirAll(dir, 0700) // ensure folders exist
+
+    return filepath.Join(dir, "reststore.db")
+}
 
 func openDB(path string) (*bolt.DB, error) {
 	return bolt.Open(path, 0600, &bolt.Options{Timeout: 1 * time.Second})
@@ -30,7 +44,7 @@ func respondText(w http.ResponseWriter, status int, body string) {
 
 func main() {
 	port := 6060
-	dbPath := "reststore.db"
+	dbPath := defaultDBPath()
 	if len(os.Args) > 1 {
 		fmt.Sscanf(os.Args[1], "%d", &port)
 	}
