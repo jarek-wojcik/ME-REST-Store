@@ -118,15 +118,46 @@ static void StopSidecar()
     }
 }
 
+static bool blockInviteFriends(UFunction* pFunction)
+{
+    const auto funcName = pFunction->GetFullName();
+
+    if (isPartOf(funcName, "InviteFriends"))
+    {
+        logger.writeToLog(string_format("%s\n", "SFS Showing Add Bot Command"), true);
+        auto PC = (ABioPlayerController*)FindObjectOfType(ABioPlayerController::StaticClass());
+        
+        if (PC) {
+            logger.writeToLog(string_format("%s\n", "Found a Player Controller"), true);
+            auto LocalPlayer = reinterpret_cast<ULocalPlayer*>(PC->WorldInfo->GetALocalPlayerController()->Player);
+            if (LocalPlayer) {
+                logger.writeToLog(string_format("Found a Local Player: %s\n", ""), true);
+                LocalPlayer->ViewportClient->ConsoleCommand(FString(TEXT("ShowBotChoiceUI")));
+            }   
+        }
+        else {
+            logger.writeToLog(string_format("%s\n", "Couldn't find a Player Controller"), true);
+        }
+
+
+        return true; // block
+    }
+
+    return false; // allow
+}
+
 void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void* pParms, void* pResult)
 {
     const auto funcName = pFunction->GetFullName();
-    if (!isPartOf(funcName, "Tick")) {
+    if (blockInviteFriends(pFunction)) {
+        return;
+    }
+
+    if (isPartOf(funcName, "sfxgui_mplobby") && !isPartOf(funcName, "Update")) {
         char* szName = pFunction->GetFullName();
         logger.writeToLog(string_format("%s\n", szName), true);
         logger.flush();
     }
-
     ProcessEvent(pObject, pFunction, pParms, pResult);
 }
 
