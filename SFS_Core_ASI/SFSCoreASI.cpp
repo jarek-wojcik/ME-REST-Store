@@ -121,11 +121,12 @@ static void StopSidecar()
 void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void* pParms, void* pResult)
 {
     const auto funcName = pFunction->GetFullName();
-    if (!isPartOf(funcName, "Tick")) {
+    if (isPartOf(funcName, "IsPrivateMatch")) {
         char* szName = pFunction->GetFullName();
         logger.writeToLog(string_format("%s\n", szName), true);
         logger.flush();
     }
+
 
     ProcessEvent(pObject, pFunction, pParms, pResult);
 }
