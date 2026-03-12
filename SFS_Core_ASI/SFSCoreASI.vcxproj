@@ -82,9 +82,9 @@
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>Default</LanguageStandard>
-		<PreBuildEvent>
-			<Command>copy /Y "$(ProjectDir)SFSWebserver.exe" "$(IntDir)SFSWebserver.exe"</Command>
-		</PreBuildEvent>
+      <PreBuildEvent>
+        <Command>copy /Y "$(ProjectDir)SFSWebserver.exe" "$(IntDir)SFSWebserver.exe"</Command>
+      </PreBuildEvent>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -104,25 +104,27 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="OverlayHost.cpp" />
     <ClCompile Include="SFSCoreASI.cpp" />
   </ItemGroup>
-	<ItemGroup>
-		<ResourceCompile Include="SFSCoreASI.rc" />
-	</ItemGroup>
-	<ItemGroup>
-		<ClInclude Include="resource.h" />
-	</ItemGroup>
-	<ItemGroup>
-		<None Include="packages.config" />
-	</ItemGroup>
-	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemGroup>
+    <ClInclude Include="OverlayHost.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SFSCoreASI.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionSettings">
-	  <Import Project="..\packages\Microsoft.Web.WebView2.1.0.3800.47\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.3800.47\build\native\Microsoft.Web.WebView2.targets')" />
+    <Import Project="..\packages\Microsoft.Web.WebView2.1.0.3800.47\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('..\packages\Microsoft.Web.WebView2.1.0.3800.47\build\native\Microsoft.Web.WebView2.targets')" />
   </ImportGroup>
-	<Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-		<PropertyGroup>
-			<ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-		</PropertyGroup>
-		<Error Condition="!Exists('..\packages\Microsoft.Web.WebView2.1.0.3800.47\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Web.WebView2.1.0.3800.47\build\native\Microsoft.Web.WebView2.targets'))" />
-	</Target>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.Web.WebView2.1.0.3800.47\build\native\Microsoft.Web.WebView2.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Web.WebView2.1.0.3800.47\build\native\Microsoft.Web.WebView2.targets'))" />
+  </Target>
 </Project>

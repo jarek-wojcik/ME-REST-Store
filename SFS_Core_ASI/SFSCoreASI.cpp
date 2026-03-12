@@ -9,6 +9,7 @@
 #include "../detours/detours.h"
 #include "resource.h"
 #include <vector>
+#include "OverlayHost.h"
 
 
 #pragma comment(lib, "detours.lib")
@@ -18,6 +19,8 @@ ME3TweaksASILogger logger("Function Call Logger", "FunctionCallLog.txt");
 static HANDLE g_sidecarProcess = NULL;
 static DWORD  g_sidecarPid = 0;
 static HMODULE g_thisModule = NULL;
+
+static OverlayHost g_overlay;
 
 static std::wstring GetModuleDirW(HMODULE module)
 {
@@ -125,9 +128,12 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
         char* szName = pFunction->GetFullName();
         logger.writeToLog(string_format("%s\n", szName), true);
         logger.flush();
+
+        // === NEW: initialise and show the WebView2 overlay ===
+        if (g_overlay.Initialize(g_thisModule))
+            g_overlay.Show();
+        // =====================================================
     }
-
-
     ProcessEvent(pObject, pFunction, pParms, pResult);
 }
 
@@ -136,14 +142,10 @@ DWORD WINAPI onAttach(LPVOID)
     const std::wstring dir = GetModuleDirW(g_thisModule);
     const std::wstring sidecarPath = dir + L"\\SFSWebserver.exe";
 
-    //Launch the SFS Webserver sidecar process.
     if (!FileExistsW(sidecarPath))
     {
         if (!ExtractSidecarExeTo(sidecarPath))
-        {
-            // If you have a logger, log here.
             return 0;
-        }
     }
     LaunchSidecar(sidecarPath, dir);
 
@@ -169,6 +171,7 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
 
     case DLL_PROCESS_DETACH:
         StopSidecar();
+        g_overlay.Shutdown();
         return TRUE;
     }
 
