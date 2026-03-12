@@ -15,7 +15,8 @@
 #pragma comment(lib, "detours.lib")
 #pragma comment(lib, "shlwapi.lib")
 
-ME3TweaksASILogger logger("Function Call Logger", "FunctionCallLog.txt");
+// Constructed in onAttach (off the loader lock) not as a global
+static ME3TweaksASILogger* logger = nullptr;
 static HANDLE g_sidecarProcess = NULL;
 static DWORD  g_sidecarPid = 0;
 static HMODULE g_thisModule = NULL;
@@ -125,35 +126,101 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
 {
     const auto funcName = pFunction->GetFullName();
     if (isPartOf(funcName, "IsPrivateMatch")) {
-        char* szName = pFunction->GetFullName();
-        logger.writeToLog(string_format("%s\n", szName), true);
-        logger.flush();
-
-        // === NEW: initialise and show the WebView2 overlay ===
-        if (g_overlay.Initialize(g_thisModule))
-            g_overlay.Show();
-        // =====================================================
+        if (logger) {
+            char* szName = pFunction->GetFullName();
+            logger->writeToLog(string_format("%s\n", szName), true);
+            logger->flush();
+        }
+        g_overlay.Show();
     }
     ProcessEvent(pObject, pFunction, pParms, pResult);
 }
 
-DWORD WINAPI onAttach(LPVOID)
+// All C++ objects with destructors live here, away from the __try block.
+static void onAttachImpl()
 {
+    // Safe to construct the logger here — we are off the loader lock
+    logger = new ME3TweaksASILogger("Function Call Logger", "FunctionCallLog.txt");
+    logger->writeToLog("[onAttach] Logger started.\n", true);
+    logger->flush();
+
     const std::wstring dir = GetModuleDirW(g_thisModule);
     const std::wstring sidecarPath = dir + L"\\SFSWebserver.exe";
 
+    logger->writeToLog(string_format("[onAttach] Module dir: %s\n", ws2s(dir).c_str()), true);
+    logger->flush();
+
     if (!FileExistsW(sidecarPath))
     {
+        logger->writeToLog("[onAttach] Sidecar not found, extracting...\n", true);
+        logger->flush();
         if (!ExtractSidecarExeTo(sidecarPath))
-            return 0;
+        {
+            logger->writeToLog("[onAttach] ERROR: ExtractSidecarExeTo failed.\n", true);
+            logger->flush();
+            return;
+        }
+        logger->writeToLog("[onAttach] Sidecar extracted.\n", true);
+        logger->flush();
     }
-    LaunchSidecar(sidecarPath, dir);
+    else
+    {
+        logger->writeToLog("[onAttach] Sidecar already exists.\n", true);
+        logger->flush();
+    }
 
-    //Launch the function call logger
+    if (!LaunchSidecar(sidecarPath, dir))
+    {
+        logger->writeToLog(string_format("[onAttach] ERROR: LaunchSidecar failed (GLE=%lu).\n", GetLastError()), true);
+        logger->flush();
+    }
+    else
+    {
+        logger->writeToLog("[onAttach] Sidecar launched.\n", true);
+        logger->flush();
+    }
+
+    logger->writeToLog("[onAttach] Initializing overlay...\n", true);
+    logger->flush();
+
+    if (g_overlay.Initialize(g_thisModule))
+    {
+        logger->writeToLog("[onAttach] Overlay initialized successfully.\n", true);
+        logger->flush();
+    }
+    else
+    {
+        logger->writeToLog("[onAttach] WARNING: Overlay failed to initialize.\n", true);
+        logger->flush();
+    }
+
+    logger->writeToLog("[onAttach] Installing ProcessEvent hook...\n", true);
+    logger->flush();
+
     DetourTransactionBegin();
     DetourUpdateThread(GetCurrentThread());
     DetourAttach(&(PVOID&)ProcessEvent, HookedPE);
     DetourTransactionCommit();
+
+    logger->writeToLog("[onAttach] Hook installed. ASI running.\n", true);
+    logger->flush();
+}
+
+// Thin __try wrapper — no C++ objects with destructors allowed in the same
+// function as __try, so all real work lives in onAttachImpl().
+DWORD WINAPI onAttach(LPVOID)
+{
+    __try
+    {
+        onAttachImpl();
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+        DWORD code = GetExceptionCode();
+        wchar_t msg[256];
+        swprintf_s(msg, L"SFSCoreASI: fatal exception in onAttach\nException code: 0x%08X\n\nThe ASI will not function.", code);
+        MessageBoxW(nullptr, msg, L"SFSCoreASI Error", MB_OK | MB_ICONERROR);
+    }
     return 0;
 }
 
@@ -172,6 +239,8 @@ BOOL WINAPI DllMain(HMODULE hModule, DWORD dwReason, LPVOID lpReserved)
     case DLL_PROCESS_DETACH:
         StopSidecar();
         g_overlay.Shutdown();
+        delete logger;
+        logger = nullptr;
         return TRUE;
     }
 

@@ -1,56 +1,128 @@
 #include "OverlayHost.h"
 
 // ---------------------------------------------------------------------------
+// Runtime check
+// ---------------------------------------------------------------------------
+
+static bool IsWebView2RuntimeInstalled()
+{
+    LPWSTR version = nullptr;
+    HRESULT hr = GetAvailableCoreWebView2BrowserVersionString(nullptr, &version);
+    if (SUCCEEDED(hr) && version)
+    {
+        CoTaskMemFree(version);
+        return true;
+    }
+    return false;
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 bool OverlayHost::Initialize(HMODULE hModule)
 {
-    // ---- 1. Compute overlay geometry ----
+    // Guard: only initialise once
+    if (m_initialized)
+        return true;
+
+    if (!IsWebView2RuntimeInstalled())
+        return false;
+
+    m_hModule     = hModule;
+    m_initialized = true;
+
+    // Spin up a dedicated thread that owns the window and message loop.
+    // WebView2 async callbacks require a pumped message loop on the same
+    // thread that called CreateCoreWebView2EnvironmentWithOptions.
+    m_thread = CreateThread(
+        nullptr, 0,
+        OverlayHost::OverlayThreadProc,
+        this,
+        0,
+        &m_threadId
+    );
+
+    return m_thread != nullptr;
+}
+
+void OverlayHost::Show()
+{
+    if (m_hwnd)
+        PostMessage(m_hwnd, WM_USER + 1, 0, 0); // signal the overlay thread
+}
+
+void OverlayHost::Hide()
+{
+    if (m_hwnd)
+        PostMessage(m_hwnd, WM_USER + 2, 0, 0);
+}
+
+void OverlayHost::Shutdown()
+{
+    if (m_hwnd)
+        PostMessage(m_hwnd, WM_DESTROY, 0, 0);
+
+    if (m_thread)
+    {
+        WaitForSingleObject(m_thread, 5000);
+        CloseHandle(m_thread);
+        m_thread = nullptr;
+    }
+
+    m_initialized = false;
+}
+
+// ---------------------------------------------------------------------------
+// Overlay thread — owns the window and runs the message loop
+// ---------------------------------------------------------------------------
+
+// static
+DWORD WINAPI OverlayHost::OverlayThreadProc(LPVOID param)
+{
+    static_cast<OverlayHost*>(param)->OverlayThread();
+    return 0;
+}
+
+void OverlayHost::OverlayThread()
+{
+    // ---- 1. Compute geometry ----
     const int screenW = GetSystemMetrics(SM_CXSCREEN);
     const int screenH = GetSystemMetrics(SM_CYSCREEN);
+    const int winW    = screenW / 5;
+    const int winH    = screenH;
+    const int winX    = screenW - winW;
+    const int winY    = 0;
 
-    const int winW = screenW / 5;          // 20% of screen width
-    const int winH = screenH;              // 100% of screen height
-    const int winX = screenW - winW;       // right-aligned (80% from left)
-    const int winY = 0;
-
-    // ---- 2. Register window class (once per process) ----
+    // ---- 2. Register window class ----
     WNDCLASSEXW wc{};
     wc.cbSize        = sizeof(wc);
     wc.style         = CS_HREDRAW | CS_VREDRAW;
     wc.lpfnWndProc   = OverlayHost::WndProc;
-    wc.hInstance     = hModule;
+    wc.hInstance     = m_hModule;
     wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wc.lpszClassName = k_ClassName;
-
-    // RegisterClassExW returns 0 if the class is already registered;
-    // that is acceptable (second Initialize call would reuse the class).
     RegisterClassExW(&wc);
 
-    // ---- 3. Create the overlay window ----
-    // WS_POPUP gives us a borderless top-level window.
+    // ---- 3. Create window ----
     m_hwnd = CreateWindowExW(
-        WS_EX_TOPMOST | WS_EX_TOOLWINDOW,   // always on top, no taskbar button
+        WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
         k_ClassName,
         L"SFS Overlay",
-        WS_POPUP | WS_VISIBLE,
+        WS_POPUP,           // start hidden; Show() will reveal it
         winX, winY, winW, winH,
-        nullptr,            // no parent
-        nullptr,            // no menu
-        hModule,
-        this                // pass 'this' so WndProc can retrieve it
+        nullptr, nullptr,
+        m_hModule,
+        this
     );
 
     if (!m_hwnd)
-        return false;
+        return;
 
-    // ---- 4. Start async WebView2 initialisation ----
-    HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(
-        nullptr,  // use default browser installation
-        nullptr,  // use default user-data folder
-        nullptr,  // no extra options
+    // ---- 4. Start WebView2 async init (callbacks fire on this thread) ----
+    CreateCoreWebView2EnvironmentWithOptions(
+        nullptr, nullptr, nullptr,
         Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
             [this](HRESULT result, ICoreWebView2Environment* env) -> HRESULT
             {
@@ -60,43 +132,13 @@ bool OverlayHost::Initialize(HMODULE hModule)
         ).Get()
     );
 
-    if (FAILED(hr))
-        return false;
-
-    m_initialized = true;
-    return true;
-}
-
-void OverlayHost::Show()
-{
-    if (m_hwnd)
-        ShowWindow(m_hwnd, SW_SHOW);
-}
-
-void OverlayHost::Hide()
-{
-    if (m_hwnd)
-        ShowWindow(m_hwnd, SW_HIDE);
-}
-
-void OverlayHost::Shutdown()
-{
-    // Release WebView2 resources first
-    if (m_controller)
+    // ---- 5. Message loop — keeps the thread alive and pumps WebView2 ----
+    MSG msg{};
+    while (GetMessageW(&msg, nullptr, 0, 0))
     {
-        m_controller->Close();
-        m_controller.Reset();
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
     }
-    m_webView.Reset();
-    m_env.Reset();
-
-    if (m_hwnd)
-    {
-        DestroyWindow(m_hwnd);
-        m_hwnd = nullptr;
-    }
-
-    m_initialized = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -110,7 +152,6 @@ LRESULT CALLBACK OverlayHost::WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
     if (msg == WM_NCCREATE)
     {
-        // Stash the 'this' pointer that was passed to CreateWindowExW
         auto* cs = reinterpret_cast<CREATESTRUCTW*>(lp);
         self = static_cast<OverlayHost*>(cs->lpCreateParams);
         SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
@@ -134,18 +175,24 @@ LRESULT OverlayHost::HandleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         ResizeWebView();
         return 0;
 
-    case WM_DESTROY:
-        // Window was destroyed externally; clean up COM pointers
-        if (m_controller) { m_controller->Close(); m_controller.Reset(); }
-        m_webView.Reset();
-        m_env.Reset();
-        m_hwnd        = nullptr;
-        m_initialized = false;
+    case WM_USER + 1:   // Show()
+        ShowWindow(hwnd, SW_SHOW);
+        return 0;
+
+    case WM_USER + 2:   // Hide()
+        ShowWindow(hwnd, SW_HIDE);
         return 0;
 
     case WM_CLOSE:
-        // Just hide on close rather than destroying
-        Hide();
+        ShowWindow(hwnd, SW_HIDE);
+        return 0;
+
+    case WM_DESTROY:
+        if (m_controller) { m_controller->Close(); m_controller.Reset(); }
+        m_webView.Reset();
+        m_env.Reset();
+        m_hwnd = nullptr;
+        PostQuitMessage(0);     // exits the GetMessage loop
         return 0;
     }
 
@@ -153,7 +200,7 @@ LRESULT OverlayHost::HandleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 }
 
 // ---------------------------------------------------------------------------
-// WebView2 async callbacks
+// WebView2 callbacks (fire on the overlay thread)
 // ---------------------------------------------------------------------------
 
 void OverlayHost::OnEnvironmentCreated(HRESULT result, ICoreWebView2Environment* env)
@@ -181,17 +228,12 @@ void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* c
         return;
 
     m_controller = controller;
-
-    // Get the underlying ICoreWebView2 interface
     controller->get_CoreWebView2(m_webView.GetAddressOf());
 
     if (!m_webView)
         return;
 
-    // Size the WebView to fill the window
     ResizeWebView();
-
-    // Navigate to the proof-of-concept URL
     m_webView->Navigate(L"https://www.google.com");
 }
 
