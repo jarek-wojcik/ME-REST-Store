@@ -180,20 +180,6 @@ static void onAttachImpl()
         logger->flush();
     }
 
-    logger->writeToLog("[onAttach] Initializing overlay...\n", true);
-    logger->flush();
-
-    if (g_overlay.Initialize(g_thisModule))
-    {
-        logger->writeToLog("[onAttach] Overlay initialized successfully.\n", true);
-        logger->flush();
-    }
-    else
-    {
-        logger->writeToLog("[onAttach] WARNING: Overlay failed to initialize.\n", true);
-        logger->flush();
-    }
-
     logger->writeToLog("[onAttach] Installing ProcessEvent hook...\n", true);
     logger->flush();
 
