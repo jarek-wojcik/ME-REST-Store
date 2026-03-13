@@ -14,7 +14,8 @@ public:
 
     bool Initialize(HMODULE hModule);
 
-    void Show();
+    void Show();           // shows both overlay panel and toggle tab
+    void ShowToggleOnly(); // shows only the toggle tab; panel stays hidden
     void Hide();
     void Shutdown();
 
@@ -52,5 +53,5 @@ private:
 
     static constexpr wchar_t k_ClassName[]       = L"SFSOverlayHostWnd";
     static constexpr wchar_t k_ToggleClassName[] = L"SFSOverlayToggleWnd";
-    static constexpr int     k_ToggleW           = 28;  // width of the tab in pixels
+    static constexpr int     k_ToggleW           = 60;  // width of the tab in pixels
 };

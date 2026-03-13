@@ -134,14 +134,15 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
             logger->flush();
         }
 
-        // Show the overlay once on the first IsPrivateMatch event
+        // On the first IsPrivateMatch, show only the toggle tab.
+        // The overlay panel starts hidden — the user opens it by clicking the tab.
         bool expected = false;
         if (g_overlayShown.compare_exchange_strong(expected, true)) {
             if (logger) {
-                logger->writeToLog("[HookedPE] First IsPrivateMatch — showing overlay.\n", true);
+                logger->writeToLog("[HookedPE] First IsPrivateMatch — showing toggle tab.\n", true);
                 logger->flush();
             }
-            g_overlay.Show();
+            g_overlay.ShowToggleOnly();
         }
     }
     ProcessEvent(pObject, pFunction, pParms, pResult);
@@ -207,7 +208,7 @@ static void onAttachImpl()
 
     if (g_overlay.Initialize(g_thisModule))
     {
-        logger->writeToLog("[onAttach] Overlay initialized. Will show on first IsPrivateMatch.\n", true);
+        logger->writeToLog("[onAttach] Overlay initialized. Toggle tab will appear on first IsPrivateMatch.\n", true);
     }
     else
     {

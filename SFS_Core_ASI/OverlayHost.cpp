@@ -112,6 +112,35 @@ void OverlayHost::Show()
         PostMessage(m_toggleHwnd, WM_USER + 1, 0, 0);
 }
 
+void OverlayHost::ShowToggleOnly()
+{
+    OvLog("[Overlay] ShowToggleOnly() called. m_toggleHwnd=%p\n",
+          static_cast<void*>(m_toggleHwnd));
+
+    if (!m_toggleHwnd)
+        return;
+
+    // Position the tab at the right edge of the game window since the
+    // overlay panel is hidden — same position as after hiding the panel.
+    HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
+    if (gameWnd)
+    {
+        RECT gc{};
+        GetClientRect(gameWnd, &gc);
+        POINT pt{ gc.left, gc.top };
+        ClientToScreen(gameWnd, &pt);
+        const int tabH = gc.bottom - gc.top;
+        SetWindowPos(m_toggleHwnd, HWND_TOPMOST,
+                     pt.x + gc.right - k_ToggleW, pt.y,
+                     k_ToggleW, tabH,
+                     SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    }
+    else
+    {
+        PostMessage(m_toggleHwnd, WM_USER + 1, 0, 0);
+    }
+}
+
 void OverlayHost::Hide()
 {
     if (m_hwnd)       PostMessage(m_hwnd,      WM_USER + 2, 0, 0);
@@ -335,22 +364,21 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
 
         RECT rc;
         GetClientRect(hwnd, &rc);
+        const int tabW = rc.right;
+        const int tabH = rc.bottom;
 
         // Background
         HBRUSH bg = CreateSolidBrush(RGB(30, 30, 30));
         FillRect(hdc, &rc, bg);
         DeleteObject(bg);
 
-        // Choose label based on whether the overlay is currently shown
-        const wchar_t* label = (m_hwnd && IsWindowVisible(m_hwnd))
-                               ? L"Hide overlay"
-                               : L"Show overlay";
+        const wchar_t* label = L"Spectre Portal";
 
-        // Rotated font: escapement + orientation both 90 degrees (= 900 tenths)
+        // Use a non-rotated font and apply a world transform to rotate.
+        // This gives reliable centring since DrawText works in pre-rotation space.
         HFONT font = CreateFontW(
-            13, 0,          // height, width
-            900, 900,       // escapement, orientation (90 degrees)
-            FW_NORMAL, FALSE, FALSE, FALSE,
+            26, 0, 0, 0,
+            FW_SEMIBOLD, FALSE, FALSE, FALSE,
             DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
             CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_SWISS,
             L"Segoe UI"
@@ -359,21 +387,43 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         SetBkMode(hdc, TRANSPARENT);
         SetTextColor(hdc, RGB(220, 220, 220));
 
-        // Measure the rotated text (GetTextExtentPoint32 measures in logical
-        // units before rotation, so cx = rendered height, cy = rendered width)
+        // Measure text in normal (unrotated) space
         SIZE sz{};
         GetTextExtentPoint32W(hdc, label, static_cast<int>(wcslen(label)), &sz);
 
-        // With 90° CCW rotation (escapement=900):
-        //   text runs upward from the baseline point
-        //   sz.cx = length of the text run (maps to vertical screen span)
-        //   sz.cy = cap height (maps to horizontal screen span)
-        // Centre the run vertically: baseline y = midpoint + half the run length
-        // Centre horizontally:       baseline x = midpoint + half the cap height
-        int x = (rc.right  + sz.cy) / 2;
-        int y = (rc.bottom + sz.cx) / 2;
+        // Enable world transforms
+        SetGraphicsMode(hdc, GM_ADVANCED);
 
-        TextOutW(hdc, x, y, label, static_cast<int>(wcslen(label)));
+        // Rotate 90° CCW around the centre of the tab:
+        //   1. Translate so tab-centre is at origin
+        //   2. Rotate -90° (CCW): x'=-y, y'=x
+        //   3. Translate back
+        // The text rect in rotated space is centred at origin,
+        // so in pre-rotation space we centre it at (0,0).
+        // Pre-rotation text rect: width=sz.cx, height=sz.cy
+        // Centred draw origin (top-left of text): (-sz.cx/2, -sz.cy/2)
+
+        // cos(-90°)=0  sin(-90°)=-1
+        XFORM xf{};
+        xf.eM11 =  0.0f;  xf.eM12 = -1.0f;
+        xf.eM21 =  1.0f;  xf.eM22 =  0.0f;
+        // After rotation, translate to tab centre
+        xf.eDx  = static_cast<float>(tabW / 2);
+        xf.eDy  = static_cast<float>(tabH / 2);
+        SetWorldTransform(hdc, &xf);
+
+        // Draw centred at (0,0) in pre-rotation space
+        RECT textRc{};
+        textRc.left   = -sz.cx / 2;
+        textRc.top    = -sz.cy / 2;
+        textRc.right  =  sz.cx / 2;
+        textRc.bottom =  sz.cy / 2;
+        DrawTextW(hdc, label, -1, &textRc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+
+        // Restore identity transform
+        XFORM identity{ 1,0,0,1,0,0 };
+        SetWorldTransform(hdc, &identity);
+        SetGraphicsMode(hdc, GM_COMPATIBLE);
 
         SelectObject(hdc, oldFont);
         DeleteObject(font);
