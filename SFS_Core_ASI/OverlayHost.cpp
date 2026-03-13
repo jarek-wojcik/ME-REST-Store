@@ -1,7 +1,22 @@
 #include "OverlayHost.h"
+#include <cstdio>
+
+// Simple append-only log used by the overlay thread.
+// Written to the same directory as the ASI.
+static FILE* s_log = nullptr;
+
+static void OvLog(const char* fmt, ...)
+{
+    if (!s_log) return;
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(s_log, fmt, args);
+    va_end(args);
+    fflush(s_log);
+}
 
 // ---------------------------------------------------------------------------
-// Runtime check
+// Helpers
 // ---------------------------------------------------------------------------
 
 static bool IsWebView2RuntimeInstalled()
@@ -16,40 +31,83 @@ static bool IsWebView2RuntimeInstalled()
     return false;
 }
 
+// Finds the Mass Effect 3 game window and returns its screen rect.
+// Falls back to the primary monitor work area if the window isn't found yet.
+static RECT GetGameWindowRect()
+{
+    // ME3 window title contains "Mass Effect 3"
+    HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
+    if (!gameWnd)
+    {
+        // Fallback: use the primary monitor
+        RECT rc{};
+        SystemParametersInfoW(SPI_GETWORKAREA, 0, &rc, 0);
+        return rc;
+    }
+
+    RECT rc{};
+    GetWindowRect(gameWnd, &rc);
+    return rc;
+}
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 bool OverlayHost::Initialize(HMODULE hModule)
 {
-    // Guard: only initialise once
     if (m_initialized)
         return true;
 
     if (!IsWebView2RuntimeInstalled())
         return false;
 
+    // Open overlay-specific log next to the ASI
+    if (!s_log)
+    {
+        wchar_t logPath[MAX_PATH]{};
+        GetModuleFileNameW(hModule, logPath, MAX_PATH);
+        // Replace filename with OverlayLog.txt
+        wchar_t* slash = wcsrchr(logPath, L'\\');
+        if (slash)
+        {
+            wcscpy_s(slash + 1, MAX_PATH - (slash - logPath) - 1, L"OverlayLog.txt");
+            _wfopen_s(&s_log, logPath, L"w");
+        }
+    }
+
+    OvLog("[Overlay] Initialize called.\n");
+
     m_hModule     = hModule;
     m_initialized = true;
 
-    // Spin up a dedicated thread that owns the window and message loop.
-    // WebView2 async callbacks require a pumped message loop on the same
-    // thread that called CreateCoreWebView2EnvironmentWithOptions.
-    m_thread = CreateThread(
-        nullptr, 0,
-        OverlayHost::OverlayThreadProc,
-        this,
-        0,
-        &m_threadId
-    );
-
-    return m_thread != nullptr;
+    m_thread = CreateThread(nullptr, 0, OverlayHost::OverlayThreadProc, this, 0, &m_threadId);
+    if (!m_thread)
+    {
+        OvLog("[Overlay] CreateThread failed GLE=%lu\n", GetLastError());
+        m_initialized = false;
+        return false;
+    }
+    OvLog("[Overlay] Thread created id=%lu\n", m_threadId);
+    return true;
 }
 
 void OverlayHost::Show()
 {
+    OvLog("[Overlay] Show() called. m_webView=%p m_hwnd=%p\n",
+          static_cast<void*>(m_webView.Get()), static_cast<void*>(m_hwnd));
+
+    if (!m_webView)
+    {
+        OvLog("[Overlay] WebView2 not ready yet, setting m_showPending.\n");
+        m_showPending = true;
+        return;
+    }
     if (m_hwnd)
-        PostMessage(m_hwnd, WM_USER + 1, 0, 0); // signal the overlay thread
+    {
+        OvLog("[Overlay] Posting WM_USER+1 to show window.\n");
+        PostMessage(m_hwnd, WM_USER + 1, 0, 0);
+    }
 }
 
 void OverlayHost::Hide()
@@ -86,13 +144,45 @@ DWORD WINAPI OverlayHost::OverlayThreadProc(LPVOID param)
 
 void OverlayHost::OverlayThread()
 {
-    // ---- 1. Compute geometry ----
-    const int screenW = GetSystemMetrics(SM_CXSCREEN);
-    const int screenH = GetSystemMetrics(SM_CYSCREEN);
-    const int winW    = screenW / 5;
-    const int winH    = screenH;
-    const int winX    = screenW - winW;
-    const int winY    = 0;
+    OvLog("[Overlay] Thread started.\n");
+
+    // WebView2 requires COM to be initialized on this thread.
+    HRESULT comHr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+    OvLog("[Overlay] CoInitializeEx hr=0x%08X\n", comHr);
+    if (FAILED(comHr))
+        return;
+
+    // ---- 1. Find game window and compute geometry ----
+    // Wait until the window exists AND is not minimized (minimized windows
+    // return rect -32000,-32000 which would place the overlay off-screen).
+    HWND gameWnd = nullptr;
+    for (int i = 0; i < 60; i++)
+    {
+        gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
+        if (gameWnd && !IsIconic(gameWnd))
+            break;
+        gameWnd = nullptr;
+        Sleep(500);
+    }
+
+    RECT gameRect{};
+    if (gameWnd)
+        GetWindowRect(gameWnd, &gameRect);
+    else
+        SystemParametersInfoW(SPI_GETWORKAREA, 0, &gameRect, 0);
+
+    const int gameX = gameRect.left;
+    const int gameY = gameRect.top;
+    const int gameW = gameRect.right  - gameRect.left;
+    const int gameH = gameRect.bottom - gameRect.top;
+    const int winW  = gameW / 5;
+    const int winH  = gameH;
+    const int winX  = gameX + gameW - winW;
+    const int winY  = gameY;
+
+    OvLog("[Overlay] gameWnd=%p Game rect: %d,%d  %dx%d\n",
+          static_cast<void*>(gameWnd), gameX, gameY, gameW, gameH);
+    OvLog("[Overlay] Overlay rect: %d,%d  %dx%d\n", winX, winY, winW, winH);
 
     // ---- 2. Register window class ----
     WNDCLASSEXW wc{};
@@ -103,42 +193,77 @@ void OverlayHost::OverlayThread()
     wc.hCursor       = LoadCursor(nullptr, IDC_ARROW);
     wc.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
     wc.lpszClassName = k_ClassName;
-    RegisterClassExW(&wc);
+    ATOM atom = RegisterClassExW(&wc);
+    OvLog("[Overlay] RegisterClassExW atom=%u GLE=%lu\n", atom, GetLastError());
 
     // ---- 3. Create window ----
+    // WS_EX_NOACTIVATE stops the overlay stealing focus from the game.
+    // We do NOT parent to gameWnd — parenting a popup to a D3D fullscreen
+    // window causes it to be clipped. Instead we use HWND_TOPMOST and
+    // position it on the same monitor.
     m_hwnd = CreateWindowExW(
-        WS_EX_TOPMOST | WS_EX_TOOLWINDOW,
+        WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
         k_ClassName,
         L"SFS Overlay",
-        WS_POPUP,           // start hidden; Show() will reveal it
+        WS_POPUP,
         winX, winY, winW, winH,
         nullptr, nullptr,
         m_hModule,
         this
     );
 
-    if (!m_hwnd)
-        return;
+    OvLog("[Overlay] CreateWindowExW hwnd=%p GLE=%lu\n",
+          static_cast<void*>(m_hwnd), GetLastError());
 
-    // ---- 4. Start WebView2 async init (callbacks fire on this thread) ----
-    CreateCoreWebView2EnvironmentWithOptions(
-        nullptr, nullptr, nullptr,
+    if (!m_hwnd)
+    {
+        CoUninitialize();
+        return;
+    }
+
+    // ---- 4. Build a writable user-data path for WebView2 ----
+    // Using the default (nullptr) path can fail when the host process has
+    // restricted write access. Explicitly point it at a temp folder.
+    wchar_t udPath[MAX_PATH]{};
+    GetModuleFileNameW(m_hModule, udPath, MAX_PATH);
+    wchar_t* sl = wcsrchr(udPath, L'\\');
+    if (sl) wcscpy_s(sl + 1, MAX_PATH - (sl - udPath) - 1, L"WebView2Data");
+    OvLog("[Overlay] UserDataFolder: %ls\n", udPath);
+
+    // ---- 5. Create WebView2 environment with explicit user-data folder ----
+    OvLog("[Overlay] Calling CreateCoreWebView2EnvironmentWithOptions...\n");
+    HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(
+        nullptr,
+        udPath,     // explicit writable user-data folder
+        nullptr,
         Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
             [this](HRESULT result, ICoreWebView2Environment* env) -> HRESULT
             {
+                OvLog("[Overlay] Environment callback hr=0x%08X env=%p\n",
+                      result, static_cast<void*>(env));
                 OnEnvironmentCreated(result, env);
                 return S_OK;
             }
         ).Get()
     );
+    OvLog("[Overlay] CreateCoreWebView2EnvironmentWithOptions returned hr=0x%08X\n", hr);
+    if (FAILED(hr))
+    {
+        CoUninitialize();
+        return;
+    }
 
-    // ---- 5. Message loop — keeps the thread alive and pumps WebView2 ----
+    // ---- 6. Message loop ----
+    OvLog("[Overlay] Entering message loop.\n");
     MSG msg{};
     while (GetMessageW(&msg, nullptr, 0, 0))
     {
         TranslateMessage(&msg);
         DispatchMessageW(&msg);
     }
+    OvLog("[Overlay] Message loop exited.\n");
+
+    CoUninitialize();
 }
 
 // ---------------------------------------------------------------------------
@@ -224,6 +349,9 @@ void OverlayHost::OnEnvironmentCreated(HRESULT result, ICoreWebView2Environment*
 
 void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* controller)
 {
+    OvLog("[Overlay] OnControllerCreated hr=0x%08X controller=%p\n",
+          result, static_cast<void*>(controller));
+
     if (FAILED(result) || !controller || !m_hwnd)
         return;
 
@@ -231,10 +359,22 @@ void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* c
     controller->get_CoreWebView2(m_webView.GetAddressOf());
 
     if (!m_webView)
+    {
+        OvLog("[Overlay] get_CoreWebView2 returned null.\n");
         return;
+    }
 
     ResizeWebView();
-    m_webView->Navigate(L"https://www.google.com");
+    HRESULT navHr = m_webView->Navigate(L"https://www.google.com");
+    OvLog("[Overlay] Navigate hr=0x%08X\n", navHr);
+
+    OvLog("[Overlay] m_showPending=%d\n", m_showPending);
+    if (m_showPending)
+    {
+        m_showPending = false;
+        OvLog("[Overlay] Honouring pending Show().\n");
+        PostMessage(m_hwnd, WM_USER + 1, 0, 0);
+    }
 }
 
 void OverlayHost::ResizeWebView()

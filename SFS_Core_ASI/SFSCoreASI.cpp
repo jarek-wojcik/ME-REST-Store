@@ -9,6 +9,7 @@
 #include "../detours/detours.h"
 #include "resource.h"
 #include <vector>
+#include <atomic>
 #include "OverlayHost.h"
 
 
@@ -22,6 +23,7 @@ static DWORD  g_sidecarPid = 0;
 static HMODULE g_thisModule = NULL;
 
 static OverlayHost g_overlay;
+static std::atomic<bool> g_overlayShown{ false };
 
 static std::wstring GetModuleDirW(HMODULE module)
 {
@@ -131,7 +133,16 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
             logger->writeToLog(string_format("%s\n", szName), true);
             logger->flush();
         }
-        g_overlay.Show();
+
+        // Show the overlay once on the first IsPrivateMatch event
+        bool expected = false;
+        if (g_overlayShown.compare_exchange_strong(expected, true)) {
+            if (logger) {
+                logger->writeToLog("[HookedPE] First IsPrivateMatch — showing overlay.\n", true);
+                logger->flush();
+            }
+            g_overlay.Show();
+        }
     }
     ProcessEvent(pObject, pFunction, pParms, pResult);
 }
@@ -189,6 +200,19 @@ static void onAttachImpl()
     DetourTransactionCommit();
 
     logger->writeToLog("[onAttach] Hook installed. ASI running.\n", true);
+    logger->flush();
+
+    logger->writeToLog("[onAttach] Initializing overlay...\n", true);
+    logger->flush();
+
+    if (g_overlay.Initialize(g_thisModule))
+    {
+        logger->writeToLog("[onAttach] Overlay initialized. Will show on first IsPrivateMatch.\n", true);
+    }
+    else
+    {
+        logger->writeToLog("[onAttach] WARNING: Overlay Initialize failed — overlay will not show.\n", true);
+    }
     logger->flush();
 }
 
