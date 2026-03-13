@@ -108,18 +108,20 @@ void OverlayHost::Show()
         OvLog("[Overlay] Posting WM_USER+1 to show window.\n");
         PostMessage(m_hwnd, WM_USER + 1, 0, 0);
     }
+    if (m_toggleHwnd)
+        PostMessage(m_toggleHwnd, WM_USER + 1, 0, 0);
 }
 
 void OverlayHost::Hide()
 {
-    if (m_hwnd)
-        PostMessage(m_hwnd, WM_USER + 2, 0, 0);
+    if (m_hwnd)       PostMessage(m_hwnd,      WM_USER + 2, 0, 0);
+    if (m_toggleHwnd) PostMessage(m_toggleHwnd, WM_USER + 2, 0, 0);
 }
 
 void OverlayHost::Shutdown()
 {
-    if (m_hwnd)
-        PostMessage(m_hwnd, WM_DESTROY, 0, 0);
+    if (m_toggleHwnd) PostMessage(m_toggleHwnd, WM_DESTROY, 0, 0);
+    if (m_hwnd)       PostMessage(m_hwnd,        WM_DESTROY, 0, 0);
 
     if (m_thread)
     {
@@ -221,6 +223,11 @@ void OverlayHost::OverlayThread()
         return;
     }
 
+    // Create the toggle tab just to the left of the main overlay.
+    // Use the overlay's own position/height so the tab always matches it exactly.
+    CreateToggleWindow(winX, winY, winH);
+    OvLog("[Overlay] Toggle hwnd=%p\n", static_cast<void*>(m_toggleHwnd));
+
     // ---- 4. Build a writable user-data path for WebView2 ----
     // Using the default (nullptr) path can fail when the host process has
     // restricted write access. Explicitly point it at a temp folder.
@@ -267,8 +274,182 @@ void OverlayHost::OverlayThread()
 }
 
 // ---------------------------------------------------------------------------
-// Window procedure
+// Toggle tab window
 // ---------------------------------------------------------------------------
+
+void OverlayHost::CreateToggleWindow(int overlayX, int overlayY, int overlayH)
+{
+    WNDCLASSEXW wc{};
+    wc.cbSize        = sizeof(wc);
+    wc.style         = CS_HREDRAW | CS_VREDRAW;
+    wc.lpfnWndProc   = OverlayHost::ToggleWndProc;
+    wc.hInstance     = m_hModule;
+    wc.hCursor       = LoadCursor(nullptr, IDC_HAND);
+    wc.hbrBackground = nullptr;  // painted manually
+    wc.lpszClassName = k_ToggleClassName;
+    RegisterClassExW(&wc);
+
+    m_toggleHwnd = CreateWindowExW(
+        WS_EX_TOPMOST | WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE,
+        k_ToggleClassName,
+        L"SFS Toggle",
+        WS_POPUP,
+        overlayX - k_ToggleW, overlayY,  // immediately left of the overlay
+        k_ToggleW, overlayH,
+        nullptr, nullptr,
+        m_hModule,
+        this
+    );
+}
+
+// static
+LRESULT CALLBACK OverlayHost::ToggleWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+    OverlayHost* self = nullptr;
+
+    if (msg == WM_NCCREATE)
+    {
+        auto* cs = reinterpret_cast<CREATESTRUCTW*>(lp);
+        self = static_cast<OverlayHost*>(cs->lpCreateParams);
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(self));
+    }
+    else
+    {
+        self = reinterpret_cast<OverlayHost*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+    }
+
+    if (self)
+        return self->HandleToggleMessage(hwnd, msg, wp, lp);
+
+    return DefWindowProcW(hwnd, msg, wp, lp);
+}
+
+LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
+{
+    switch (msg)
+    {
+    case WM_PAINT:
+    {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+
+        // Background
+        HBRUSH bg = CreateSolidBrush(RGB(30, 30, 30));
+        FillRect(hdc, &rc, bg);
+        DeleteObject(bg);
+
+        // Choose label based on whether the overlay is currently shown
+        const wchar_t* label = (m_hwnd && IsWindowVisible(m_hwnd))
+                               ? L"Hide overlay"
+                               : L"Show overlay";
+
+        // Rotated font: escapement + orientation both 90 degrees (= 900 tenths)
+        HFONT font = CreateFontW(
+            13, 0,          // height, width
+            900, 900,       // escapement, orientation (90 degrees)
+            FW_NORMAL, FALSE, FALSE, FALSE,
+            DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+            CLEARTYPE_QUALITY, DEFAULT_PITCH | FF_SWISS,
+            L"Segoe UI"
+        );
+        HFONT oldFont = static_cast<HFONT>(SelectObject(hdc, font));
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, RGB(220, 220, 220));
+
+        // Measure the rotated text (GetTextExtentPoint32 measures in logical
+        // units before rotation, so cx = rendered height, cy = rendered width)
+        SIZE sz{};
+        GetTextExtentPoint32W(hdc, label, static_cast<int>(wcslen(label)), &sz);
+
+        // With 90° CCW rotation (escapement=900):
+        //   text runs upward from the baseline point
+        //   sz.cx = length of the text run (maps to vertical screen span)
+        //   sz.cy = cap height (maps to horizontal screen span)
+        // Centre the run vertically: baseline y = midpoint + half the run length
+        // Centre horizontally:       baseline x = midpoint + half the cap height
+        int x = (rc.right  + sz.cy) / 2;
+        int y = (rc.bottom + sz.cx) / 2;
+
+        TextOutW(hdc, x, y, label, static_cast<int>(wcslen(label)));
+
+        SelectObject(hdc, oldFont);
+        DeleteObject(font);
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+
+    case WM_LBUTTONUP:
+    {
+        bool nowVisible = IsWindowVisible(m_hwnd);
+        OvLog("[Overlay] Toggle clicked — overlay was %s.\n", nowVisible ? "visible" : "hidden");
+
+        HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
+        RECT gameClient{};
+        RECT gameWin{};
+        if (gameWnd)
+        {
+            GetWindowRect(gameWnd, &gameWin);
+            GetClientRect(gameWnd, &gameClient);
+            // Map client rect to screen coords
+            POINT pt{ gameClient.left, gameClient.top };
+            ClientToScreen(gameWnd, &pt);
+            gameClient.left   = pt.x;
+            gameClient.top    = pt.y;
+            gameClient.right  = pt.x + gameClient.right;
+            gameClient.bottom = pt.y + gameClient.bottom;
+        }
+
+        const int tabH = gameWnd ? (gameClient.bottom - gameClient.top) : 720;
+        const int tabY = gameWnd ? gameClient.top : 0;
+
+        if (nowVisible)
+        {
+            ShowWindow(m_hwnd, SW_HIDE);
+            if (gameWnd)
+            {
+                SetWindowPos(m_toggleHwnd, HWND_TOPMOST,
+                             gameClient.right - k_ToggleW, tabY,
+                             k_ToggleW, tabH,
+                             SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            }
+        }
+        else
+        {
+            RECT or_{};
+            GetWindowRect(m_hwnd, &or_);
+            SetWindowPos(m_toggleHwnd, HWND_TOPMOST,
+                         or_.left - k_ToggleW, tabY,
+                         k_ToggleW, tabH,
+                         SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            ShowWindow(m_hwnd, SW_SHOW);
+        }
+        InvalidateRect(hwnd, nullptr, TRUE);
+        return 0;
+    }
+
+    case WM_USER + 1:   // Show (called at startup)
+        ShowWindow(hwnd, SW_SHOW);
+        return 0;
+
+    case WM_USER + 2:   // Hide
+        ShowWindow(hwnd, SW_HIDE);
+        return 0;
+
+    case WM_DESTROY:
+        m_toggleHwnd = nullptr;
+        return 0;
+    }
+
+    return DefWindowProcW(hwnd, msg, wp, lp);
+}
+
+// ---------------------------------------------------------------------------
+// Main overlay window procedure
+// ---------------------------------------------------------------------------
+
 
 // static
 LRESULT CALLBACK OverlayHost::WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
@@ -386,6 +567,7 @@ void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* c
         m_showPending = false;
         OvLog("[Overlay] Honouring pending Show().\n");
         PostMessage(m_hwnd, WM_USER + 1, 0, 0);
+        if (m_toggleHwnd) PostMessage(m_toggleHwnd, WM_USER + 1, 0, 0);
     }
 }
 
