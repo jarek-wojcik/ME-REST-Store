@@ -175,7 +175,7 @@ void OverlayHost::OverlayThread()
     const int gameY = gameRect.top;
     const int gameW = gameRect.right  - gameRect.left;
     const int gameH = gameRect.bottom - gameRect.top;
-    const int winW  = gameW / 5;
+    const int winW  = gameW / 2;   // 50% of game window width
     const int winH  = gameH;
     const int winX  = gameX + gameW - winW;
     const int winY  = gameY;
@@ -365,7 +365,19 @@ void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* c
     }
 
     ResizeWebView();
-    HRESULT navHr = m_webView->Navigate(L"https://www.google.com");
+
+    // Explicitly mark the controller as visible — this is separate from
+    // the window being shown and must be set for rendering to occur.
+    m_controller->put_IsVisible(TRUE);
+
+    // Set a solid white background so the webview paints immediately
+    // rather than leaving the default transparent/blank state.
+    COREWEBVIEW2_COLOR bg{ 255, 255, 255, 255 };
+    Microsoft::WRL::ComPtr<ICoreWebView2Controller2> ctrl2;
+    if (SUCCEEDED(m_controller.As(&ctrl2)))
+        ctrl2->put_DefaultBackgroundColor(bg);
+
+    HRESULT navHr = m_webView->Navigate(L"https://www.reddit.com");
     OvLog("[Overlay] Navigate hr=0x%08X\n", navHr);
 
     OvLog("[Overlay] m_showPending=%d\n", m_showPending);
