@@ -47,6 +47,11 @@ private:
     bool        m_showPending   = false;
     HMODULE     m_hModule       = nullptr;
 
+    // Desired visibility state — used by the monitor timer to restore windows
+    // after the game un-minimizes.
+    bool        m_toggleVisible = false;  // toggle tab should be on-screen
+    bool        m_panelVisible  = false;  // main overlay panel is open
+
     Microsoft::WRL::ComPtr<ICoreWebView2Environment>  m_env;
     Microsoft::WRL::ComPtr<ICoreWebView2Controller>   m_controller;
     Microsoft::WRL::ComPtr<ICoreWebView2>             m_webView;

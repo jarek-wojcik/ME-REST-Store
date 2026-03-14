@@ -97,6 +97,9 @@ void OverlayHost::Show()
     OvLog("[Overlay] Show() called. m_webView=%p m_hwnd=%p\n",
           static_cast<void*>(m_webView.Get()), static_cast<void*>(m_hwnd));
 
+    m_toggleVisible = true;
+    m_panelVisible  = true;
+
     if (!m_webView)
     {
         OvLog("[Overlay] WebView2 not ready yet, setting m_showPending.\n");
@@ -120,8 +123,10 @@ void OverlayHost::ShowToggleOnly()
     if (!m_toggleHwnd)
         return;
 
+    m_toggleVisible = true;
+
     // Position the tab at the right edge of the game window since the
-    // overlay panel is hidden — same position as after hiding the panel.
+    // overlay panel is hidden ï¿½ same position as after hiding the panel.
     HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
     if (gameWnd)
     {
@@ -143,6 +148,8 @@ void OverlayHost::ShowToggleOnly()
 
 void OverlayHost::Hide()
 {
+    m_toggleVisible = false;
+    m_panelVisible  = false;
     if (m_hwnd)       PostMessage(m_hwnd,      WM_USER + 2, 0, 0);
     if (m_toggleHwnd) PostMessage(m_toggleHwnd, WM_USER + 2, 0, 0);
 }
@@ -163,7 +170,7 @@ void OverlayHost::Shutdown()
 }
 
 // ---------------------------------------------------------------------------
-// Overlay thread — owns the window and runs the message loop
+// Overlay thread ï¿½ owns the window and runs the message loop
 // ---------------------------------------------------------------------------
 
 // static
@@ -229,7 +236,7 @@ void OverlayHost::OverlayThread()
 
     // ---- 3. Create window ----
     // WS_EX_NOACTIVATE stops the overlay stealing focus from the game.
-    // We do NOT parent to gameWnd — parenting a popup to a D3D fullscreen
+    // We do NOT parent to gameWnd ï¿½ parenting a popup to a D3D fullscreen
     // window causes it to be clipped. Instead we use HWND_TOPMOST and
     // position it on the same monitor.
     m_hwnd = CreateWindowExW(
@@ -256,6 +263,10 @@ void OverlayHost::OverlayThread()
     // Use the overlay's own position/height so the tab always matches it exactly.
     CreateToggleWindow(winX, winY, winH);
     OvLog("[Overlay] Toggle hwnd=%p\n", static_cast<void*>(m_toggleHwnd));
+
+    // Start the game-window monitor timer on the toggle window so we can
+    // reposition / show / hide the overlay pair as the game minimizes and restores.
+    SetTimer(m_toggleHwnd, 1 /*id*/, 250 /*ms*/, nullptr);
 
     // ---- 4. Build a writable user-data path for WebView2 ----
     // Using the default (nullptr) path can fail when the host process has
@@ -357,6 +368,66 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
 {
     switch (msg)
     {
+    // Prevent the overlay from stealing focus / activating the game-losing-focus path.
+    case WM_MOUSEACTIVATE:
+        return MA_NOACTIVATE;
+
+    case WM_ACTIVATE:
+        // If Windows somehow activates us anyway, immediately hand focus back.
+        if (LOWORD(wp) != WA_INACTIVE)
+        {
+            HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
+            if (gameWnd) SetForegroundWindow(gameWnd);
+        }
+        return 0;
+
+    // Monitor the game window and keep the overlay pair in sync with its lifecycle.
+    case WM_TIMER:
+    {
+        if (wp != 1 || !m_toggleVisible) break;
+
+        HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
+        if (!gameWnd) break;
+
+        if (IsIconic(gameWnd))
+        {
+            // Game is minimized â€” hide our windows so they don't float over the desktop.
+            if (IsWindowVisible(hwnd))   ShowWindow(hwnd,   SW_HIDE);
+            if (IsWindowVisible(m_hwnd)) ShowWindow(m_hwnd, SW_HIDE);
+        }
+        else
+        {
+            // Game is visible â€” reposition and (re)show the overlay pair.
+            RECT gc{};
+            GetClientRect(gameWnd, &gc);
+            POINT pt{ 0, 0 };
+            ClientToScreen(gameWnd, &pt);
+            const int cW = gc.right  - gc.left;
+            const int cH = gc.bottom - gc.top;
+            const int overlayW = cW / 2;
+
+            if (m_panelVisible)
+            {
+                // Panel is open: overlay fills right half, toggle is left of overlay.
+                const int overlayX = pt.x + cW - overlayW;
+                SetWindowPos(m_hwnd, HWND_TOPMOST,
+                             overlayX, pt.y, overlayW, cH,
+                             SWP_NOACTIVATE | SWP_SHOWWINDOW);
+                SetWindowPos(hwnd, HWND_TOPMOST,
+                             overlayX - k_ToggleW, pt.y, k_ToggleW, cH,
+                             SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            }
+            else
+            {
+                // Panel closed: toggle sits at right edge of game window.
+                SetWindowPos(hwnd, HWND_TOPMOST,
+                             pt.x + cW - k_ToggleW, pt.y, k_ToggleW, cH,
+                             SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            }
+        }
+        break;
+    }
+
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
@@ -394,16 +465,16 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         // Enable world transforms
         SetGraphicsMode(hdc, GM_ADVANCED);
 
-        // Rotate 90° CCW around the centre of the tab:
+        // Rotate 90ï¿½ CCW around the centre of the tab:
         //   1. Translate so tab-centre is at origin
-        //   2. Rotate -90° (CCW): x'=-y, y'=x
+        //   2. Rotate -90ï¿½ (CCW): x'=-y, y'=x
         //   3. Translate back
         // The text rect in rotated space is centred at origin,
         // so in pre-rotation space we centre it at (0,0).
         // Pre-rotation text rect: width=sz.cx, height=sz.cy
         // Centred draw origin (top-left of text): (-sz.cx/2, -sz.cy/2)
 
-        // cos(-90°)=0  sin(-90°)=-1
+        // cos(-90ï¿½)=0  sin(-90ï¿½)=-1
         XFORM xf{};
         xf.eM11 =  0.0f;  xf.eM12 = -1.0f;
         xf.eM21 =  1.0f;  xf.eM22 =  0.0f;
@@ -434,7 +505,7 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
     case WM_LBUTTONUP:
     {
         bool nowVisible = IsWindowVisible(m_hwnd);
-        OvLog("[Overlay] Toggle clicked — overlay was %s.\n", nowVisible ? "visible" : "hidden");
+        OvLog("[Overlay] Toggle clicked ï¿½ overlay was %s.\n", nowVisible ? "visible" : "hidden");
 
         HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
         RECT gameClient{};
@@ -457,6 +528,7 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
 
         if (nowVisible)
         {
+            m_panelVisible = false;
             ShowWindow(m_hwnd, SW_HIDE);
             if (gameWnd)
             {
@@ -468,6 +540,7 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         }
         else
         {
+            m_panelVisible = true;
             RECT or_{};
             GetWindowRect(m_hwnd, &or_);
             SetWindowPos(m_toggleHwnd, HWND_TOPMOST,
@@ -481,14 +554,17 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
     }
 
     case WM_USER + 1:   // Show (called at startup)
+        m_toggleVisible = true;
         ShowWindow(hwnd, SW_SHOW);
         return 0;
 
     case WM_USER + 2:   // Hide
+        m_toggleVisible = false;
         ShowWindow(hwnd, SW_HIDE);
         return 0;
 
     case WM_DESTROY:
+        KillTimer(hwnd, 1);
         m_toggleHwnd = nullptr;
         return 0;
     }
@@ -527,15 +603,29 @@ LRESULT OverlayHost::HandleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     switch (msg)
     {
+    // Prevent focus stealing from the fullscreen D3D game window.
+    case WM_MOUSEACTIVATE:
+        return MA_NOACTIVATE;
+
+    case WM_ACTIVATE:
+        if (LOWORD(wp) != WA_INACTIVE)
+        {
+            HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
+            if (gameWnd) SetForegroundWindow(gameWnd);
+        }
+        return 0;
+
     case WM_SIZE:
         ResizeWebView();
         return 0;
 
     case WM_USER + 1:   // Show()
+        m_panelVisible = true;
         ShowWindow(hwnd, SW_SHOW);
         return 0;
 
     case WM_USER + 2:   // Hide()
+        m_panelVisible = false;
         ShowWindow(hwnd, SW_HIDE);
         return 0;
 
@@ -597,7 +687,7 @@ void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* c
 
     ResizeWebView();
 
-    // Explicitly mark the controller as visible — this is separate from
+    // Explicitly mark the controller as visible ï¿½ this is separate from
     // the window being shown and must be set for rendering to occur.
     m_controller->put_IsVisible(TRUE);
 
