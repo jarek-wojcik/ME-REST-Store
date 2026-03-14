@@ -1,11 +1,7 @@
 #pragma once
 
 #include <windows.h>
-#include <shellapi.h>
-#include <commctrl.h>
-#include <wrl.h>
 #include <string>
-#include <WebView2.h>
 
 class OverlayHost
 {
@@ -35,34 +31,19 @@ private:
     LRESULT HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp);
     void CreateToggleWindow(int overlayX, int overlayY, int overlayH);
 
-    void OnEnvironmentCreated(HRESULT result, ICoreWebView2Environment* env);
-    void OnControllerCreated(HRESULT result, ICoreWebView2Controller* controller);
-    void ResizeWebView();
-
-    // Subclass all Chromium child HWNDs under m_hwnd so that WM_MOUSEACTIVATE
-    // returns MA_NOACTIVATE, preventing them from stealing focus from the game.
-    void SubclassChromiumChildren();
-    static BOOL CALLBACK   EnumChromiumChildren(HWND hwnd, LPARAM lp);
-    static LRESULT CALLBACK ChromiumChildSubclassProc(
-        HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR uid, DWORD_PTR ref);
-
     // ---- Data members ----
     HWND        m_hwnd          = nullptr;
     HWND        m_toggleHwnd    = nullptr;  // the small close-tab
     HANDLE      m_thread        = nullptr;
     DWORD       m_threadId      = 0;
     bool        m_initialized   = false;
-    bool        m_showPending   = false;
     HMODULE     m_hModule       = nullptr;
+    HMODULE     m_hSciter       = nullptr;
 
     // Desired visibility state — used by the monitor timer to restore windows
     // after the game un-minimizes.
     bool        m_toggleVisible = false;  // toggle tab should be on-screen
     bool        m_panelVisible  = false;  // main overlay panel is open
-
-    Microsoft::WRL::ComPtr<ICoreWebView2Environment>  m_env;
-    Microsoft::WRL::ComPtr<ICoreWebView2Controller>   m_controller;
-    Microsoft::WRL::ComPtr<ICoreWebView2>             m_webView;
 
     static constexpr wchar_t k_ClassName[]       = L"SFSOverlayHostWnd";
     static constexpr wchar_t k_ToggleClassName[] = L"SFSOverlayToggleWnd";

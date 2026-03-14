@@ -1,7 +1,6 @@
-#include "OverlayHost.h"
+﻿#include "OverlayHost.h"
 #include <cstdio>
-
-#pragma comment(lib, "comctl32.lib")
+#include "sciter-x.h"
 
 // Simple append-only log used by the overlay thread.
 // Written to the same directory as the ASI.
@@ -20,18 +19,6 @@ static void OvLog(const char* fmt, ...)
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-static bool IsWebView2RuntimeInstalled()
-{
-    LPWSTR version = nullptr;
-    HRESULT hr = GetAvailableCoreWebView2BrowserVersionString(nullptr, &version);
-    if (SUCCEEDED(hr) && version)
-    {
-        CoTaskMemFree(version);
-        return true;
-    }
-    return false;
-}
 
 // Finds the Mass Effect 3 game window and returns its screen rect.
 // Falls back to the primary monitor work area if the window isn't found yet.
@@ -61,8 +48,23 @@ bool OverlayHost::Initialize(HMODULE hModule)
     if (m_initialized)
         return true;
 
-    if (!IsWebView2RuntimeInstalled())
+    // Build the full path to sciter.dll relative to the ASI itself.
+    // LoadLibrary with a bare name searches the ME3 exe directory, not the
+    // ASI directory — we need the explicit path so sciter.dll can live
+    // alongside the ASI rather than next to MassEffect3.exe.
+    // Pre-loading it here also ensures _SAPI()'s own LoadLibrary("sciter.dll")
+    // call finds the already-loaded module instead of searching again.
+    wchar_t sciterPath[MAX_PATH]{};
+    GetModuleFileNameW(hModule, sciterPath, MAX_PATH);
+    wchar_t* sl = wcsrchr(sciterPath, L'\\');
+    if (sl) wcscpy_s(sl + 1, MAX_PATH - (sl - sciterPath) - 1, L"sciter.dll");
+
+    m_hSciter = LoadLibraryW(sciterPath);
+    if (!m_hSciter)
+    {
+        OvLog("[Overlay] sciter.dll not found next to ASI (looked for: %ls).\n", sciterPath);
         return false;
+    }
 
     // Open overlay-specific log next to the ASI
     if (!s_log)
@@ -96,18 +98,11 @@ bool OverlayHost::Initialize(HMODULE hModule)
 
 void OverlayHost::Show()
 {
-    OvLog("[Overlay] Show() called. m_webView=%p m_hwnd=%p\n",
-          static_cast<void*>(m_webView.Get()), static_cast<void*>(m_hwnd));
+    OvLog("[Overlay] Show() called. m_hwnd=%p\n", static_cast<void*>(m_hwnd));
 
     m_toggleVisible = true;
     m_panelVisible  = true;
 
-    if (!m_webView)
-    {
-        OvLog("[Overlay] WebView2 not ready yet, setting m_showPending.\n");
-        m_showPending = true;
-        return;
-    }
     if (m_hwnd)
     {
         OvLog("[Overlay] Posting WM_USER+1 to show window.\n");
@@ -128,7 +123,7 @@ void OverlayHost::ShowToggleOnly()
     m_toggleVisible = true;
 
     // Position the tab at the right edge of the game window since the
-    // overlay panel is hidden � same position as after hiding the panel.
+    // overlay panel is hidden ï¿½ same position as after hiding the panel.
     HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
     if (gameWnd)
     {
@@ -168,11 +163,17 @@ void OverlayHost::Shutdown()
         m_thread = nullptr;
     }
 
+    if (m_hSciter)
+    {
+        FreeLibrary(m_hSciter);
+        m_hSciter = nullptr;
+    }
+
     m_initialized = false;
 }
 
 // ---------------------------------------------------------------------------
-// Overlay thread � owns the window and runs the message loop
+// Overlay thread ï¿½ owns the window and runs the message loop
 // ---------------------------------------------------------------------------
 
 // static
@@ -185,12 +186,6 @@ DWORD WINAPI OverlayHost::OverlayThreadProc(LPVOID param)
 void OverlayHost::OverlayThread()
 {
     OvLog("[Overlay] Thread started.\n");
-
-    // WebView2 requires COM to be initialized on this thread.
-    HRESULT comHr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-    OvLog("[Overlay] CoInitializeEx hr=0x%08X\n", comHr);
-    if (FAILED(comHr))
-        return;
 
     // ---- 1. Find game window and compute geometry ----
     // Wait until the window exists AND is not minimized (minimized windows
@@ -238,7 +233,7 @@ void OverlayHost::OverlayThread()
 
     // ---- 3. Create window ----
     // WS_EX_NOACTIVATE stops the overlay stealing focus from the game.
-    // We do NOT parent to gameWnd � parenting a popup to a D3D fullscreen
+    // We do NOT parent to gameWnd ï¿½ parenting a popup to a D3D fullscreen
     // window causes it to be clipped. Instead we use HWND_TOPMOST and
     // position it on the same monitor.
     m_hwnd = CreateWindowExW(
@@ -257,7 +252,6 @@ void OverlayHost::OverlayThread()
 
     if (!m_hwnd)
     {
-        CoUninitialize();
         return;
     }
 
@@ -270,39 +264,14 @@ void OverlayHost::OverlayThread()
     // reposition / show / hide the overlay pair as the game minimizes and restores.
     SetTimer(m_toggleHwnd, 1 /*id*/, 250 /*ms*/, nullptr);
 
-    // ---- 4. Build a writable user-data path for WebView2 ----
-    // Using the default (nullptr) path can fail when the host process has
-    // restricted write access. Explicitly point it at a temp folder.
-    wchar_t udPath[MAX_PATH]{};
-    GetModuleFileNameW(m_hModule, udPath, MAX_PATH);
-    wchar_t* sl = wcsrchr(udPath, L'\\');
-    if (sl) wcscpy_s(sl + 1, MAX_PATH - (sl - udPath) - 1, L"WebView2Data");
-    OvLog("[Overlay] UserDataFolder: %ls\n", udPath);
+    // ---- 4. Load the Spectre Portal into the Sciter view ----
+    // SciterProcND (called from WndProc) already associated Sciter with this
+    // HWND during WM_CREATE. SciterLoadFile starts loading immediately;
+    // rendering happens on the first WM_PAINT once the window is shown.
+    SBOOL loaded = SciterLoadFile(m_hwnd, L"http://localhost:6060/spectreportal/");
+    OvLog("[Overlay] SciterLoadFile returned %d\n", loaded);
 
-    // ---- 5. Create WebView2 environment with explicit user-data folder ----
-    OvLog("[Overlay] Calling CreateCoreWebView2EnvironmentWithOptions...\n");
-    HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(
-        nullptr,
-        udPath,     // explicit writable user-data folder
-        nullptr,
-        Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
-            [this](HRESULT result, ICoreWebView2Environment* env) -> HRESULT
-            {
-                OvLog("[Overlay] Environment callback hr=0x%08X env=%p\n",
-                      result, static_cast<void*>(env));
-                OnEnvironmentCreated(result, env);
-                return S_OK;
-            }
-        ).Get()
-    );
-    OvLog("[Overlay] CreateCoreWebView2EnvironmentWithOptions returned hr=0x%08X\n", hr);
-    if (FAILED(hr))
-    {
-        CoUninitialize();
-        return;
-    }
-
-    // ---- 6. Message loop ----
+    // ---- 5. Message loop ----
     OvLog("[Overlay] Entering message loop.\n");
     MSG msg{};
     while (GetMessageW(&msg, nullptr, 0, 0))
@@ -311,8 +280,6 @@ void OverlayHost::OverlayThread()
         DispatchMessageW(&msg);
     }
     OvLog("[Overlay] Message loop exited.\n");
-
-    CoUninitialize();
 }
 
 // ---------------------------------------------------------------------------
@@ -393,13 +360,13 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
 
         if (IsIconic(gameWnd))
         {
-            // Game is minimized — hide our windows so they don't float over the desktop.
+            // Game is minimized â€” hide our windows so they don't float over the desktop.
             if (IsWindowVisible(hwnd))   ShowWindow(hwnd,   SW_HIDE);
             if (IsWindowVisible(m_hwnd)) ShowWindow(m_hwnd, SW_HIDE);
         }
         else
         {
-            // Game is visible — reposition and (re)show the overlay pair.
+            // Game is visible â€” reposition and (re)show the overlay pair.
             RECT gc{};
             GetClientRect(gameWnd, &gc);
             POINT pt{ 0, 0 };
@@ -467,16 +434,16 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         // Enable world transforms
         SetGraphicsMode(hdc, GM_ADVANCED);
 
-        // Rotate 90� CCW around the centre of the tab:
+        // Rotate 90ï¿½ CCW around the centre of the tab:
         //   1. Translate so tab-centre is at origin
-        //   2. Rotate -90� (CCW): x'=-y, y'=x
+        //   2. Rotate -90ï¿½ (CCW): x'=-y, y'=x
         //   3. Translate back
         // The text rect in rotated space is centred at origin,
         // so in pre-rotation space we centre it at (0,0).
         // Pre-rotation text rect: width=sz.cx, height=sz.cy
         // Centred draw origin (top-left of text): (-sz.cx/2, -sz.cy/2)
 
-        // cos(-90�)=0  sin(-90�)=-1
+        // cos(-90ï¿½)=0  sin(-90ï¿½)=-1
         XFORM xf{};
         xf.eM11 =  0.0f;  xf.eM12 = -1.0f;
         xf.eM21 =  1.0f;  xf.eM22 =  0.0f;
@@ -507,7 +474,7 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
     case WM_LBUTTONUP:
     {
         bool nowVisible = IsWindowVisible(m_hwnd);
-        OvLog("[Overlay] Toggle clicked � overlay was %s.\n", nowVisible ? "visible" : "hidden");
+        OvLog("[Overlay] Toggle clicked ï¿½ overlay was %s.\n", nowVisible ? "visible" : "hidden");
 
         HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
         RECT gameClient{};
@@ -603,12 +570,25 @@ LRESULT CALLBACK OverlayHost::WndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 
 LRESULT OverlayHost::HandleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
+    // Handle WM_DESTROY first so PostQuitMessage is always guaranteed to
+    // fire even if Sciter consumes the message internally.
+    if (msg == WM_DESTROY)
+    {
+        m_hwnd = nullptr;
+        PostQuitMessage(0);
+        return 0;
+    }
+
+    // Route all messages through Sciter. This covers WM_CREATE (binding),
+    // WM_SIZE (reflow), WM_PAINT (rendering), WM_ERASEBKGND, and all
+    // mouse/keyboard input, replacing the old WebView2 controller layer.
+    SBOOL handled = FALSE;
+    LRESULT lr = SciterProcND(hwnd, msg, wp, lp, &handled);
+    if (handled)
+        return lr;
+
     switch (msg)
     {
-    case WM_SIZE:
-        ResizeWebView();
-        return 0;
-
     case WM_USER + 1:   // Show()
         m_panelVisible = true;
         ShowWindow(hwnd, SW_SHOW);
@@ -622,142 +602,8 @@ LRESULT OverlayHost::HandleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     case WM_CLOSE:
         ShowWindow(hwnd, SW_HIDE);
         return 0;
-
-    case WM_DESTROY:
-        if (m_controller) { m_controller->Close(); m_controller.Reset(); }
-        m_webView.Reset();
-        m_env.Reset();
-        m_hwnd = nullptr;
-        PostQuitMessage(0);     // exits the GetMessage loop
-        return 0;
     }
 
     return DefWindowProcW(hwnd, msg, wp, lp);
 }
 
-// ---------------------------------------------------------------------------
-// WebView2 callbacks (fire on the overlay thread)
-// ---------------------------------------------------------------------------
-
-void OverlayHost::OnEnvironmentCreated(HRESULT result, ICoreWebView2Environment* env)
-{
-    if (FAILED(result) || !env || !m_hwnd)
-        return;
-
-    m_env = env;
-
-    env->CreateCoreWebView2Controller(
-        m_hwnd,
-        Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(
-            [this](HRESULT res, ICoreWebView2Controller* controller) -> HRESULT
-            {
-                OnControllerCreated(res, controller);
-                return S_OK;
-            }
-        ).Get()
-    );
-}
-
-void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* controller)
-{
-    OvLog("[Overlay] OnControllerCreated hr=0x%08X controller=%p\n",
-          result, static_cast<void*>(controller));
-
-    if (FAILED(result) || !controller || !m_hwnd)
-        return;
-
-    m_controller = controller;
-    controller->get_CoreWebView2(m_webView.GetAddressOf());
-
-    if (!m_webView)
-    {
-        OvLog("[Overlay] get_CoreWebView2 returned null.\n");
-        return;
-    }
-
-    ResizeWebView();
-
-    // Explicitly mark the controller as visible � this is separate from
-    // the window being shown and must be set for rendering to occur.
-    m_controller->put_IsVisible(TRUE);
-
-    // Set a solid white background so the webview paints immediately
-    // rather than leaving the default transparent/blank state.
-    COREWEBVIEW2_COLOR bg{ 255, 255, 255, 255 };
-    Microsoft::WRL::ComPtr<ICoreWebView2Controller2> ctrl2;
-    if (SUCCEEDED(m_controller.As(&ctrl2)))
-        ctrl2->put_DefaultBackgroundColor(bg);
-
-    HRESULT navHr = m_webView->Navigate(L"http://localhost:6060/spectreportal/");
-    OvLog("[Overlay] Navigate hr=0x%08X\n", navHr);
-
-    // Subclass Chromium child windows now that the controller is ready.
-    // This is called again from ResizeWebView() to catch any windows
-    // Chromium creates later.
-    SubclassChromiumChildren();
-
-    OvLog("[Overlay] m_showPending=%d\n", m_showPending);
-    if (m_showPending)
-    {
-        m_showPending = false;
-        OvLog("[Overlay] Honouring pending Show().\n");
-        PostMessage(m_hwnd, WM_USER + 1, 0, 0);
-        if (m_toggleHwnd) PostMessage(m_toggleHwnd, WM_USER + 1, 0, 0);
-    }
-}
-
-void OverlayHost::ResizeWebView()
-{
-    if (!m_controller || !m_hwnd)
-        return;
-
-    RECT rc{};
-    GetClientRect(m_hwnd, &rc);
-    m_controller->put_Bounds(rc);
-
-    // Chromium may recreate compositor HWNDs after a resize — re-subclass.
-    SubclassChromiumChildren();
-}
-
-// ---------------------------------------------------------------------------
-// Chromium child-window subclassing (focus-steal prevention)
-// ---------------------------------------------------------------------------
-
-// Subclass proc installed on every Chromium child HWND under m_hwnd.
-// Returns MA_NOACTIVATE so that clicking the WebView2 surface never activates
-// the overlay window chain and never causes a fullscreen D3D game to minimize.
-// The click itself is NOT consumed — Chromium still receives it and routes it
-// to the correct input element, so keyboard focus inside WebView2 works fine.
-// static
-LRESULT CALLBACK OverlayHost::ChromiumChildSubclassProc(
-    HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR uid, DWORD_PTR /*ref*/)
-{
-    if (msg == WM_MOUSEACTIVATE)
-        return MA_NOACTIVATE;
-
-    if (msg == WM_NCDESTROY)
-    {
-        // Clean up the subclass when the window is destroyed.
-        RemoveWindowSubclass(hwnd, ChromiumChildSubclassProc, uid);
-    }
-
-    return DefSubclassProc(hwnd, msg, wp, lp);
-}
-
-// EnumChildWindows callback — subclasses each direct and indirect child.
-// static
-BOOL CALLBACK OverlayHost::EnumChromiumChildren(HWND hwnd, LPARAM /*lp*/)
-{
-    // SetWindowSubclass is idempotent with the same (proc, uid) pair, so
-    // calling it again on an already-subclassed window is safe.
-    SetWindowSubclass(hwnd, ChromiumChildSubclassProc,
-                      reinterpret_cast<UINT_PTR>(ChromiumChildSubclassProc), 0);
-    return TRUE;  // continue enumeration
-}
-
-void OverlayHost::SubclassChromiumChildren()
-{
-    if (!m_hwnd) return;
-    OvLog("[Overlay] SubclassChromiumChildren called.\n");
-    EnumChildWindows(m_hwnd, EnumChromiumChildren, 0);
-}
