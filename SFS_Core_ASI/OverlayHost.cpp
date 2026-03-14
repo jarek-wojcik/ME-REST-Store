@@ -1,6 +1,8 @@
 #include "OverlayHost.h"
 #include <cstdio>
 
+#pragma comment(lib, "comctl32.lib")
+
 // Simple append-only log used by the overlay thread.
 // Written to the same directory as the ASI.
 static FILE* s_log = nullptr;
@@ -603,18 +605,6 @@ LRESULT OverlayHost::HandleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
 {
     switch (msg)
     {
-    // Prevent focus stealing from the fullscreen D3D game window.
-    case WM_MOUSEACTIVATE:
-        return MA_NOACTIVATE;
-
-    case WM_ACTIVATE:
-        if (LOWORD(wp) != WA_INACTIVE)
-        {
-            HWND gameWnd = FindWindowW(nullptr, L"Mass Effect 3");
-            if (gameWnd) SetForegroundWindow(gameWnd);
-        }
-        return 0;
-
     case WM_SIZE:
         ResizeWebView();
         return 0;
@@ -701,6 +691,11 @@ void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* c
     HRESULT navHr = m_webView->Navigate(L"http://localhost:6060/spectreportal/");
     OvLog("[Overlay] Navigate hr=0x%08X\n", navHr);
 
+    // Subclass Chromium child windows now that the controller is ready.
+    // This is called again from ResizeWebView() to catch any windows
+    // Chromium creates later.
+    SubclassChromiumChildren();
+
     OvLog("[Overlay] m_showPending=%d\n", m_showPending);
     if (m_showPending)
     {
@@ -719,4 +714,50 @@ void OverlayHost::ResizeWebView()
     RECT rc{};
     GetClientRect(m_hwnd, &rc);
     m_controller->put_Bounds(rc);
+
+    // Chromium may recreate compositor HWNDs after a resize — re-subclass.
+    SubclassChromiumChildren();
+}
+
+// ---------------------------------------------------------------------------
+// Chromium child-window subclassing (focus-steal prevention)
+// ---------------------------------------------------------------------------
+
+// Subclass proc installed on every Chromium child HWND under m_hwnd.
+// Returns MA_NOACTIVATE so that clicking the WebView2 surface never activates
+// the overlay window chain and never causes a fullscreen D3D game to minimize.
+// The click itself is NOT consumed — Chromium still receives it and routes it
+// to the correct input element, so keyboard focus inside WebView2 works fine.
+// static
+LRESULT CALLBACK OverlayHost::ChromiumChildSubclassProc(
+    HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR uid, DWORD_PTR /*ref*/)
+{
+    if (msg == WM_MOUSEACTIVATE)
+        return MA_NOACTIVATE;
+
+    if (msg == WM_NCDESTROY)
+    {
+        // Clean up the subclass when the window is destroyed.
+        RemoveWindowSubclass(hwnd, ChromiumChildSubclassProc, uid);
+    }
+
+    return DefSubclassProc(hwnd, msg, wp, lp);
+}
+
+// EnumChildWindows callback — subclasses each direct and indirect child.
+// static
+BOOL CALLBACK OverlayHost::EnumChromiumChildren(HWND hwnd, LPARAM /*lp*/)
+{
+    // SetWindowSubclass is idempotent with the same (proc, uid) pair, so
+    // calling it again on an already-subclassed window is safe.
+    SetWindowSubclass(hwnd, ChromiumChildSubclassProc,
+                      reinterpret_cast<UINT_PTR>(ChromiumChildSubclassProc), 0);
+    return TRUE;  // continue enumeration
+}
+
+void OverlayHost::SubclassChromiumChildren()
+{
+    if (!m_hwnd) return;
+    OvLog("[Overlay] SubclassChromiumChildren called.\n");
+    EnumChildWindows(m_hwnd, EnumChromiumChildren, 0);
 }

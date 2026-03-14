@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include <shellapi.h>
+#include <commctrl.h>
 #include <wrl.h>
 #include <string>
 #include <WebView2.h>
@@ -37,6 +38,13 @@ private:
     void OnEnvironmentCreated(HRESULT result, ICoreWebView2Environment* env);
     void OnControllerCreated(HRESULT result, ICoreWebView2Controller* controller);
     void ResizeWebView();
+
+    // Subclass all Chromium child HWNDs under m_hwnd so that WM_MOUSEACTIVATE
+    // returns MA_NOACTIVATE, preventing them from stealing focus from the game.
+    void SubclassChromiumChildren();
+    static BOOL CALLBACK   EnumChromiumChildren(HWND hwnd, LPARAM lp);
+    static LRESULT CALLBACK ChromiumChildSubclassProc(
+        HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR uid, DWORD_PTR ref);
 
     // ---- Data members ----
     HWND        m_hwnd          = nullptr;
