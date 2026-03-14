@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"io/fs"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,6 +16,9 @@ import (
 
 //go:embed templates
 var templateFS embed.FS
+
+//go:embed static
+var staticFS embed.FS
 
 const bucketName = "sfs"
 
@@ -142,14 +146,12 @@ func main() {
 	}
 
 	// GET /static/*
-	// Serves images and other static assets from the static/ folder
-	// adjacent to the running executable.
-	exePath, err := os.Executable()
+	// Serves images and other static assets embedded in the binary.
+	staticSub, err := fs.Sub(staticFS, "static")
 	if err != nil {
 		panic(err)
 	}
-	staticDir := filepath.Join(filepath.Dir(exePath), "static")
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(staticDir))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticSub))))
 
 	// GET /spectreportal/
 	// Serves the main UI shell with tab navigation.
