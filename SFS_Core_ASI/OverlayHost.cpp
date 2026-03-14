@@ -810,34 +810,107 @@ static HWND FindRenderWidget(HWND host)
 // static
 LRESULT CALLBACK OverlayHost::LowLevelKeyProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if (nCode == HC_ACTION && s_instance && s_instance->m_panelVisible)
+    // Modifier state tracked explicitly inside the hook.
+    // The LL hook always fires on the installing (overlay) thread, so these
+    // statics are only ever touched from one thread — no synchronisation needed.
+    // We cannot rely on GetAsyncKeyState or GetKeyboardState here: when we
+    // suppress a key by returning 1, Windows may not update either state table
+    // before the next hook invocation fires for the following key.
+    static bool s_shiftDown   = false;
+    static bool s_ctrlDown    = false;
+    static bool s_altDown     = false;  // VK_MENU (used for AltGr detection)
+    static bool s_capsLockOn  = false;  // toggle state
+    static bool s_numlockOn   = true;   // toggle state (on by default)
+
+    if (nCode != HC_ACTION)
+        return CallNextHookEx(nullptr, nCode, wParam, lParam);
+
+    KBDLLHOOKSTRUCT* kb = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+    UINT uMsg = static_cast<UINT>(wParam);
+    bool isDown = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
+    bool isUp   = (uMsg == WM_KEYUP   || uMsg == WM_SYSKEYUP);
+
+    // --- Always update our modifier tracking, even when panel is closed ---
+    // This keeps state consistent so that when the panel opens mid-session
+    // the modifier state is already correct.
+    if (!(kb->flags & LLKHF_INJECTED))
     {
-        KBDLLHOOKSTRUCT* kb = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-
-        // Skip events that we ourselves injected, to prevent infinite loops.
-        if (!(kb->flags & LLKHF_INJECTED))
+        switch (kb->vkCode)
         {
-            HWND target = FindRenderWidget(s_instance->m_hwnd);
-            if (!target) target = s_instance->m_hwnd;  // best-effort fallback
-
-            UINT uMsg = static_cast<UINT>(wParam); // WM_KEYDOWN / WM_KEYUP / WM_SYSKEYDOWN / WM_SYSKEYUP
-
-            // Build the lParam for WM_KEYDOWN/WM_KEYUP (repeat=1, scan code, flags).
-            LPARAM keyLp = 1 | (static_cast<LPARAM>(kb->scanCode & 0xFF) << 16);
-            if (kb->flags & LLKHF_EXTENDED)             keyLp |= (1UL << 24);
-            if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP) keyLp |= (3UL << 30); // prev-state + transition
-
-            PostMessage(target, uMsg, static_cast<WPARAM>(kb->vkCode), keyLp);
-
-            // Do NOT post WM_CHAR manually. Chromium's message loop calls
-            // TranslateMessage internally when it dequeues our WM_KEYDOWN,
-            // which synthesises WM_CHAR itself. Posting it here too causes
-            // every character to be inserted twice.
-
-            // Suppress the keystroke so ME3 does not also react to it while
-            // the overlay panel is open.
-            return 1;
+        case VK_SHIFT: case VK_LSHIFT: case VK_RSHIFT:
+            s_shiftDown = isDown;
+            break;
+        case VK_CONTROL: case VK_LCONTROL: case VK_RCONTROL:
+            s_ctrlDown = isDown;
+            break;
+        case VK_MENU: case VK_LMENU: case VK_RMENU:
+            s_altDown = isDown;
+            break;
+        case VK_CAPITAL:
+            if (isDown) s_capsLockOn = !s_capsLockOn;
+            break;
+        case VK_NUMLOCK:
+            if (isDown) s_numlockOn = !s_numlockOn;
+            break;
         }
+    }
+
+    if (s_instance && s_instance->m_panelVisible && !(kb->flags & LLKHF_INJECTED))
+    {
+        HWND target = FindRenderWidget(s_instance->m_hwnd);
+        if (!target) target = s_instance->m_hwnd;
+
+        // Build lParam for WM_KEYDOWN/WM_KEYUP messages.
+        LPARAM keyLp = 1 | (static_cast<LPARAM>(kb->scanCode & 0xFF) << 16);
+        if (kb->flags & LLKHF_EXTENDED)  keyLp |= (1UL << 24);
+        if (isUp)                         keyLp |= (3UL << 30);
+
+        if (isDown)
+        {
+            // Build a keyboard state array from our tracked modifier state.
+            // This is reliable because we maintained it ourselves for every
+            // key event, so Shift/CapsLock/AltGr are always current.
+            BYTE ks[256]{};
+            if (s_shiftDown)  { ks[VK_SHIFT]   = 0x80; ks[VK_LSHIFT]   = 0x80; }
+            if (s_ctrlDown)   { ks[VK_CONTROL] = 0x80; ks[VK_LCONTROL] = 0x80; }
+            if (s_altDown)    { ks[VK_MENU]    = 0x80; ks[VK_LMENU]    = 0x80; }
+            if (s_capsLockOn) { ks[VK_CAPITAL] = 0x01; }
+            if (s_numlockOn)  { ks[VK_NUMLOCK] = 0x01; }
+
+            WCHAR ch[8]{};
+            int n = ToUnicodeEx(kb->vkCode, kb->scanCode, ks,
+                                ch, _countof(ch), 0, GetKeyboardLayout(0));
+
+            // Printable = ToUnicodeEx returned a non-control glyph.
+            bool isPrintable = (n > 0 && static_cast<unsigned>(ch[0]) >= 0x20u);
+
+            if (!isPrintable || s_ctrlDown)
+            {
+                // Non-printable (arrows, backspace, enter, escape, F-keys, tab)
+                // or keyboard shortcut: forward as WM_KEYDOWN so Chromium handles
+                // the virtual key directly.
+                PostMessage(target, uMsg, static_cast<WPARAM>(kb->vkCode), keyLp);
+            }
+            else
+            {
+                // Printable character: post WM_CHAR with the correctly-cased
+                // character we computed. Skip WM_KEYDOWN to avoid Chromium
+                // generating a second WM_CHAR from its own TranslateMessage call.
+                LPARAM charLp = 1 | (static_cast<LPARAM>(kb->scanCode & 0xFF) << 16);
+                for (int i = 0; i < n; ++i)
+                    PostMessage(target, WM_CHAR, static_cast<WPARAM>(ch[i]), charLp);
+            }
+        }
+        else
+        {
+            // WM_KEYUP / WM_SYSKEYUP: always forward so Chromium releases
+            // its internal modifier/key state correctly.
+            PostMessage(target, uMsg, static_cast<WPARAM>(kb->vkCode), keyLp);
+        }
+
+        // Suppress the keystroke so ME3 does not also react to it while
+        // the overlay panel is open.
+        return 1;
     }
     return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
