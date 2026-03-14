@@ -9,10 +9,12 @@ import (
 
 const botsBucket = "bots"
 
-// BotView pairs a persisted Bot with its resolved CharacterDef for template rendering.
+// BotView pairs a persisted Bot with its resolved CharacterDef and WeaponDef
+// for template rendering.
 type BotView struct {
 	Bot
-	CharDef *CharacterDef
+	CharDef   *CharacterDef
+	WeaponDef *WeaponDef // nil when no weapon is assigned
 }
 
 // ensureBotsBucket creates the bots bucket if it does not already exist.
@@ -52,6 +54,7 @@ func createBot(db *bolt.DB, teamID string, charID string) (Bot, error) {
 		ID:          newID(),
 		TeamID:      teamID,
 		CharacterID: charID,
+		WeaponID:    "",
 		Powers:      []PowerSlot{},
 	}
 	data, err := json.Marshal(bot)
@@ -87,6 +90,28 @@ func updateBotCharacter(db *bolt.DB, botID string, charID string) (Bot, error) {
 	return bot, err
 }
 
+// updateBotWeapon changes a bot's weapon and returns the updated bot.
+func updateBotWeapon(db *bolt.DB, botID string, weaponID string) (Bot, error) {
+	var bot Bot
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(botsBucket))
+		v := b.Get([]byte(botID))
+		if v == nil {
+			return fmt.Errorf("bot not found")
+		}
+		if err := json.Unmarshal(v, &bot); err != nil {
+			return err
+		}
+		bot.WeaponID = weaponID
+		data, err := json.Marshal(bot)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(botID), data)
+	})
+	return bot, err
+}
+
 // deleteBot removes a bot by ID. Returns false if the ID did not exist.
 func deleteBot(db *bolt.DB, botID string) (bool, error) {
 	var existed bool
@@ -101,8 +126,7 @@ func deleteBot(db *bolt.DB, botID string) (bool, error) {
 	return existed, err
 }
 
-// botViews resolves the CharacterDef for each bot, falling back to the first
-// catalog entry if the stored ID is no longer valid.
+// botViews resolves the CharacterDef and WeaponDef for each bot.
 func botViews(bots []Bot) []BotView {
 	views := make([]BotView, 0, len(bots))
 	for _, bot := range bots {
@@ -110,7 +134,11 @@ func botViews(bots []Bot) []BotView {
 		if def == nil {
 			def = &CharacterCatalog[0]
 		}
-		views = append(views, BotView{Bot: bot, CharDef: def})
+		views = append(views, BotView{
+			Bot:       bot,
+			CharDef:   def,
+			WeaponDef: WeaponByID(bot.WeaponID), // nil if unset
+		})
 	}
 	return views
 }

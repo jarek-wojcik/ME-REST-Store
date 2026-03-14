@@ -142,7 +142,11 @@ func main() {
 			def = &CharacterCatalog[0]
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_ = tmpl.ExecuteTemplate(w, "bot_card", BotView{Bot: bot, CharDef: def})
+		_ = tmpl.ExecuteTemplate(w, "bot_card", BotView{
+			Bot:       bot,
+			CharDef:   def,
+			WeaponDef: WeaponByID(bot.WeaponID),
+		})
 	}
 
 	// GET /static/*
@@ -256,6 +260,38 @@ func main() {
 			return
 		}
 		bot, err := updateBotCharacter(db, botID, charID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderBotCard(w, bot)
+	})
+
+	// GET /api/weapons/selector?botId={id}
+	// Returns the weapon selector grid partial for use in the modal.
+	http.HandleFunc("GET /api/weapons/selector", func(w http.ResponseWriter, r *http.Request) {
+		botID := r.URL.Query().Get("botId")
+		if botID == "" {
+			respondText(w, 400, "missing botId\n")
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "weapon_selector", map[string]any{
+			"BotID":   botID,
+			"Weapons": WeaponCatalog,
+		})
+	})
+
+	// POST /api/bots/{id}/weapon/{weaponId}
+	// Updates a bot's weapon. Returns the updated bot_card partial.
+	http.HandleFunc("POST /api/bots/{id}/weapon/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
+		botID := r.PathValue("id")
+		weaponID := r.PathValue("weaponId")
+		if WeaponByID(weaponID) == nil {
+			respondText(w, 400, "unknown weapon\n")
+			return
+		}
+		bot, err := updateBotWeapon(db, botID, weaponID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
