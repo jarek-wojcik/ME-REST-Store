@@ -23,14 +23,17 @@ type PowerSlot struct {
 // Bot is a character instance assigned to a team.
 // CharacterID references a CharacterDef in the catalog.
 // WeaponID references a WeaponDef in the catalog.
+// WeaponMod1ID / WeaponMod2ID reference WeaponModDef entries in the catalog.
 // Powers holds 0–5 slots; slots are initialised from the CharacterDef
 // defaults when a bot is first created.
 type Bot struct {
-	ID          string      `json:"id"`
-	TeamID      string      `json:"teamId"`
-	CharacterID string      `json:"characterId"`
-	WeaponID    string      `json:"weaponId"`
-	Powers      []PowerSlot `json:"powers"` // up to 5
+	ID           string      `json:"id"`
+	TeamID       string      `json:"teamId"`
+	CharacterID  string      `json:"characterId"`
+	WeaponID     string      `json:"weaponId"`
+	WeaponMod1ID string      `json:"weaponMod1Id"`
+	WeaponMod2ID string      `json:"weaponMod2Id"`
+	Powers       []PowerSlot `json:"powers"` // up to 5
 }
 
 // ---------------------------------------------------------------------------

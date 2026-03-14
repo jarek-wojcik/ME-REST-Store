@@ -9,12 +9,14 @@ import (
 
 const botsBucket = "bots"
 
-// BotView pairs a persisted Bot with its resolved CharacterDef and WeaponDef
+// BotView pairs a persisted Bot with its resolved catalog definitions
 // for template rendering.
 type BotView struct {
 	Bot
-	CharDef   *CharacterDef
-	WeaponDef *WeaponDef // nil when no weapon is assigned
+	CharDef       *CharacterDef
+	WeaponDef     *WeaponDef    // nil when no weapon is assigned
+	WeaponMod1Def *WeaponModDef // nil when no mod is assigned in slot 1
+	WeaponMod2Def *WeaponModDef // nil when no mod is assigned in slot 2
 }
 
 // ensureBotsBucket creates the bots bucket if it does not already exist.
@@ -51,11 +53,13 @@ func listBotsForTeam(db *bolt.DB, teamID string) ([]Bot, error) {
 // createBot persists a new bot with the given character and returns it.
 func createBot(db *bolt.DB, teamID string, charID string) (Bot, error) {
 	bot := Bot{
-		ID:          newID(),
-		TeamID:      teamID,
-		CharacterID: charID,
-		WeaponID:    "",
-		Powers:      []PowerSlot{},
+		ID:           newID(),
+		TeamID:       teamID,
+		CharacterID:  charID,
+		WeaponID:     "",
+		WeaponMod1ID: "",
+		WeaponMod2ID: "",
+		Powers:       []PowerSlot{},
 	}
 	data, err := json.Marshal(bot)
 	if err != nil {
@@ -126,7 +130,35 @@ func deleteBot(db *bolt.DB, botID string) (bool, error) {
 	return existed, err
 }
 
-// botViews resolves the CharacterDef and WeaponDef for each bot.
+// updateBotWeaponMod changes a bot's weapon mod in the given slot (1 or 2)
+// and returns the updated bot.
+func updateBotWeaponMod(db *bolt.DB, botID string, slot int, modID string) (Bot, error) {
+	var bot Bot
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(botsBucket))
+		v := b.Get([]byte(botID))
+		if v == nil {
+			return fmt.Errorf("bot not found")
+		}
+		if err := json.Unmarshal(v, &bot); err != nil {
+			return err
+		}
+		switch slot {
+		case 1:
+			bot.WeaponMod1ID = modID
+		case 2:
+			bot.WeaponMod2ID = modID
+		}
+		data, err := json.Marshal(bot)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(botID), data)
+	})
+	return bot, err
+}
+
+// botViews resolves catalog definitions for each bot.
 func botViews(bots []Bot) []BotView {
 	views := make([]BotView, 0, len(bots))
 	for _, bot := range bots {
@@ -135,9 +167,11 @@ func botViews(bots []Bot) []BotView {
 			def = &CharacterCatalog[0]
 		}
 		views = append(views, BotView{
-			Bot:       bot,
-			CharDef:   def,
-			WeaponDef: WeaponByID(bot.WeaponID), // nil if unset
+			Bot:           bot,
+			CharDef:       def,
+			WeaponDef:     WeaponByID(bot.WeaponID),
+			WeaponMod1Def: WeaponModByID(bot.WeaponMod1ID),
+			WeaponMod2Def: WeaponModByID(bot.WeaponMod2ID),
 		})
 	}
 	return views

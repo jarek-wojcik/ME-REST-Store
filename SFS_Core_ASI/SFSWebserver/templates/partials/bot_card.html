@@ -59,7 +59,7 @@
         </div>
 
         <!-- Weapon row -->
-        <div class="flex items-center gap-4 px-4 py-3">
+        <div class="flex items-center gap-4 px-4 py-3 border-b border-[#1e3a5f]/50">
             <span class="text-[10px] font-semibold tracking-widest uppercase
                          text-gray-600 w-14 flex-shrink-0">Weapon</span>
 
@@ -100,6 +100,98 @@
                     </div>
                     <span class="text-xs text-gray-600 group-hover/wpn:text-[#00aaff]
                                  transition-colors">Select weapon…</span>
+                {{end}}
+
+            </button>
+        </div>
+
+        <!-- Mod slot 1 row -->
+        <div class="flex items-center gap-4 px-4 py-2 border-b border-[#1e3a5f]/30">
+            <span class="text-[10px] font-semibold tracking-widest uppercase
+                         text-gray-600 w-14 flex-shrink-0">Mod 1</span>
+
+            <button class="group/mod1 flex items-center gap-3 rounded-lg
+                           border border-[#1e3a5f] bg-[#0a0e1a] px-3 py-1.5
+                           hover:border-[#00aaff]/60 hover:bg-[#0d1829]
+                           transition-all duration-150 cursor-pointer focus:outline-none
+                           min-w-0 flex-1"
+                    hx-get="/api/weapon-mods/selector?botId={{.Bot.ID}}&slot=1"
+                    hx-target="#modal-body"
+                    hx-swap="innerHTML"
+                    @click="modalOpen=true"
+                    title="Change weapon mod 1">
+
+                {{if .WeaponMod1Def}}
+                    <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                        <img src="{{.WeaponMod1Def.PictureURL}}"
+                             alt="{{.WeaponMod1Def.Name}}"
+                             class="w-full h-full object-contain
+                                    group-hover/mod1:scale-105 transition-transform duration-200"/>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-xs font-medium text-gray-300
+                                    group-hover/mod1:text-[#00aaff] transition-colors truncate">
+                            {{.WeaponMod1Def.Name}}
+                        </div>
+                        <div class="text-[10px] text-gray-600 truncate">{{.WeaponMod1Def.WeaponSlot}}</div>
+                    </div>
+                {{else}}
+                    <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center
+                                border border-dashed border-[#1e3a5f] rounded">
+                        <svg class="w-4 h-4 text-[#1e3a5f] group-hover/mod1:text-[#00aaff]
+                                   transition-colors"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600 group-hover/mod1:text-[#00aaff]
+                                 transition-colors">Select mod…</span>
+                {{end}}
+
+            </button>
+        </div>
+
+        <!-- Mod slot 2 row -->
+        <div class="flex items-center gap-4 px-4 py-2">
+            <span class="text-[10px] font-semibold tracking-widest uppercase
+                         text-gray-600 w-14 flex-shrink-0">Mod 2</span>
+
+            <button class="group/mod2 flex items-center gap-3 rounded-lg
+                           border border-[#1e3a5f] bg-[#0a0e1a] px-3 py-1.5
+                           hover:border-[#00aaff]/60 hover:bg-[#0d1829]
+                           transition-all duration-150 cursor-pointer focus:outline-none
+                           min-w-0 flex-1"
+                    hx-get="/api/weapon-mods/selector?botId={{.Bot.ID}}&slot=2"
+                    hx-target="#modal-body"
+                    hx-swap="innerHTML"
+                    @click="modalOpen=true"
+                    title="Change weapon mod 2">
+
+                {{if .WeaponMod2Def}}
+                    <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                        <img src="{{.WeaponMod2Def.PictureURL}}"
+                             alt="{{.WeaponMod2Def.Name}}"
+                             class="w-full h-full object-contain
+                                    group-hover/mod2:scale-105 transition-transform duration-200"/>
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-xs font-medium text-gray-300
+                                    group-hover/mod2:text-[#00aaff] transition-colors truncate">
+                            {{.WeaponMod2Def.Name}}
+                        </div>
+                        <div class="text-[10px] text-gray-600 truncate">{{.WeaponMod2Def.WeaponSlot}}</div>
+                    </div>
+                {{else}}
+                    <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center
+                                border border-dashed border-[#1e3a5f] rounded">
+                        <svg class="w-4 h-4 text-[#1e3a5f] group-hover/mod2:text-[#00aaff]
+                                   transition-colors"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs text-gray-600 group-hover/mod2:text-[#00aaff]
+                                 transition-colors">Select mod…</span>
                 {{end}}
 
             </button>

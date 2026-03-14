@@ -143,9 +143,11 @@ func main() {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "bot_card", BotView{
-			Bot:       bot,
-			CharDef:   def,
-			WeaponDef: WeaponByID(bot.WeaponID),
+			Bot:           bot,
+			CharDef:       def,
+			WeaponDef:     WeaponByID(bot.WeaponID),
+			WeaponMod1Def: WeaponModByID(bot.WeaponMod1ID),
+			WeaponMod2Def: WeaponModByID(bot.WeaponMod2ID),
 		})
 	}
 
@@ -292,6 +294,55 @@ func main() {
 			return
 		}
 		bot, err := updateBotWeapon(db, botID, weaponID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderBotCard(w, bot)
+	})
+
+	// GET /api/weapon-mods/selector?botId={id}&slot={1|2}
+	// Returns the weapon mod selector grid partial for use in the modal.
+	http.HandleFunc("GET /api/weapon-mods/selector", func(w http.ResponseWriter, r *http.Request) {
+		botID := r.URL.Query().Get("botId")
+		slot := r.URL.Query().Get("slot")
+		if botID == "" || (slot != "1" && slot != "2") {
+			respondText(w, 400, "missing or invalid botId/slot\n")
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "weapon_mod_selector", map[string]any{
+			"BotID": botID,
+			"Slot":  slot,
+			"Mods":  WeaponModCatalog,
+		})
+	})
+
+	// POST /api/bots/{id}/mod/{slot}/{modId}
+	// Updates a bot's weapon mod in the given slot (1 or 2). Returns the updated bot_card partial.
+	http.HandleFunc("POST /api/bots/{id}/mod/{slot}/{modId}", func(w http.ResponseWriter, r *http.Request) {
+		botID := r.PathValue("id")
+		slotStr := r.PathValue("slot")
+		modID := r.PathValue("modId")
+		var slot int
+		switch slotStr {
+		case "1":
+			slot = 1
+		case "2":
+			slot = 2
+		default:
+			respondText(w, 400, "slot must be 1 or 2\n")
+			return
+		}
+		// Allow clearing a slot by posting modId "none".
+		if modID != "none" && WeaponModByID(modID) == nil {
+			respondText(w, 400, "unknown mod\n")
+			return
+		}
+		if modID == "none" {
+			modID = ""
+		}
+		bot, err := updateBotWeaponMod(db, botID, slot, modID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
