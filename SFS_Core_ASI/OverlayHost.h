@@ -46,11 +46,19 @@ private:
     static LRESULT CALLBACK ChromiumChildSubclassProc(
         HWND hwnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR uid, DWORD_PTR ref);
 
+    // Low-level keyboard hook — intercepts keystrokes on the overlay thread
+    // and forwards them to the Chromium render HWND when the panel is visible.
+    // WH_KEYBOARD_LL always fires on the installing thread, so no cross-thread
+    // focus manipulation (and no game minimize) is needed.
+    static LRESULT CALLBACK LowLevelKeyProc(int nCode, WPARAM wParam, LPARAM lParam);
+    static OverlayHost* s_instance;  // for access inside the static hook proc
+
     // ---- Data members ----
     HWND        m_hwnd          = nullptr;
     HWND        m_toggleHwnd    = nullptr;  // the small close-tab
     HANDLE      m_thread        = nullptr;
     DWORD       m_threadId      = 0;
+    HHOOK       m_llKeyHook     = nullptr;  // WH_KEYBOARD_LL hook handle
     bool        m_initialized   = false;
     bool        m_showPending   = false;
     HMODULE     m_hModule       = nullptr;

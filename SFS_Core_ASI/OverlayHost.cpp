@@ -3,6 +3,9 @@
 
 #pragma comment(lib, "comctl32.lib")
 
+// Static instance pointer used by the WH_KEYBOARD_LL hook proc.
+OverlayHost* OverlayHost::s_instance = nullptr;
+
 // Simple append-only log used by the overlay thread.
 // Written to the same directory as the ASI.
 static FILE* s_log = nullptr;
@@ -303,6 +306,15 @@ void OverlayHost::OverlayThread()
     }
 
     // ---- 6. Message loop ----
+    // Install a low-level keyboard hook BEFORE entering the loop.
+    // WH_KEYBOARD_LL always fires on the installing thread (here), so it
+    // will be serviced by the GetMessage loop below without any cross-thread
+    // focus magic that would minimize ME3's fullscreen D3D window.
+    s_instance = this;
+    m_llKeyHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyProc, m_hModule, 0);
+    OvLog("[Overlay] SetWindowsHookEx(WH_KEYBOARD_LL) hook=%p GLE=%lu\n",
+          static_cast<void*>(m_llKeyHook), GetLastError());
+
     OvLog("[Overlay] Entering message loop.\n");
     MSG msg{};
     while (GetMessageW(&msg, nullptr, 0, 0))
@@ -550,6 +562,8 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
                          k_ToggleW, tabH,
                          SWP_NOACTIVATE | SWP_SHOWWINDOW);
             ShowWindow(m_hwnd, SW_SHOW);
+            if (m_controller)
+                m_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
         }
         InvalidateRect(hwnd, nullptr, TRUE);
         return 0;
@@ -612,6 +626,8 @@ LRESULT OverlayHost::HandleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
     case WM_USER + 1:   // Show()
         m_panelVisible = true;
         ShowWindow(hwnd, SW_SHOW);
+        if (m_controller)
+            m_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
         return 0;
 
     case WM_USER + 2:   // Hide()
@@ -624,6 +640,8 @@ LRESULT OverlayHost::HandleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
         return 0;
 
     case WM_DESTROY:
+        if (m_llKeyHook) { UnhookWindowsHookEx(m_llKeyHook); m_llKeyHook = nullptr; }
+        s_instance = nullptr;
         if (m_controller) { m_controller->Close(); m_controller.Reset(); }
         m_webView.Reset();
         m_env.Reset();
@@ -760,4 +778,78 @@ void OverlayHost::SubclassChromiumChildren()
     if (!m_hwnd) return;
     OvLog("[Overlay] SubclassChromiumChildren called.\n");
     EnumChildWindows(m_hwnd, EnumChromiumChildren, 0);
+}
+
+// ---------------------------------------------------------------------------
+// Low-level keyboard hook — keyboard input forwarding
+// ---------------------------------------------------------------------------
+
+// Finds the Chromium render widget HWND that actually processes key events.
+// WebView2 creates a child HWND with class "Chrome_RenderWidgetHostHWND"
+// under the host window; keyboard messages must be dispatched there.
+static HWND FindRenderWidget(HWND host)
+{
+    HWND h = FindWindowExW(host, nullptr, L"Chrome_RenderWidgetHostHWND", nullptr);
+    if (!h)
+    {
+        // Some WebView2 versions nest the widget further down; do a full search.
+        struct Find { static BOOL CALLBACK cb(HWND w, LPARAM lp) {
+            wchar_t cls[64]{};
+            GetClassNameW(w, cls, 64);
+            if (wcscmp(cls, L"Chrome_RenderWidgetHostHWND") == 0) {
+                *reinterpret_cast<HWND*>(lp) = w;
+                return FALSE; // stop
+            }
+            return TRUE;
+        }};
+        EnumChildWindows(host, Find::cb, reinterpret_cast<LPARAM>(&h));
+    }
+    return h;
+}
+
+// static
+LRESULT CALLBACK OverlayHost::LowLevelKeyProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+    if (nCode == HC_ACTION && s_instance && s_instance->m_panelVisible)
+    {
+        KBDLLHOOKSTRUCT* kb = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+
+        // Skip events that we ourselves injected, to prevent infinite loops.
+        if (!(kb->flags & LLKHF_INJECTED))
+        {
+            HWND target = FindRenderWidget(s_instance->m_hwnd);
+            if (!target) target = s_instance->m_hwnd;  // best-effort fallback
+
+            UINT uMsg = static_cast<UINT>(wParam); // WM_KEYDOWN / WM_KEYUP / WM_SYSKEYDOWN / WM_SYSKEYUP
+
+            // Build the lParam for WM_KEYDOWN/WM_KEYUP (repeat=1, scan code, flags).
+            LPARAM keyLp = 1 | (static_cast<LPARAM>(kb->scanCode & 0xFF) << 16);
+            if (kb->flags & LLKHF_EXTENDED)             keyLp |= (1UL << 24);
+            if (uMsg == WM_KEYUP || uMsg == WM_SYSKEYUP) keyLp |= (3UL << 30); // prev-state + transition
+
+            PostMessage(target, uMsg, static_cast<WPARAM>(kb->vkCode), keyLp);
+
+            // For key-down events, also synthesize WM_CHAR so that text input
+            // fields receive character input. GetKeyboardState reflects the
+            // current physical key state since we're on the LL hook thread.
+            if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)
+            {
+                BYTE ks[256]{};
+                GetKeyboardState(ks);
+                WCHAR ch[8]{};
+                int n = ToUnicodeEx(kb->vkCode, kb->scanCode, ks,
+                                    ch, _countof(ch), 0, GetKeyboardLayout(0));
+                if (n > 0)
+                {
+                    for (int i = 0; i < n; ++i)
+                        PostMessage(target, WM_CHAR, static_cast<WPARAM>(ch[i]), keyLp);
+                }
+            }
+
+            // Suppress the keystroke so ME3 does not also react to it while
+            // the overlay panel is open.
+            return 1;
+        }
+    }
+    return CallNextHookEx(nullptr, nCode, wParam, lParam);
 }
