@@ -1,22 +1,28 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 	"strings"
+	"time"
 
 	bolt "go.etcd.io/bbolt"
 )
+
+//go:embed templates/spectreportal.html
+var spectrePortalHTML string
 
 const bucketName = "sfs"
 
 // defaultDBPath returns the default location for the BoltDB file.
 //
 // On Windows, this will typically resolve to:
-//   C:\Users\<user>\Documents\BioWare\Mass Effect 3\sfsdatabase.db
+//
+//	C:\Users\<user>\Documents\BioWare\Mass Effect 3\sfsdatabase.db
 //
 // If the home directory cannot be determined, it falls back to using the
 // current working directory (relative path "sfsdatabase.db").
@@ -86,6 +92,18 @@ func main() {
 	if err := ensureBucket(db); err != nil {
 		panic(err)
 	}
+
+	// Parse the Spectre Portal template once at startup.
+	spectrePortalTmpl := template.Must(template.New("spectreportal").Parse(spectrePortalHTML))
+
+	// GET /spectreportal/
+	// Serves the main UI shell with tab navigation.
+	http.HandleFunc("/spectreportal/", func(responseWriter http.ResponseWriter, request *http.Request) {
+		responseWriter.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if err := spectrePortalTmpl.Execute(responseWriter, nil); err != nil {
+			respondText(responseWriter, 500, "template error\n")
+		}
+	})
 
 	// GET /health
 	// Simple health endpoint for checking whether the server is running.

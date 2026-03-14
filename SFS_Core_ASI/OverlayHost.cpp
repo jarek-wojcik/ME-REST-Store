@@ -608,7 +608,7 @@ void OverlayHost::OnControllerCreated(HRESULT result, ICoreWebView2Controller* c
     if (SUCCEEDED(m_controller.As(&ctrl2)))
         ctrl2->put_DefaultBackgroundColor(bg);
 
-    HRESULT navHr = m_webView->Navigate(L"https://www.reddit.com");
+    HRESULT navHr = m_webView->Navigate(L"http://localhost:6060/spectreportal/");
     OvLog("[Overlay] Navigate hr=0x%08X\n", navHr);
 
     OvLog("[Overlay] m_showPending=%d\n", m_showPending);
