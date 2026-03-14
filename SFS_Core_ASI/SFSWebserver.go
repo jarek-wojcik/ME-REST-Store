@@ -16,6 +16,9 @@ import (
 //go:embed templates/spectreportal.html
 var spectrePortalHTML string
 
+//go:embed templates/partials/team_list.html
+var teamListHTML string
+
 const bucketName = "sfs"
 
 // defaultDBPath returns the default location for the BoltDB file.
@@ -88,13 +91,28 @@ func main() {
 	}
 	defer db.Close()
 
-	// Ensure the bucket exists before serving requests.
+	// Ensure buckets exist before serving requests.
 	if err := ensureBucket(db); err != nil {
 		panic(err)
 	}
+	if err := ensureTeamsBucket(db); err != nil {
+		panic(err)
+	}
 
-	// Parse the Spectre Portal template once at startup.
+	// Parse templates once at startup.
 	spectrePortalTmpl := template.Must(template.New("spectreportal").Parse(spectrePortalHTML))
+	teamListTmpl := template.Must(template.New("team_list").Parse(teamListHTML))
+
+	// renderTeams is a helper that writes the team_list partial to w.
+	renderTeams := func(w http.ResponseWriter) {
+		teams, err := listTeams(db)
+		if err != nil {
+			respondText(w, 500, "db error\n")
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = teamListTmpl.Execute(w, map[string]any{"Teams": teams})
+	}
 
 	// GET /spectreportal/
 	// Serves the main UI shell with tab navigation.
@@ -103,6 +121,50 @@ func main() {
 		if err := spectrePortalTmpl.Execute(responseWriter, nil); err != nil {
 			respondText(responseWriter, 500, "template error\n")
 		}
+	})
+
+	// GET /api/teams
+	// Returns the team list HTML partial (used by HTMX on initial tab load).
+	http.HandleFunc("GET /api/teams", func(w http.ResponseWriter, r *http.Request) {
+		renderTeams(w)
+	})
+
+	// POST /api/teams
+	// Creates a new team. Form field: name. Returns the updated team list partial.
+	http.HandleFunc("POST /api/teams", func(w http.ResponseWriter, r *http.Request) {
+		name := strings.TrimSpace(r.FormValue("name"))
+		if name == "" {
+			respondText(w, 400, "missing name\n")
+			return
+		}
+		if _, err := createTeam(db, name); err != nil {
+			respondText(w, 500, "create failed\n")
+			return
+		}
+		renderTeams(w)
+	})
+
+	// DELETE /api/teams/{id}
+	// Deletes a team by ID. Returns the updated team list partial.
+	http.HandleFunc("DELETE /api/teams/{id}", func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		existed, err := deleteTeam(db, id)
+		if err != nil {
+			respondText(w, 500, "delete failed\n")
+			return
+		}
+		if !existed {
+			respondText(w, 404, "not found\n")
+			return
+		}
+		renderTeams(w)
+	})
+
+	// GET /api/teams/{id}/bots
+	// Placeholder — returns an empty bot panel until bot cards are implemented.
+	http.HandleFunc("GET /api/teams/{id}/bots", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_, _ = w.Write([]byte(`<div class="text-gray-600 text-xs text-center py-10 select-none">No bots in this team yet.</div>`))
 	})
 
 	// GET /health

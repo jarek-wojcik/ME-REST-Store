@@ -163,7 +163,12 @@
                 <h1 class="text-xl font-semibold tracking-wide text-gray-100">Strike Teams</h1>
                 <span class="text-xs text-me-blue border border-me-border px-2 py-0.5 rounded tracking-widest uppercase">Bot Management</span>
             </div>
-            <div class="text-gray-500 text-sm">— Content coming soon —</div>
+            <!-- Team management panel: loaded once by HTMX on page load -->
+            <div hx-get="/api/teams"
+                 hx-trigger="load"
+                 hx-swap="outerHTML">
+                <div class="text-gray-600 text-xs text-center py-10 select-none">Loading…</div>
+            </div>
         </div>
 
         <!-- Mission Parameters tab -->
