@@ -829,22 +829,10 @@ LRESULT CALLBACK OverlayHost::LowLevelKeyProc(int nCode, WPARAM wParam, LPARAM l
 
             PostMessage(target, uMsg, static_cast<WPARAM>(kb->vkCode), keyLp);
 
-            // For key-down events, also synthesize WM_CHAR so that text input
-            // fields receive character input. GetKeyboardState reflects the
-            // current physical key state since we're on the LL hook thread.
-            if (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN)
-            {
-                BYTE ks[256]{};
-                GetKeyboardState(ks);
-                WCHAR ch[8]{};
-                int n = ToUnicodeEx(kb->vkCode, kb->scanCode, ks,
-                                    ch, _countof(ch), 0, GetKeyboardLayout(0));
-                if (n > 0)
-                {
-                    for (int i = 0; i < n; ++i)
-                        PostMessage(target, WM_CHAR, static_cast<WPARAM>(ch[i]), keyLp);
-                }
-            }
+            // Do NOT post WM_CHAR manually. Chromium's message loop calls
+            // TranslateMessage internally when it dequeues our WM_KEYDOWN,
+            // which synthesises WM_CHAR itself. Posting it here too causes
+            // every character to be inserted twice.
 
             // Suppress the keystroke so ME3 does not also react to it while
             // the overlay panel is open.
