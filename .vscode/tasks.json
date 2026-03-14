@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "SFSWebserver: Build",
+            "type": "shell",
+            "command": "go build -ldflags=\"-s -w\" -o ../SFSWebserver.exe .",
+            "options": {
+                "cwd": "${workspaceFolder}/SFS_Core_ASI/SFSWebserver"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": "$go"
+        }
+    ]
+}
