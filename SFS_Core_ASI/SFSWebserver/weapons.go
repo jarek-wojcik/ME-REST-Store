@@ -1,12 +1,25 @@
 package main
 
+// WeaponType identifies the class of a weapon (and is used to filter mods).
+type WeaponType string
+
+const (
+	WeaponTypeAssaultRifle WeaponType = "Assault Rifle"
+	WeaponTypePistol       WeaponType = "Pistol"
+	WeaponTypeShotgun      WeaponType = "Shotgun"
+	WeaponTypeSMG          WeaponType = "SMG"
+	WeaponTypeSniperRifle  WeaponType = "Sniper Rifle"
+	// WeaponTypeAny marks a mod as universal — compatible with every weapon.
+	WeaponTypeAny WeaponType = ""
+)
+
 // WeaponDef is a read-only definition of a weapon available in multiplayer.
 // Like CharacterDef it is compiled into the binary and never stored in BoltDB.
 type WeaponDef struct {
-	ID          string // matches the asset filename stem, e.g. "AssaultRifle_Avenger"
-	Name        string // human-readable display name
-	Category    string // "Assault Rifle", "Pistol", "Shotgun", "SMG", "Sniper Rifle"
-	PictureFile string // filename inside /static/assets/weapons/
+	ID          string     // matches the asset filename stem, e.g. "AssaultRifle_Avenger"
+	Name        string     // human-readable display name
+	Category    WeaponType // weapon class
+	PictureFile string     // filename inside /static/assets/weapons/
 }
 
 // PictureURL returns the URL path for the weapon's image.

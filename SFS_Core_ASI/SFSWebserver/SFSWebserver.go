@@ -148,6 +148,7 @@ func main() {
 			WeaponDef:     WeaponByID(bot.WeaponID),
 			WeaponMod1Def: WeaponModByID(bot.WeaponMod1ID),
 			WeaponMod2Def: WeaponModByID(bot.WeaponMod2ID),
+			PowerViews:    powerViews(bot.Powers),
 		})
 	}
 
@@ -303,6 +304,8 @@ func main() {
 
 	// GET /api/weapon-mods/selector?botId={id}&slot={1|2}
 	// Returns the weapon mod selector grid partial for use in the modal.
+	// Only mods compatible with the bot's currently equipped weapon are shown;
+	// universal mods (WeaponTypeAny) are always included.
 	http.HandleFunc("GET /api/weapon-mods/selector", func(w http.ResponseWriter, r *http.Request) {
 		botID := r.URL.Query().Get("botId")
 		slot := r.URL.Query().Get("slot")
@@ -310,11 +313,27 @@ func main() {
 			respondText(w, 400, "missing or invalid botId/slot\n")
 			return
 		}
+		bot, err := getBot(db, botID)
+		if err != nil {
+			respondText(w, 404, "bot not found\n")
+			return
+		}
+		// Determine which weapon type is equipped (nil = no weapon).
+		weaponDef := WeaponByID(bot.WeaponID)
+		// Filter mods: keep universal mods and those matching the weapon's type.
+		var filtered []WeaponModDef
+		for _, mod := range WeaponModCatalog {
+			if mod.WeaponType == WeaponTypeAny {
+				filtered = append(filtered, mod)
+			} else if weaponDef != nil && mod.WeaponType == weaponDef.Category {
+				filtered = append(filtered, mod)
+			}
+		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "weapon_mod_selector", map[string]any{
 			"BotID": botID,
 			"Slot":  slot,
-			"Mods":  WeaponModCatalog,
+			"Mods":  filtered,
 		})
 	})
 
@@ -343,6 +362,83 @@ func main() {
 			modID = ""
 		}
 		bot, err := updateBotWeaponMod(db, botID, slot, modID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderBotCard(w, bot)
+	})
+
+	// POST /api/bots/{id}/power/{slot}/rankevo/{rank}/{evoIdx}/{choice}
+	// Atomically sets rank AND one evolution choice (used for evo-cell clicks at ranks 4–6).
+	http.HandleFunc("POST /api/bots/{id}/power/{slot}/rankevo/{rank}/{evoIdx}/{choice}", func(w http.ResponseWriter, r *http.Request) {
+		botID := r.PathValue("id")
+		var slotIdx, rank, evoIdx int
+		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
+			respondText(w, 400, "slot must be 0–4\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("rank"), &rank); err != nil || rank < 4 || rank > 6 {
+			respondText(w, 400, "rank must be 4–6\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("evoIdx"), &evoIdx); err != nil || evoIdx < 0 || evoIdx > 2 {
+			respondText(w, 400, "evoIdx must be 0–2\n")
+			return
+		}
+		choice := r.PathValue("choice")
+		if choice != "A" && choice != "B" {
+			respondText(w, 400, "choice must be A or B\n")
+			return
+		}
+		bot, err := updateBotPowerRankAndEvo(db, botID, slotIdx, rank, evoIdx, choice)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderBotCard(w, bot)
+	})
+
+	// POST /api/bots/{id}/power/{slot}/rank/{rank}
+	// Sets the rank (0–6) for a power slot. Returns the updated bot_card partial.
+	http.HandleFunc("POST /api/bots/{id}/power/{slot}/rank/{rank}", func(w http.ResponseWriter, r *http.Request) {
+		botID := r.PathValue("id")
+		var slotIdx, rank int
+		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
+			respondText(w, 400, "slot must be 0–4\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("rank"), &rank); err != nil || rank < 0 || rank > 6 {
+			respondText(w, 400, "rank must be 0–6\n")
+			return
+		}
+		bot, err := updateBotPowerRank(db, botID, slotIdx, rank)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderBotCard(w, bot)
+	})
+
+	// POST /api/bots/{id}/power/{slot}/evo/{evoIdx}/{choice}
+	// Sets an A/B evolution choice (evoIdx: 0–2; choice: A or B). Returns the updated bot_card partial.
+	http.HandleFunc("POST /api/bots/{id}/power/{slot}/evo/{evoIdx}/{choice}", func(w http.ResponseWriter, r *http.Request) {
+		botID := r.PathValue("id")
+		var slotIdx, evoIdx int
+		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
+			respondText(w, 400, "slot must be 0–4\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("evoIdx"), &evoIdx); err != nil || evoIdx < 0 || evoIdx > 2 {
+			respondText(w, 400, "evoIdx must be 0–2\n")
+			return
+		}
+		choice := r.PathValue("choice")
+		if choice != "A" && choice != "B" {
+			respondText(w, 400, "choice must be A or B\n")
+			return
+		}
+		bot, err := updateBotPowerEvolution(db, botID, slotIdx, evoIdx, choice)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return

@@ -152,7 +152,7 @@
         </div>
 
         <!-- Mod slot 2 row -->
-        <div class="flex items-center gap-4 px-4 py-2">
+        <div class="flex items-center gap-4 px-4 py-2 border-b border-[#1e3a5f]/50">
             <span class="text-[10px] font-semibold tracking-widest uppercase
                          text-gray-600 w-14 flex-shrink-0">Mod 2</span>
 
@@ -196,6 +196,104 @@
 
             </button>
         </div>
+
+        <!-- Powers section
+             Sprite sheet: 384×128, 6 cols × 2 rows of 64×64 cells.
+             Each button uses background-image so it IS the cell directly.
+             background-size: 384px 128px  (natural sprite size)
+             background-position per cell (col * -64px, row * -64px):
+               rank1  0px    0px       rank2  -64px  0px      rank3  -128px  0px
+               evo4A  -192px 0px       evo4B  -192px -64px
+               evo5A  -256px 0px       evo5B  -256px -64px
+               evo6A  -320px 0px       evo6B  -320px -64px
+        -->
+        {{range $i, $pv := .PowerViews}}
+        {{if $pv.PowerDef}}
+        <div class="flex items-start gap-1.5 px-3 py-1.5 border-b border-[#1e3a5f]/20 last:border-b-0">
+
+            <!-- Power name: vertically centred against the 64px cell height -->
+            <span class="text-[9px] text-gray-500 w-[4.5rem] flex-shrink-0 truncate leading-none"
+                  style="padding-top:26px;" title="{{$pv.PowerDef.Name}}">{{$pv.PowerDef.Name}}</span>
+
+            <!-- Evolution tree -->
+            <div class="flex items-start gap-0.5 flex-shrink-0">
+
+                <!-- ── Rank 1 ── toggle: if rank≥1 → clear, else → set rank 1 -->
+                <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                        style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;"
+                        hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/{{if ge $pv.Rank 1}}0{{else}}1{{end}}"
+                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 1">
+                    {{if lt $pv.Rank 1}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                </button>
+
+                <!-- ── Rank 2 ── -->
+                <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                        style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-64px 0px;background-repeat:no-repeat;"
+                        hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/2"
+                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 2">
+                    {{if lt $pv.Rank 2}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                </button>
+
+                <!-- ── Rank 3 ── -->
+                <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                        style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-128px 0px;background-repeat:no-repeat;"
+                        hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/3"
+                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 3">
+                    {{if lt $pv.Rank 3}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                </button>
+
+                <!-- ── Evo rank 4 (A top / B bottom) ── -->
+                <div class="flex flex-col gap-0.5">
+                    <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                            style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px 0px;background-repeat:no-repeat;"
+                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/4/0/A"
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 4 — Evolution A">
+                        {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                    </button>
+                    <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                            style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px -64px;background-repeat:no-repeat;"
+                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/4/0/B"
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 4 — Evolution B">
+                        {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                    </button>
+                </div>
+
+                <!-- ── Evo rank 5 (A top / B bottom) ── -->
+                <div class="flex flex-col gap-0.5">
+                    <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                            style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px 0px;background-repeat:no-repeat;"
+                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/5/1/A"
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 5 — Evolution A">
+                        {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                    </button>
+                    <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                            style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px -64px;background-repeat:no-repeat;"
+                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/5/1/B"
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 5 — Evolution B">
+                        {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                    </button>
+                </div>
+
+                <!-- ── Evo rank 6 (A top / B bottom) ── -->
+                <div class="flex flex-col gap-0.5">
+                    <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                            style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px 0px;background-repeat:no-repeat;"
+                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/6/2/A"
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 6 — Evolution A">
+                        {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                    </button>
+                    <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
+                            style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px -64px;background-repeat:no-repeat;"
+                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/6/2/B"
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 6 — Evolution B">
+                        {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
+                    </button>
+                </div>
+
+            </div>
+        </div>
+        {{end}}
+        {{end}}
 
     </div>
 
