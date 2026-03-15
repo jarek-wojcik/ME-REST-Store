@@ -27,6 +27,7 @@
     <!-- Alpine.js – store init must run before Alpine initialises -->
     <script>
         document.addEventListener('alpine:init', () => {
+            Alpine.store('botPanel', { openBotId: null });
             Alpine.store('tooltip', {
                 visible: false, text: '', subtext: '', x: 0, y: 0,
                 show(text, subtext, el) {
@@ -54,6 +55,11 @@
                 detail: { message: e.detail.question, issueRequest: e.detail.issueRequest },
                 bubbles: false
             }));
+        });
+
+        /** Open newly created bot automatically */
+        document.addEventListener('botCreated', function(e) {
+            Alpine.store('botPanel').openBotId = e.detail.id;
         });
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>

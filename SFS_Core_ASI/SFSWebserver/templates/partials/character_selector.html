@@ -69,7 +69,7 @@
                                focus:border-[#00aaff]"
                         hx-post="{{$.CharPostURLBase}}/{{.ID}}"
                         hx-target="#{{$.TargetID}}"
-                        hx-swap="outerHTML"
+                        hx-swap="{{$.TargetSwap}}"
                         @click="modalOpen=false"
                         title="{{.Name}}">
 

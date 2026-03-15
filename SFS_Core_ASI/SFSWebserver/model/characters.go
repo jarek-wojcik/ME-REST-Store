@@ -33,7 +33,8 @@ type Bot struct {
 	WeaponID     string      `json:"weaponId"`
 	WeaponMod1ID string      `json:"weaponMod1Id"`
 	WeaponMod2ID string      `json:"weaponMod2Id"`
-	Powers       []PowerSlot `json:"powers"` // up to 5
+	Powers       []PowerSlot `json:"powers"`    // up to 5
+	SortOrder    int64       `json:"sortOrder"` // unix nanos at creation time; 0 for legacy bots
 }
 
 // ---------------------------------------------------------------------------

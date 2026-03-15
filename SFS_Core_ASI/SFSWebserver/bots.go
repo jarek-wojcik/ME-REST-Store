@@ -3,6 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"time"
 
 	"sfswebserver/model"
 
@@ -89,8 +91,7 @@ func ensureBotsBucket(db *bolt.DB) error {
 	})
 }
 
-// listBotsForTeam returns all bots belonging to teamID.
-// BoltDB has no indices so this is a full scan; fine for local use (<100 bots).
+// listBotsForTeam returns all bots belonging to teamID, sorted by creation order.
 func listBotsForTeam(db *bolt.DB, teamID string) ([]model.Bot, error) {
 	var bots []model.Bot
 	err := db.View(func(tx *bolt.Tx) error {
@@ -108,6 +109,9 @@ func listBotsForTeam(db *bolt.DB, teamID string) ([]model.Bot, error) {
 			}
 			return nil
 		})
+	})
+	sort.Slice(bots, func(i, j int) bool {
+		return bots[i].SortOrder < bots[j].SortOrder
 	})
 	return bots, err
 }
@@ -140,6 +144,7 @@ func createBot(db *bolt.DB, teamID string, charID string) (model.Bot, error) {
 		WeaponMod1ID: "",
 		WeaponMod2ID: "",
 		Powers:       defaultPowersForChar(charID),
+		SortOrder:    time.Now().UnixNano(),
 	}
 	data, err := json.Marshal(bot)
 	if err != nil {
@@ -282,18 +287,23 @@ func updateBotPowerRankAndEvo(db *bolt.DB, botID string, slotIdx int, rank int, 
 	return bot, err
 }
 
-// deleteBot removes a bot by ID. Returns false if the ID did not exist.
-func deleteBot(db *bolt.DB, botID string) (bool, error) {
-	var existed bool
-	err := db.Update(func(tx *bolt.Tx) error {
+// deleteBot removes a bot by ID. Returns the bot's teamID and false if the ID did not exist.
+func deleteBot(db *bolt.DB, botID string) (teamID string, existed bool, err error) {
+	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(botsBucket))
-		if b.Get([]byte(botID)) != nil {
-			existed = true
-			return b.Delete([]byte(botID))
+		v := b.Get([]byte(botID))
+		if v == nil {
+			return nil
 		}
-		return nil
+		var bot model.Bot
+		if jsonErr := json.Unmarshal(v, &bot); jsonErr != nil {
+			return jsonErr
+		}
+		teamID = bot.TeamID
+		existed = true
+		return b.Delete([]byte(botID))
 	})
-	return existed, err
+	return teamID, existed, err
 }
 
 // updateBotWeaponMod changes a bot's weapon mod in the given slot (1 or 2)

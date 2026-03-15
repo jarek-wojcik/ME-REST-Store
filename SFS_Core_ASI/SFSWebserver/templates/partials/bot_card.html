@@ -1,5 +1,6 @@
 {{define "bot_card"}}
 <div id="{{.CardID}}"
+     x-data="{ renaming: false }"
      class="group relative w-full flex flex-row rounded-xl overflow-hidden
             border border-[#1e3a5f] bg-[#080c18]
             hover:border-[#00aaff]/40 transition-all duration-200">
@@ -33,12 +34,21 @@
     {{end}}
     <!-- Portrait image -->
     <div class="relative flex-1 overflow-hidden
-                bg-gradient-to-b from-[#0d1829] to-[#060a12]">
+                bg-gradient-to-b from-[#0d1829] to-[#060a12]{{if not .IsSpectre}} cursor-pointer{{end}}"
+         style="min-height:160px;"
+         {{if not .IsSpectre}}@click="$store.botPanel.openBotId = ($store.botPanel.openBotId === '{{.CardID}}' ? null : '{{.CardID}}')"{{end}}>
         <img src="{{if .AppearanceCharDef}}{{.AppearanceCharDef.PictureURL}}{{else}}{{.CharDef.PictureURL}}{{end}}"
              alt="{{.CharDef.Name}}"
              class="absolute top-0 left-0 w-full object-contain object-top
                     scale-105 transition-transform duration-300 group-hover:scale-110"
              style="min-height:160px;"/>
+        {{if not .IsSpectre}}
+        <div class="absolute bottom-0 left-0 right-0 px-1 py-1 bg-[#080c18]/80
+                    text-[10px] text-center text-gray-300 leading-tight truncate pointer-events-none"
+             x-show="$store.botPanel.openBotId !== '{{.CardID}}'">
+            {{.CharDef.Name}}
+        </div>
+        {{end}}
     </div>
     </div>
 
@@ -46,7 +56,7 @@
     <div class="flex flex-col flex-1 min-w-0">
 
         <!-- Character name bar -->
-        <div x-data="{ renaming: false }" class="flex items-center justify-between gap-2 px-4 py-2
+        <div class="flex items-center justify-between gap-2 px-4 py-2
                     border-b border-[#1e3a5f] bg-[#0d1422]">
             <!-- Display mode -->
             <div x-show="!renaming" class="flex items-center gap-2 min-w-0 flex-1">
@@ -93,8 +103,8 @@
             <button class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity
                            p-0.5 rounded text-gray-600 hover:text-red-400"
                     hx-delete="{{.DeleteURL}}"
-                    hx-target="#{{.CardID}}"
-                    hx-swap="outerHTML"
+                    hx-target="#bot-panel"
+                    hx-swap="innerHTML"
                     hx-confirm="{{.DeleteConfirm}}"
                     title="Remove bot">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"

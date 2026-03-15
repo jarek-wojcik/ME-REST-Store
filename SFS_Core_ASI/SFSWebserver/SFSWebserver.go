@@ -301,17 +301,19 @@ func main() {
 	// Creates a default bot (Human Adept Male) and returns the updated bot panel.
 	http.HandleFunc("POST /api/teams/{id}/bots", func(w http.ResponseWriter, r *http.Request) {
 		teamID := r.PathValue("id")
-		if _, err := createBot(db, teamID, "AdeptHumanMale"); err != nil {
+		bot, err := createBot(db, teamID, "AdeptHumanMale")
+		if err != nil {
 			respondText(w, 500, "create failed\n")
 			return
 		}
+		w.Header().Set("HX-Trigger", `{"botCreated":{"id":"bot-card-`+bot.ID+`"}}`)
 		renderBotPanel(w, teamID)
 	})
 
 	// DELETE /api/bots/{id}
-	// Removes a bot. Returns an empty string (HTMX outerHTML swap removes the card).
+	// Removes a bot and returns the updated bot_panel partial.
 	http.HandleFunc("DELETE /api/bots/{id}", func(w http.ResponseWriter, r *http.Request) {
-		existed, err := deleteBot(db, r.PathValue("id"))
+		teamID, existed, err := deleteBot(db, r.PathValue("id"))
 		if err != nil {
 			respondText(w, 500, "delete failed\n")
 			return
@@ -320,7 +322,7 @@ func main() {
 			respondText(w, 404, "not found\n")
 			return
 		}
-		w.WriteHeader(200) // empty body — HTMX outerHTML swap removes the element
+		renderBotPanel(w, teamID)
 	})
 
 	// GET /api/characters/selector?entityId={id}&kind={bot|spectre}
@@ -332,28 +334,32 @@ func main() {
 			respondText(w, 400, "missing entityId\n")
 			return
 		}
-		var charPostURLBase, targetID string
+		var charPostURLBase, targetID, targetSwap string
 		switch kind {
 		case "spectre":
 			charPostURLBase = "/api/spectres/" + entityID + "/character"
 			targetID = "spectre-card-" + entityID
+			targetSwap = "outerHTML"
 		case "spectre-appearance":
 			charPostURLBase = "/api/spectres/" + entityID + "/appearance"
 			targetID = "spectre-card-" + entityID
+			targetSwap = "outerHTML"
 		default: // "bot"
 			charPostURLBase = "/api/bots/" + entityID + "/character"
-			targetID = "bot-card-" + entityID
+			targetID = "bot-panel"
+			targetSwap = "innerHTML"
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "character_selector", map[string]any{
 			"CharPostURLBase": charPostURLBase,
 			"TargetID":        targetID,
+			"TargetSwap":      targetSwap,
 			"Groups":          model.GroupedCharacters(),
 		})
 	})
 
 	// POST /api/bots/{id}/character/{charId}
-	// Updates a bot's character. Returns the updated bot_card partial.
+	// Updates a bot's character. Returns the updated bot panel.
 	http.HandleFunc("POST /api/bots/{id}/character/{charId}", func(w http.ResponseWriter, r *http.Request) {
 		botID := r.PathValue("id")
 		charID := r.PathValue("charId")
@@ -366,7 +372,7 @@ func main() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		renderBotCard(w, bot)
+		renderBotPanel(w, bot.TeamID)
 	})
 
 	// GET /api/weapons/selector?entityId={id}&kind={bot|spectre}
