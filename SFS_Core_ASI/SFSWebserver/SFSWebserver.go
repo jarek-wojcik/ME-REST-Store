@@ -248,8 +248,8 @@ func main() {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "character_selector", map[string]any{
-			"BotID":      botID,
-			"Characters": CharacterCatalog,
+			"BotID":  botID,
+			"Groups": GroupedCharacters(),
 		})
 	})
 
