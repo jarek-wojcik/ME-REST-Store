@@ -15,26 +15,30 @@ const botsBucket = "bots"
 // view. Embedding this in a card view struct keeps templates free of routing
 // logic and makes the same templates reusable for both bots and spectres.
 type CardURLs struct {
-	CardID            string // HTML element id, e.g. "bot-card-abc123"
-	DeleteURL         string // DELETE endpoint for this entity
-	DeleteConfirm     string // hx-confirm message shown before deletion
-	CharSelectorURL   string // GET: opens character selector modal
-	WeaponSelectorURL string // GET: opens weapon selector modal
-	Mod1SelectorURL   string // GET: opens weapon mod 1 selector modal
-	Mod2SelectorURL   string // GET: opens weapon mod 2 selector modal
-	PowerBaseURL      string // prefix for power rank/evo routes, e.g. "/api/bots/id/power"
+	CardID                string // HTML element id, e.g. "bot-card-abc123"
+	DeleteURL             string // DELETE endpoint for this entity
+	DeleteConfirm         string // hx-confirm message shown before deletion
+	CharSelectorURL       string // GET: opens character selector modal
+	WeaponSelectorURL     string // GET: opens weapon selector modal
+	Mod1SelectorURL       string // GET: opens weapon mod 1 selector modal
+	Mod2SelectorURL       string // GET: opens weapon mod 2 selector modal
+	PowerBaseURL          string // prefix for power rank/evo routes, e.g. "/api/bots/id/power"
+	IsSpectre             bool   // true for spectre cards; enables borrow-power UI
+	AddPowerURL           string // GET: opens the borrow-power character picker (spectres only)
+	ClearBorrowedPowerURL string // DELETE: removes the borrowed power slot (spectres only)
 }
 
 // PowerSlotView pairs a persisted PowerSlot with its resolved PowerDef and
 // flattened evolution fields for easy template access.
 type PowerSlotView struct {
 	model.PowerSlot
-	PowerDef    *model.PowerDef // nil if PowerID is empty or unknown
-	SlotIdx     int             // 0–4, used in API route paths
-	Evo0        string          // Evolution[0]: "A" or "B" (rank 4 choice)
-	Evo1        string          // Evolution[1]: "A" or "B" (rank 5 choice)
-	Evo2        string          // Evolution[2]: "A" or "B" (rank 6 choice)
-	SlotBaseURL string          // e.g. "/api/bots/abc123/power/0"
+	PowerDef        *model.PowerDef // nil if PowerID is empty or unknown
+	SlotIdx         int             // 0–4, used in API route paths
+	Evo0            string          // Evolution[0]: "A" or "B" (rank 4 choice)
+	Evo1            string          // Evolution[1]: "A" or "B" (rank 5 choice)
+	Evo2            string          // Evolution[2]: "A" or "B" (rank 6 choice)
+	SlotBaseURL     string          // e.g. "/api/bots/abc123/power/0"
+	IsBorrowedPower bool            // true for the borrowed-power slot (spectres only)
 }
 
 // BotView pairs a persisted Bot with its resolved catalog definitions

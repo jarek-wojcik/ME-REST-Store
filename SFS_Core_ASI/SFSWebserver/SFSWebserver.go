@@ -173,7 +173,7 @@ func main() {
 			WeaponDef:     model.WeaponByID(s.WeaponID),
 			WeaponMod1Def: model.WeaponModByID(s.WeaponMod1ID),
 			WeaponMod2Def: model.WeaponModByID(s.WeaponMod2ID),
-			PowerViews:    powerViews(s.Powers, urls.PowerBaseURL),
+			PowerViews:    spectrePowerViews(s, urls),
 			CardURLs:      urls,
 		})
 	}
@@ -705,6 +705,114 @@ func main() {
 			return
 		}
 		s, err := updateSpectrePowerEvolution(db, spectreID, slotIdx, evoIdx, choice)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// GET /api/spectres/{id}/borrowed-power/selector
+	// Returns the borrow-power character picker partial (step 1 of the flow).
+	http.HandleFunc("GET /api/spectres/{id}/borrowed-power/selector", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "spectre_borrow_char", map[string]any{
+			"SpectreID": spectreID,
+			"Groups":    model.GroupedCharacters(),
+		})
+	})
+
+	// GET /api/spectres/{id}/borrowed-power/from-char/{charId}
+	// Returns the power picker for the selected source character (step 2).
+	http.HandleFunc("GET /api/spectres/{id}/borrowed-power/from-char/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		charID := r.PathValue("charId")
+		charDef := model.CharacterByID(charID)
+		if charDef == nil {
+			respondText(w, 400, "unknown character\n")
+			return
+		}
+		// Resolve the PowerDefs for this character.
+		var powers []*model.PowerDef
+		for _, pid := range charDef.PowerIDs {
+			if pid != "" {
+				powers = append(powers, model.PowerByID(pid))
+			}
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "spectre_borrow_power", map[string]any{
+			"SpectreID": spectreID,
+			"CharDef":   charDef,
+			"Powers":    powers,
+			"BackURL":   "/api/spectres/" + spectreID + "/borrowed-power/selector",
+		})
+	})
+
+	// POST /api/spectres/{id}/borrowed-power/add/{powerID}
+	// Persists the chosen borrowed power and returns the refreshed spectre card.
+	http.HandleFunc("POST /api/spectres/{id}/borrowed-power/add/{powerID}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		powerID := r.PathValue("powerID")
+		if model.PowerByID(powerID) == nil {
+			respondText(w, 400, "unknown power\n")
+			return
+		}
+		s, err := addSpectreBorrowedPower(db, spectreID, powerID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// DELETE /api/spectres/{id}/borrowed-power
+	// Removes the borrowed power slot and returns the refreshed spectre card.
+	http.HandleFunc("DELETE /api/spectres/{id}/borrowed-power", func(w http.ResponseWriter, r *http.Request) {
+		s, err := clearSpectreBorrowedPower(db, r.PathValue("id"))
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/borrowed-power/rank/{rank}
+	// Sets the rank of the borrowed power slot.
+	http.HandleFunc("POST /api/spectres/{id}/borrowed-power/rank/{rank}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		var rank int
+		if _, err := fmt.Sscan(r.PathValue("rank"), &rank); err != nil || rank < 0 || rank > 6 {
+			respondText(w, 400, "rank must be 0–6\n")
+			return
+		}
+		s, err := updateSpectreBorrowedPowerRank(db, spectreID, rank)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/borrowed-power/rankevo/{rank}/{evoIdx}/{choice}
+	// Atomically sets rank and evolution choice on the borrowed power slot.
+	http.HandleFunc("POST /api/spectres/{id}/borrowed-power/rankevo/{rank}/{evoIdx}/{choice}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		var rank, evoIdx int
+		if _, err := fmt.Sscan(r.PathValue("rank"), &rank); err != nil || rank < 4 || rank > 6 {
+			respondText(w, 400, "rank must be 4–6\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("evoIdx"), &evoIdx); err != nil || evoIdx < 0 || evoIdx > 2 {
+			respondText(w, 400, "evoIdx must be 0–2\n")
+			return
+		}
+		choice := r.PathValue("choice")
+		if choice != "A" && choice != "B" {
+			respondText(w, 400, "choice must be A or B\n")
+			return
+		}
+		s, err := updateSpectreBorrowedPowerRankAndEvo(db, spectreID, rank, evoIdx, choice)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
