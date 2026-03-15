@@ -310,7 +310,7 @@
         </div>
         {{end}}
         {{end}}
-        {{if .IsSpectre}}
+        {{if and .IsSpectre (not .HasBorrowedPower)}}
         <div class="flex items-center justify-center border-b border-r border-[#1e3a5f] min-h-[4.5rem]">
             <button class="group/add flex items-center gap-2 px-3 py-2 rounded-lg
                            border border-dashed border-[#1e3a5f] text-gray-600

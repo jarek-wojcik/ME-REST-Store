@@ -24,6 +24,7 @@ type CardURLs struct {
 	Mod2SelectorURL       string // GET: opens weapon mod 2 selector modal
 	PowerBaseURL          string // prefix for power rank/evo routes, e.g. "/api/bots/id/power"
 	IsSpectre             bool   // true for spectre cards; enables borrow-power UI
+	HasBorrowedPower      bool   // true when a borrowed power is already set (spectres only)
 	AddPowerURL           string // GET: opens the borrow-power character picker (spectres only)
 	ClearBorrowedPowerURL string // DELETE: removes the borrowed power slot (spectres only)
 }

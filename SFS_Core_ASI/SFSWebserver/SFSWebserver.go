@@ -166,6 +166,7 @@ func main() {
 			def = &model.CharacterCatalog[0]
 		}
 		urls := spectreURLs(s.ID)
+		urls.HasBorrowedPower = s.BorrowedPower != nil
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "bot_card", SpectreView{
 			Spectre:       s,

@@ -304,6 +304,7 @@ func spectreViews(spectres []model.Spectre) []SpectreView {
 			def = &model.CharacterCatalog[0]
 		}
 		urls := spectreURLs(s.ID)
+		urls.HasBorrowedPower = s.BorrowedPower != nil
 		views = append(views, SpectreView{
 			Spectre:       s,
 			CharDef:       def,
