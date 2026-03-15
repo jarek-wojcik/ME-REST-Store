@@ -185,7 +185,7 @@
           },
           resolveConfirm(ok) {
               this.confirmDialog.open = false;
-              if (ok && this.confirmDialog._resolve) this.confirmDialog._resolve();
+              if (ok && this.confirmDialog._resolve) this.confirmDialog._resolve(true);
               this.confirmDialog._resolve = null;
           }
       }"
