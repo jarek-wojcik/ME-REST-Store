@@ -16,11 +16,15 @@ const spectresBucket = "spectres"
 // bot-specific routing was replaced by the embedded CardURLs fields.
 type SpectreView struct {
 	model.Spectre
-	CharDef       *model.CharacterDef
-	WeaponDef     *model.WeaponDef
-	WeaponMod1Def *model.WeaponModDef
-	WeaponMod2Def *model.WeaponModDef
-	PowerViews    []PowerSlotView
+	CharDef           *model.CharacterDef
+	AppearanceCharDef *model.CharacterDef // visual override portrait; nil means use CharDef image
+	WeaponDef         *model.WeaponDef
+	WeaponMod1Def     *model.WeaponModDef
+	WeaponMod2Def     *model.WeaponModDef
+	Weapon2Def        *model.WeaponDef    // second weapon slot
+	Weapon2Mod1Def    *model.WeaponModDef // mod slot 1 for second weapon
+	Weapon2Mod2Def    *model.WeaponModDef // mod slot 2 for second weapon
+	PowerViews        []PowerSlotView
 	CardURLs
 }
 
@@ -28,17 +32,24 @@ type SpectreView struct {
 func spectreURLs(spectreID string) CardURLs {
 	base := "/api/spectres/" + spectreID
 	return CardURLs{
-		CardID:                "spectre-card-" + spectreID,
-		DeleteURL:             base,
-		DeleteConfirm:         "Remove this spectre?",
-		CharSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre",
-		WeaponSelectorURL:     "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre",
-		Mod1SelectorURL:       "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=1",
-		Mod2SelectorURL:       "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=2",
-		PowerBaseURL:          base + "/power",
-		IsSpectre:             true,
-		AddPowerURL:           base + "/borrowed-power/selector",
-		ClearBorrowedPowerURL: base + "/borrowed-power",
+		CardID:                 "spectre-card-" + spectreID,
+		DeleteURL:              base,
+		DeleteConfirm:          "Remove this spectre?",
+		CharSelectorURL:        "/api/characters/selector?entityId=" + spectreID + "&kind=spectre",
+		WeaponSelectorURL:      "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre",
+		Mod1SelectorURL:        "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=1",
+		Mod2SelectorURL:        "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=2",
+		PowerBaseURL:           base + "/power",
+		IsSpectre:              true,
+		AddPowerURL:            base + "/borrowed-power/selector",
+		ClearBorrowedPowerURL:  base + "/borrowed-power",
+		AppearanceSelectorURL:  "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
+		RenameURL:              base + "/rename",
+		Weapon2SelectorURL:     "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon2",
+		Weapon2Mod1SelectorURL: "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=1",
+		Weapon2Mod2SelectorURL: "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=2",
+		WeaponClearURL:         base + "/weapon/none",
+		Weapon2ClearURL:        base + "/weapon2/none",
 	}
 }
 
@@ -144,6 +155,104 @@ func updateSpectreCharacter(db *bolt.DB, spectreID, charID string) (model.Spectr
 	return s, err
 }
 
+// updateSpectreWeapon2 changes the second equipped weapon.
+func updateSpectreWeapon2(db *bolt.DB, spectreID, weaponID string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.Weapon2ID = weaponID
+		if weaponID == "" {
+			s.Weapon2Mod1ID = ""
+			s.Weapon2Mod2ID = ""
+		}
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// updateSpectreWeapon2Mod changes a mod slot (1 or 2) for the second weapon.
+func updateSpectreWeapon2Mod(db *bolt.DB, spectreID string, slot int, modID string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		switch slot {
+		case 1:
+			s.Weapon2Mod1ID = modID
+		case 2:
+			s.Weapon2Mod2ID = modID
+		}
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(s.ID), data)
+	})
+	return s, err
+}
+
+// updateSpectreName changes just the display name of a spectre.
+func updateSpectreName(db *bolt.DB, spectreID, name string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.Name = name
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// updateSpectreAppearance sets the appearance character override without
+// changing the base class, powers, or any other loadout data.
+func updateSpectreAppearance(db *bolt.DB, spectreID, charID string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.AppearanceCharacterID = charID
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
 // updateSpectreWeapon changes the equipped weapon.
 func updateSpectreWeapon(db *bolt.DB, spectreID, weaponID string) (model.Spectre, error) {
 	var s model.Spectre
@@ -157,6 +266,10 @@ func updateSpectreWeapon(db *bolt.DB, spectreID, weaponID string) (model.Spectre
 			return err
 		}
 		s.WeaponID = weaponID
+		if weaponID == "" {
+			s.WeaponMod1ID = ""
+			s.WeaponMod2ID = ""
+		}
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err
@@ -278,21 +391,27 @@ func updateSpectrePowerRankAndEvo(db *bolt.DB, spectreID string, slotIdx, rank, 
 // spectrePowerViews builds the full []PowerSlotView for a spectre, including
 // the borrowed power as the last entry when one is set.
 func spectrePowerViews(s model.Spectre, urls CardURLs) []PowerSlotView {
-	pv := powerViews(s.Powers, urls.PowerBaseURL)
-	if s.BorrowedPower != nil {
-		bp := *s.BorrowedPower
-		pv = append(pv, PowerSlotView{
-			PowerSlot:       bp,
-			PowerDef:        model.PowerByID(bp.PowerID),
-			SlotIdx:         len(s.Powers),
-			Evo0:            bp.Evolution[0],
-			Evo1:            bp.Evolution[1],
-			Evo2:            bp.Evolution[2],
-			SlotBaseURL:     "/api/spectres/" + s.ID + "/borrowed-power",
-			IsBorrowedPower: true,
-		})
+	base := "/api/spectres/" + s.ID
+	normal := powerViews(s.Powers, urls.PowerBaseURL)
+	for i := range normal {
+		normal[i].ChangePowerURL = base + fmt.Sprintf("/power/%d/change/selector", i)
 	}
-	return pv
+	if s.BorrowedPower == nil {
+		return normal
+	}
+	bp := *s.BorrowedPower
+	borrowedView := PowerSlotView{
+		PowerSlot:       bp,
+		PowerDef:        model.PowerByID(bp.PowerID),
+		SlotIdx:         len(s.Powers),
+		Evo0:            bp.Evolution[0],
+		Evo1:            bp.Evolution[1],
+		Evo2:            bp.Evolution[2],
+		SlotBaseURL:     base + "/borrowed-power",
+		IsBorrowedPower: true,
+		ChangePowerURL:  base + "/borrowed-power/selector",
+	}
+	return append(normal, borrowedView)
 }
 
 // spectreViews resolves catalog definitions for each spectre.
@@ -306,16 +425,46 @@ func spectreViews(spectres []model.Spectre) []SpectreView {
 		urls := spectreURLs(s.ID)
 		urls.HasBorrowedPower = s.BorrowedPower != nil
 		views = append(views, SpectreView{
-			Spectre:       s,
-			CharDef:       def,
-			WeaponDef:     model.WeaponByID(s.WeaponID),
-			WeaponMod1Def: model.WeaponModByID(s.WeaponMod1ID),
-			WeaponMod2Def: model.WeaponModByID(s.WeaponMod2ID),
-			PowerViews:    spectrePowerViews(s, urls),
-			CardURLs:      urls,
+			Spectre:           s,
+			CharDef:           def,
+			AppearanceCharDef: model.CharacterByID(s.AppearanceCharacterID),
+			WeaponDef:         model.WeaponByID(s.WeaponID),
+			WeaponMod1Def:     model.WeaponModByID(s.WeaponMod1ID),
+			WeaponMod2Def:     model.WeaponModByID(s.WeaponMod2ID),
+			Weapon2Def:        model.WeaponByID(s.Weapon2ID),
+			Weapon2Mod1Def:    model.WeaponModByID(s.Weapon2Mod1ID),
+			Weapon2Mod2Def:    model.WeaponModByID(s.Weapon2Mod2ID),
+			PowerViews:        spectrePowerViews(s, urls),
+			CardURLs:          urls,
 		})
 	}
 	return views
+}
+
+// updateSpectrePowerID replaces the PowerID of a normal power slot and resets
+// its rank and evolution to defaults. Used by the per-slot "Change" flow.
+func updateSpectrePowerID(db *bolt.DB, spectreID string, slotIdx int, powerID string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		if slotIdx < 0 || slotIdx >= len(s.Powers) {
+			return fmt.Errorf("invalid slot index")
+		}
+		s.Powers[slotIdx] = model.DefaultPower(powerID)
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
 }
 
 // addSpectreBorrowedPower sets (or replaces) the borrowed power slot.

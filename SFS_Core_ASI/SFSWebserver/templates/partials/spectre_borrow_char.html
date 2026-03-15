@@ -6,7 +6,7 @@
     <div class="flex-shrink-0 mb-3">
         <div class="flex items-center justify-between mb-1">
             <div>
-                <h2 class="text-base font-semibold text-gray-100 tracking-wide">Borrow a Power</h2>
+                <h2 class="text-base font-semibold text-gray-100 tracking-wide">{{.Heading}}</h2>
                 <p class="text-[11px] text-gray-500 mt-0.5">Select a character to see their available powers.</p>
             </div>
             <button class="p-1.5 rounded hover:bg-[#1e3a5f] text-gray-500 hover:text-gray-200
@@ -67,7 +67,7 @@
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]
                                transition-all duration-150 cursor-pointer focus:outline-none
                                focus:border-[#00aaff]"
-                        hx-get="/api/spectres/{{$.SpectreID}}/borrowed-power/from-char/{{.ID}}"
+                        hx-get="{{$.FromCharURLBase}}/from-char/{{.ID}}"
                         hx-target="#modal-body"
                         hx-swap="innerHTML"
                         title="{{.Name}}">

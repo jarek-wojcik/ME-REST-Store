@@ -15,18 +15,25 @@ const botsBucket = "bots"
 // view. Embedding this in a card view struct keeps templates free of routing
 // logic and makes the same templates reusable for both bots and spectres.
 type CardURLs struct {
-	CardID                string // HTML element id, e.g. "bot-card-abc123"
-	DeleteURL             string // DELETE endpoint for this entity
-	DeleteConfirm         string // hx-confirm message shown before deletion
-	CharSelectorURL       string // GET: opens character selector modal
-	WeaponSelectorURL     string // GET: opens weapon selector modal
-	Mod1SelectorURL       string // GET: opens weapon mod 1 selector modal
-	Mod2SelectorURL       string // GET: opens weapon mod 2 selector modal
-	PowerBaseURL          string // prefix for power rank/evo routes, e.g. "/api/bots/id/power"
-	IsSpectre             bool   // true for spectre cards; enables borrow-power UI
-	HasBorrowedPower      bool   // true when a borrowed power is already set (spectres only)
-	AddPowerURL           string // GET: opens the borrow-power character picker (spectres only)
-	ClearBorrowedPowerURL string // DELETE: removes the borrowed power slot (spectres only)
+	CardID                 string // HTML element id, e.g. "bot-card-abc123"
+	DeleteURL              string // DELETE endpoint for this entity
+	DeleteConfirm          string // hx-confirm message shown before deletion
+	CharSelectorURL        string // GET: opens character selector modal
+	WeaponSelectorURL      string // GET: opens weapon selector modal
+	Mod1SelectorURL        string // GET: opens weapon mod 1 selector modal
+	Mod2SelectorURL        string // GET: opens weapon mod 2 selector modal
+	PowerBaseURL           string // prefix for power rank/evo routes, e.g. "/api/bots/id/power"
+	IsSpectre              bool   // true for spectre cards; enables borrow-power UI
+	HasBorrowedPower       bool   // true when a borrowed power is already set (spectres only)
+	AddPowerURL            string // GET: opens the borrow-power character picker (spectres only)
+	ClearBorrowedPowerURL  string // DELETE: removes the borrowed power slot (spectres only)
+	AppearanceSelectorURL  string // GET: opens character selector for appearance-only change (spectres only)
+	RenameURL              string // POST: renames the entity; form field "name" (spectres only)
+	Weapon2SelectorURL     string // GET: opens weapon selector for second weapon slot (spectres only)
+	Weapon2Mod1SelectorURL string // GET: opens weapon mod selector for second weapon mod 1 (spectres only)
+	Weapon2Mod2SelectorURL string // GET: opens weapon mod selector for second weapon mod 2 (spectres only)
+	WeaponClearURL         string // POST: clears weapon (spectres only)
+	Weapon2ClearURL        string // POST: clears second weapon (spectres only)
 }
 
 // PowerSlotView pairs a persisted PowerSlot with its resolved PowerDef and
@@ -40,17 +47,19 @@ type PowerSlotView struct {
 	Evo2            string          // Evolution[2]: "A" or "B" (rank 6 choice)
 	SlotBaseURL     string          // e.g. "/api/bots/abc123/power/0"
 	IsBorrowedPower bool            // true for the borrowed-power slot (spectres only)
+	ChangePowerURL  string          // GET: opens power-change flow for this slot (spectres only; empty for bots)
 }
 
 // BotView pairs a persisted Bot with its resolved catalog definitions
 // for template rendering.
 type BotView struct {
 	model.Bot
-	CharDef       *model.CharacterDef
-	WeaponDef     *model.WeaponDef    // nil when no weapon is assigned
-	WeaponMod1Def *model.WeaponModDef // nil when no mod is assigned in slot 1
-	WeaponMod2Def *model.WeaponModDef // nil when no mod is assigned in slot 2
-	PowerViews    []PowerSlotView
+	CharDef           *model.CharacterDef
+	AppearanceCharDef *model.CharacterDef // always nil for bots; present so bot_card template compiles uniformly
+	WeaponDef         *model.WeaponDef    // nil when no weapon is assigned
+	WeaponMod1Def     *model.WeaponModDef // nil when no mod is assigned in slot 1
+	WeaponMod2Def     *model.WeaponModDef // nil when no mod is assigned in slot 2
+	PowerViews        []PowerSlotView
 	CardURLs
 }
 

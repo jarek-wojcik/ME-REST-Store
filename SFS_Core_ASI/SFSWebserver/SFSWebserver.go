@@ -4,7 +4,9 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"io"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -72,7 +74,35 @@ func respondText(responseWriter http.ResponseWriter, status int, body string) {
 	_, _ = responseWriter.Write([]byte(body))
 }
 
+// setupLogging opens (or creates) SFSWebserver.log next to the running
+// executable and tees all log output to both the file and stdout.
+// Returns the open *os.File so main() can defer its Close.
+func setupLogging() *os.File {
+	exePath, err := os.Executable()
+	logPath := "SFSWebserver.log"
+	if err == nil {
+		logPath = filepath.Join(filepath.Dir(exePath), "SFSWebserver.log")
+	}
+	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		// Can't open log file — stdout only is fine.
+		log.SetOutput(os.Stdout)
+		log.Printf("[WARN] could not open log file %s: %v — logging to stdout only", logPath, err)
+		return nil
+	}
+	log.SetOutput(io.MultiWriter(os.Stdout, f))
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmsgprefix)
+	log.Printf("[INFO] logging to %s", logPath)
+	return f
+}
+
 func main() {
+	logFile := setupLogging()
+	if logFile != nil {
+		defer logFile.Close()
+	}
+	log.Printf("[INFO] SFSWebserver starting")
+
 	// Default server port and DB path.
 	port := 6060
 	dbPath := defaultDBPath()
@@ -86,34 +116,44 @@ func main() {
 	if len(os.Args) > 2 {
 		dbPath = os.Args[2]
 	}
+	log.Printf("[INFO] port=%d  db=%s", port, dbPath)
 
 	// Open database.
+	log.Printf("[INFO] opening database")
 	db, err := openDB(dbPath)
 	if err != nil {
-		panic(err)
+		log.Fatalf("[FATAL] openDB: %v", err)
 	}
 	defer db.Close()
+	log.Printf("[INFO] database opened")
 
 	// Ensure buckets exist before serving requests.
+	log.Printf("[INFO] ensuring buckets")
 	if err := ensureBucket(db); err != nil {
-		panic(err)
+		log.Fatalf("[FATAL] ensureBucket: %v", err)
 	}
 	if err := ensureTeamsBucket(db); err != nil {
-		panic(err)
+		log.Fatalf("[FATAL] ensureTeamsBucket: %v", err)
 	}
 	if err := ensureBotsBucket(db); err != nil {
-		panic(err)
+		log.Fatalf("[FATAL] ensureBotsBucket: %v", err)
 	}
 	if err := ensureSpectresBucket(db); err != nil {
-		panic(err)
+		log.Fatalf("[FATAL] ensureSpectresBucket: %v", err)
 	}
+	log.Printf("[INFO] buckets ready")
 
 	// Parse all templates as a single set so partials can call each other
 	// via {{template "name" .}}.
-	tmpl := template.Must(template.New("").ParseFS(templateFS,
+	log.Printf("[INFO] parsing templates")
+	tmpl, err := template.New("").ParseFS(templateFS,
 		"templates/*.html",
 		"templates/partials/*.html",
-	))
+	)
+	if err != nil {
+		log.Fatalf("[FATAL] template parse error: %v", err)
+	}
+	log.Printf("[INFO] templates parsed OK")
 
 	// renderTeams writes the team_list partial.
 	renderTeams := func(w http.ResponseWriter) {
@@ -169,13 +209,17 @@ func main() {
 		urls.HasBorrowedPower = s.BorrowedPower != nil
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "bot_card", SpectreView{
-			Spectre:       s,
-			CharDef:       def,
-			WeaponDef:     model.WeaponByID(s.WeaponID),
-			WeaponMod1Def: model.WeaponModByID(s.WeaponMod1ID),
-			WeaponMod2Def: model.WeaponModByID(s.WeaponMod2ID),
-			PowerViews:    spectrePowerViews(s, urls),
-			CardURLs:      urls,
+			Spectre:           s,
+			CharDef:           def,
+			AppearanceCharDef: model.CharacterByID(s.AppearanceCharacterID),
+			WeaponDef:         model.WeaponByID(s.WeaponID),
+			WeaponMod1Def:     model.WeaponModByID(s.WeaponMod1ID),
+			WeaponMod2Def:     model.WeaponModByID(s.WeaponMod2ID),
+			Weapon2Def:        model.WeaponByID(s.Weapon2ID),
+			Weapon2Mod1Def:    model.WeaponModByID(s.Weapon2Mod1ID),
+			Weapon2Mod2Def:    model.WeaponModByID(s.Weapon2Mod2ID),
+			PowerViews:        spectrePowerViews(s, urls),
+			CardURLs:          urls,
 		})
 	}
 
@@ -196,7 +240,7 @@ func main() {
 	// Serves images and other static assets embedded in the binary.
 	staticSub, err := fs.Sub(staticFS, "static")
 	if err != nil {
-		panic(err)
+		log.Fatalf("[FATAL] fs.Sub static: %v", err)
 	}
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticSub))))
 
@@ -292,6 +336,9 @@ func main() {
 		case "spectre":
 			charPostURLBase = "/api/spectres/" + entityID + "/character"
 			targetID = "spectre-card-" + entityID
+		case "spectre-appearance":
+			charPostURLBase = "/api/spectres/" + entityID + "/appearance"
+			targetID = "spectre-card-" + entityID
 		default: // "bot"
 			charPostURLBase = "/api/bots/" + entityID + "/character"
 			targetID = "bot-card-" + entityID
@@ -334,6 +381,9 @@ func main() {
 		switch kind {
 		case "spectre":
 			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon"
+			targetID = "spectre-card-" + entityID
+		case "spectre-weapon2":
+			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon2"
 			targetID = "spectre-card-" + entityID
 		default: // "bot"
 			weaponPostURLBase = "/api/bots/" + entityID + "/weapon"
@@ -385,6 +435,13 @@ func main() {
 				respondText(w, 404, "entity not found\n")
 				return
 			}
+		case "spectre-weapon2":
+			if sv, err2 := getSpectre(db, entityID); err2 == nil {
+				weaponID = sv.Weapon2ID
+			} else {
+				respondText(w, 404, "entity not found\n")
+				return
+			}
 		default: // "bot"
 			if bv, err2 := getBot(db, entityID); err2 == nil {
 				weaponID = bv.WeaponID
@@ -408,6 +465,9 @@ func main() {
 		switch kind {
 		case "spectre":
 			modPostURLBase = "/api/spectres/" + entityID + "/mod/" + slot
+			targetID = "spectre-card-" + entityID
+		case "spectre-weapon2":
+			modPostURLBase = "/api/spectres/" + entityID + "/mod2/" + slot
 			targetID = "spectre-card-" + entityID
 		default: // "bot"
 			modPostURLBase = "/api/bots/" + entityID + "/mod/" + slot
@@ -594,6 +654,52 @@ func main() {
 		renderSpectreCard(w, s)
 	})
 
+	// POST /api/spectres/{id}/appearance/{charId}
+	// Changes the portrait image only; base class, powers, and loadout are unchanged.
+	http.HandleFunc("POST /api/spectres/{id}/appearance/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		charID := r.PathValue("charId")
+		if model.CharacterByID(charID) == nil {
+			respondText(w, 400, "unknown character\n")
+			return
+		}
+		s, err := updateSpectreAppearance(db, r.PathValue("id"), charID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/rename
+	// Renames a spectre. Form body: name=<new name>. Returns the updated card.
+	http.HandleFunc("POST /api/spectres/{id}/rename", func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			respondText(w, 400, "bad form\n")
+			return
+		}
+		name := r.FormValue("name")
+		if name == "" {
+			respondText(w, 400, "name required\n")
+			return
+		}
+		s, err := updateSpectreName(db, r.PathValue("id"), name)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/weapon/none
+	http.HandleFunc("POST /api/spectres/{id}/weapon/none", func(w http.ResponseWriter, r *http.Request) {
+		s, err := updateSpectreWeapon(db, r.PathValue("id"), "")
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
 	// POST /api/spectres/{id}/weapon/{weaponId}
 	http.HandleFunc("POST /api/spectres/{id}/weapon/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
 		weaponID := r.PathValue("weaponId")
@@ -602,6 +708,57 @@ func main() {
 			return
 		}
 		s, err := updateSpectreWeapon(db, r.PathValue("id"), weaponID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/weapon2/none
+	http.HandleFunc("POST /api/spectres/{id}/weapon2/none", func(w http.ResponseWriter, r *http.Request) {
+		s, err := updateSpectreWeapon2(db, r.PathValue("id"), "")
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/weapon2/{weaponId}
+	http.HandleFunc("POST /api/spectres/{id}/weapon2/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
+		weaponID := r.PathValue("weaponId")
+		if model.WeaponByID(weaponID) == nil {
+			respondText(w, 400, "unknown weapon\n")
+			return
+		}
+		s, err := updateSpectreWeapon2(db, r.PathValue("id"), weaponID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/mod2/{slot}/{modId} — mod slots for second weapon
+	http.HandleFunc("POST /api/spectres/{id}/mod2/{slot}/{modId}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		slotStr := r.PathValue("slot")
+		modID := r.PathValue("modId")
+		var slot int
+		switch slotStr {
+		case "1":
+			slot = 1
+		case "2":
+			slot = 2
+		default:
+			respondText(w, 400, "invalid slot\n")
+			return
+		}
+		if modID == "none" {
+			modID = ""
+		}
+		s, err := updateSpectreWeapon2Mod(db, spectreID, slot, modID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
@@ -719,8 +876,9 @@ func main() {
 		spectreID := r.PathValue("id")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "spectre_borrow_char", map[string]any{
-			"SpectreID": spectreID,
-			"Groups":    model.GroupedCharacters(),
+			"Heading":         "Borrow a Power",
+			"FromCharURLBase": "/api/spectres/" + spectreID + "/borrowed-power",
+			"Groups":          model.GroupedCharacters(),
 		})
 	})
 
@@ -734,7 +892,6 @@ func main() {
 			respondText(w, 400, "unknown character\n")
 			return
 		}
-		// Resolve the PowerDefs for this character.
 		var powers []*model.PowerDef
 		for _, pid := range charDef.PowerIDs {
 			if pid != "" {
@@ -743,10 +900,11 @@ func main() {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "spectre_borrow_power", map[string]any{
-			"SpectreID": spectreID,
-			"CharDef":   charDef,
-			"Powers":    powers,
-			"BackURL":   "/api/spectres/" + spectreID + "/borrowed-power/selector",
+			"CharDef":      charDef,
+			"Powers":       powers,
+			"BackURL":      "/api/spectres/" + spectreID + "/borrowed-power/selector",
+			"PostURLBase":  "/api/spectres/" + spectreID + "/borrowed-power/add",
+			"TargetCardID": "spectre-card-" + spectreID,
 		})
 	})
 
@@ -760,6 +918,68 @@ func main() {
 			return
 		}
 		s, err := addSpectreBorrowedPower(db, spectreID, powerID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// GET /api/spectres/{id}/power/{slot}/change/selector
+	// Opens the character picker for changing one normal power slot.
+	http.HandleFunc("GET /api/spectres/{id}/power/{slot}/change/selector", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		slot := r.PathValue("slot")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "spectre_borrow_char", map[string]any{
+			"Heading":         "Change Power",
+			"FromCharURLBase": "/api/spectres/" + spectreID + "/power/" + slot + "/change",
+			"Groups":          model.GroupedCharacters(),
+		})
+	})
+
+	// GET /api/spectres/{id}/power/{slot}/change/from-char/{charId}
+	// Returns the power picker for the selected source character.
+	http.HandleFunc("GET /api/spectres/{id}/power/{slot}/change/from-char/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		slot := r.PathValue("slot")
+		charID := r.PathValue("charId")
+		charDef := model.CharacterByID(charID)
+		if charDef == nil {
+			respondText(w, 400, "unknown character\n")
+			return
+		}
+		var powers []*model.PowerDef
+		for _, pid := range charDef.PowerIDs {
+			if pid != "" {
+				powers = append(powers, model.PowerByID(pid))
+			}
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "spectre_borrow_power", map[string]any{
+			"CharDef":      charDef,
+			"Powers":       powers,
+			"BackURL":      "/api/spectres/" + spectreID + "/power/" + slot + "/change/selector",
+			"PostURLBase":  "/api/spectres/" + spectreID + "/power/" + slot + "/change/set",
+			"TargetCardID": "spectre-card-" + spectreID,
+		})
+	})
+
+	// POST /api/spectres/{id}/power/{slot}/change/set/{powerID}
+	// Replaces the power in the given slot and returns the refreshed spectre card.
+	http.HandleFunc("POST /api/spectres/{id}/power/{slot}/change/set/{powerID}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		powerID := r.PathValue("powerID")
+		var slotIdx int
+		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
+			respondText(w, 400, "slot must be 0–4\n")
+			return
+		}
+		if model.PowerByID(powerID) == nil {
+			respondText(w, 400, "unknown power\n")
+			return
+		}
+		s, err := updateSpectrePowerID(db, spectreID, slotIdx, powerID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
@@ -950,7 +1170,10 @@ func main() {
 
 	// Bind to loopback only (local machine).
 	addr := fmt.Sprintf("127.0.0.1:%d", port)
+	log.Printf("[INFO] listening on http://%s", addr)
 
 	// Start HTTP server (blocks forever unless an error occurs).
-	_ = http.ListenAndServe(addr, nil)
+	if err := http.ListenAndServe(addr, nil); err != nil {
+		log.Fatalf("[FATAL] ListenAndServe: %v", err)
+	}
 }
