@@ -61,15 +61,14 @@
 
             <!-- Grid for this subclass -->
             <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
-                {{$botID := $.BotID}}
                 {{range .Characters}}
                 <button class="group relative flex flex-col items-center rounded-lg overflow-hidden
                                border border-[#1e3a5f] bg-[#080c18]
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]
                                transition-all duration-150 cursor-pointer focus:outline-none
                                focus:border-[#00aaff]"
-                        hx-post="/api/bots/{{$botID}}/character/{{.ID}}"
-                        hx-target="#bot-card-{{$botID}}"
+                        hx-post="{{$.CharPostURLBase}}/{{.ID}}"
+                        hx-target="#{{$.TargetID}}"
                         hx-swap="outerHTML"
                         @click="modalOpen=false"
                         title="{{.Name}}">

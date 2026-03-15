@@ -11,15 +11,30 @@ import (
 
 const botsBucket = "bots"
 
+// CardURLs holds all pre-computed endpoint and element-ID strings for a card
+// view. Embedding this in a card view struct keeps templates free of routing
+// logic and makes the same templates reusable for both bots and spectres.
+type CardURLs struct {
+	CardID            string // HTML element id, e.g. "bot-card-abc123"
+	DeleteURL         string // DELETE endpoint for this entity
+	DeleteConfirm     string // hx-confirm message shown before deletion
+	CharSelectorURL   string // GET: opens character selector modal
+	WeaponSelectorURL string // GET: opens weapon selector modal
+	Mod1SelectorURL   string // GET: opens weapon mod 1 selector modal
+	Mod2SelectorURL   string // GET: opens weapon mod 2 selector modal
+	PowerBaseURL      string // prefix for power rank/evo routes, e.g. "/api/bots/id/power"
+}
+
 // PowerSlotView pairs a persisted PowerSlot with its resolved PowerDef and
 // flattened evolution fields for easy template access.
 type PowerSlotView struct {
 	model.PowerSlot
-	PowerDef *model.PowerDef // nil if PowerID is empty or unknown
-	SlotIdx  int             // 0–4, used in API route paths
-	Evo0     string          // Evolution[0]: "A" or "B" (rank 4 choice)
-	Evo1     string          // Evolution[1]: "A" or "B" (rank 5 choice)
-	Evo2     string          // Evolution[2]: "A" or "B" (rank 6 choice)
+	PowerDef    *model.PowerDef // nil if PowerID is empty or unknown
+	SlotIdx     int             // 0–4, used in API route paths
+	Evo0        string          // Evolution[0]: "A" or "B" (rank 4 choice)
+	Evo1        string          // Evolution[1]: "A" or "B" (rank 5 choice)
+	Evo2        string          // Evolution[2]: "A" or "B" (rank 6 choice)
+	SlotBaseURL string          // e.g. "/api/bots/abc123/power/0"
 }
 
 // BotView pairs a persisted Bot with its resolved catalog definitions
@@ -31,6 +46,7 @@ type BotView struct {
 	WeaponMod1Def *model.WeaponModDef // nil when no mod is assigned in slot 1
 	WeaponMod2Def *model.WeaponModDef // nil when no mod is assigned in slot 2
 	PowerViews    []PowerSlotView
+	CardURLs
 }
 
 // getBot fetches a single bot by ID. Returns an error if the bot is not found.
@@ -293,20 +309,37 @@ func updateBotWeaponMod(db *bolt.DB, botID string, slot int, modID string) (mode
 	return bot, err
 }
 
-// powerViews resolves PowerDef and flattens evolutions for template use.
-func powerViews(slots []model.PowerSlot) []PowerSlotView {
+// powerViews resolves PowerDef, flattens evolutions, and pre-computes per-slot
+// URL prefixes for use in templates.
+func powerViews(slots []model.PowerSlot, powerBaseURL string) []PowerSlotView {
 	views := make([]PowerSlotView, len(slots))
 	for i, ps := range slots {
 		views[i] = PowerSlotView{
-			PowerSlot: ps,
-			PowerDef:  model.PowerByID(ps.PowerID),
-			SlotIdx:   i,
-			Evo0:      ps.Evolution[0],
-			Evo1:      ps.Evolution[1],
-			Evo2:      ps.Evolution[2],
+			PowerSlot:   ps,
+			PowerDef:    model.PowerByID(ps.PowerID),
+			SlotIdx:     i,
+			Evo0:        ps.Evolution[0],
+			Evo1:        ps.Evolution[1],
+			Evo2:        ps.Evolution[2],
+			SlotBaseURL: fmt.Sprintf("%s/%d", powerBaseURL, i),
 		}
 	}
 	return views
+}
+
+// botURLs returns the pre-computed CardURLs for a given bot ID.
+func botURLs(botID string) CardURLs {
+	base := "/api/bots/" + botID
+	return CardURLs{
+		CardID:            "bot-card-" + botID,
+		DeleteURL:         base,
+		DeleteConfirm:     "Remove this bot?",
+		CharSelectorURL:   "/api/characters/selector?entityId=" + botID + "&kind=bot",
+		WeaponSelectorURL: "/api/weapons/selector?entityId=" + botID + "&kind=bot",
+		Mod1SelectorURL:   "/api/weapon-mods/selector?entityId=" + botID + "&kind=bot&slot=1",
+		Mod2SelectorURL:   "/api/weapon-mods/selector?entityId=" + botID + "&kind=bot&slot=2",
+		PowerBaseURL:      base + "/power",
+	}
 }
 
 // botViews resolves catalog definitions for each bot.
@@ -317,13 +350,15 @@ func botViews(bots []model.Bot) []BotView {
 		if def == nil {
 			def = &model.CharacterCatalog[0]
 		}
+		urls := botURLs(bot.ID)
 		views = append(views, BotView{
 			Bot:           bot,
 			CharDef:       def,
 			WeaponDef:     model.WeaponByID(bot.WeaponID),
 			WeaponMod1Def: model.WeaponModByID(bot.WeaponMod1ID),
 			WeaponMod2Def: model.WeaponModByID(bot.WeaponMod2ID),
-			PowerViews:    powerViews(bot.Powers),
+			PowerViews:    powerViews(bot.Powers, urls.PowerBaseURL),
+			CardURLs:      urls,
 		})
 	}
 	return views

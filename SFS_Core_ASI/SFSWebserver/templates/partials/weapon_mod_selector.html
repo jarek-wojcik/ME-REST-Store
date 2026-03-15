@@ -27,8 +27,8 @@
                            hover:border-red-500/50 hover:bg-[#1a0c0c]
                            transition-all duration-150 cursor-pointer focus:outline-none
                            col-span-3 justify-center"
-                    hx-post="/api/bots/{{$.BotID}}/mod/{{$.Slot}}/none"
-                    hx-target="#bot-card-{{$.BotID}}"
+                    hx-post="{{$.ModClearURL}}"
+                    hx-target="#{{$.TargetID}}"
                     hx-swap="outerHTML"
                     @click="modalOpen=false"
                     title="Clear this mod slot">
@@ -45,8 +45,8 @@
                            hover:border-[#00aaff]/60 hover:bg-[#0d1829]
                            transition-all duration-150 cursor-pointer focus:outline-none
                            focus:border-[#00aaff] text-left"
-                    hx-post="/api/bots/{{$.BotID}}/mod/{{$.Slot}}/{{.ID}}"
-                    hx-target="#bot-card-{{$.BotID}}"
+                    hx-post="{{$.ModPostURLBase}}/{{.ID}}"
+                    hx-target="#{{$.TargetID}}"
                     hx-swap="outerHTML"
                     @click="modalOpen=false"
                     title="{{.Name}}">

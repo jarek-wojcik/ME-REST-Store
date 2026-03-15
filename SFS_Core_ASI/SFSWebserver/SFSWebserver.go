@@ -104,6 +104,9 @@ func main() {
 	if err := ensureBotsBucket(db); err != nil {
 		panic(err)
 	}
+	if err := ensureSpectresBucket(db); err != nil {
+		panic(err)
+	}
 
 	// Parse all templates as a single set so partials can call each other
 	// via {{template "name" .}}.
@@ -143,6 +146,7 @@ func main() {
 		if def == nil {
 			def = &model.CharacterCatalog[0]
 		}
+		urls := botURLs(bot.ID)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "bot_card", BotView{
 			Bot:           bot,
@@ -150,7 +154,40 @@ func main() {
 			WeaponDef:     model.WeaponByID(bot.WeaponID),
 			WeaponMod1Def: model.WeaponModByID(bot.WeaponMod1ID),
 			WeaponMod2Def: model.WeaponModByID(bot.WeaponMod2ID),
-			PowerViews:    powerViews(bot.Powers),
+			PowerViews:    powerViews(bot.Powers, urls.PowerBaseURL),
+			CardURLs:      urls,
+		})
+	}
+
+	// renderSpectreCard writes the bot_card partial for a spectre.
+	renderSpectreCard := func(w http.ResponseWriter, s model.Spectre) {
+		def := model.CharacterByID(s.CharacterID)
+		if def == nil {
+			def = &model.CharacterCatalog[0]
+		}
+		urls := spectreURLs(s.ID)
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "bot_card", SpectreView{
+			Spectre:       s,
+			CharDef:       def,
+			WeaponDef:     model.WeaponByID(s.WeaponID),
+			WeaponMod1Def: model.WeaponModByID(s.WeaponMod1ID),
+			WeaponMod2Def: model.WeaponModByID(s.WeaponMod2ID),
+			PowerViews:    powerViews(s.Powers, urls.PowerBaseURL),
+			CardURLs:      urls,
+		})
+	}
+
+	// renderSpectreList writes the spectre_list partial.
+	renderSpectreList := func(w http.ResponseWriter) {
+		spectres, err := listSpectres(db)
+		if err != nil {
+			respondText(w, 500, "db error\n")
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = tmpl.ExecuteTemplate(w, "spectre_list", map[string]any{
+			"Spectres": spectreViews(spectres),
 		})
 	}
 
@@ -240,18 +277,29 @@ func main() {
 		w.WriteHeader(200) // empty body — HTMX outerHTML swap removes the element
 	})
 
-	// GET /api/characters/selector?botId={id}
+	// GET /api/characters/selector?entityId={id}&kind={bot|spectre}
 	// Returns the character selector grid partial for use in the modal.
 	http.HandleFunc("GET /api/characters/selector", func(w http.ResponseWriter, r *http.Request) {
-		botID := r.URL.Query().Get("botId")
-		if botID == "" {
-			respondText(w, 400, "missing botId\n")
+		entityID := r.URL.Query().Get("entityId")
+		kind := r.URL.Query().Get("kind")
+		if entityID == "" {
+			respondText(w, 400, "missing entityId\n")
 			return
+		}
+		var charPostURLBase, targetID string
+		switch kind {
+		case "spectre":
+			charPostURLBase = "/api/spectres/" + entityID + "/character"
+			targetID = "spectre-card-" + entityID
+		default: // "bot"
+			charPostURLBase = "/api/bots/" + entityID + "/character"
+			targetID = "bot-card-" + entityID
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "character_selector", map[string]any{
-			"BotID":  botID,
-			"Groups": model.GroupedCharacters(),
+			"CharPostURLBase": charPostURLBase,
+			"TargetID":        targetID,
+			"Groups":          model.GroupedCharacters(),
 		})
 	})
 
@@ -272,18 +320,29 @@ func main() {
 		renderBotCard(w, bot)
 	})
 
-	// GET /api/weapons/selector?botId={id}
+	// GET /api/weapons/selector?entityId={id}&kind={bot|spectre}
 	// Returns the weapon selector grid partial for use in the modal.
 	http.HandleFunc("GET /api/weapons/selector", func(w http.ResponseWriter, r *http.Request) {
-		botID := r.URL.Query().Get("botId")
-		if botID == "" {
-			respondText(w, 400, "missing botId\n")
+		entityID := r.URL.Query().Get("entityId")
+		kind := r.URL.Query().Get("kind")
+		if entityID == "" {
+			respondText(w, 400, "missing entityId\n")
 			return
+		}
+		var weaponPostURLBase, targetID string
+		switch kind {
+		case "spectre":
+			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon"
+			targetID = "spectre-card-" + entityID
+		default: // "bot"
+			weaponPostURLBase = "/api/bots/" + entityID + "/weapon"
+			targetID = "bot-card-" + entityID
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "weapon_selector", map[string]any{
-			"BotID":  botID,
-			"Groups": model.GroupedWeapons(),
+			"WeaponPostURLBase": weaponPostURLBase,
+			"TargetID":          targetID,
+			"Groups":            model.GroupedWeapons(),
 		})
 	})
 
@@ -304,24 +363,37 @@ func main() {
 		renderBotCard(w, bot)
 	})
 
-	// GET /api/weapon-mods/selector?botId={id}&slot={1|2}
+	// GET /api/weapon-mods/selector?entityId={id}&kind={bot|spectre}&slot={1|2}
 	// Returns the weapon mod selector grid partial for use in the modal.
-	// Only mods compatible with the bot's currently equipped weapon are shown;
+	// Only mods compatible with the entity's currently equipped weapon are shown;
 	// universal mods (WeaponTypeAny) are always included.
 	http.HandleFunc("GET /api/weapon-mods/selector", func(w http.ResponseWriter, r *http.Request) {
-		botID := r.URL.Query().Get("botId")
+		entityID := r.URL.Query().Get("entityId")
 		slot := r.URL.Query().Get("slot")
-		if botID == "" || (slot != "1" && slot != "2") {
-			respondText(w, 400, "missing or invalid botId/slot\n")
+		kind := r.URL.Query().Get("kind")
+		if entityID == "" || (slot != "1" && slot != "2") {
+			respondText(w, 400, "missing or invalid entityId/slot\n")
 			return
 		}
-		bot, err := getBot(db, botID)
-		if err != nil {
-			respondText(w, 404, "bot not found\n")
-			return
+		var weaponID string
+		switch kind {
+		case "spectre":
+			if sv, err2 := getSpectre(db, entityID); err2 == nil {
+				weaponID = sv.WeaponID
+			} else {
+				respondText(w, 404, "entity not found\n")
+				return
+			}
+		default: // "bot"
+			if bv, err2 := getBot(db, entityID); err2 == nil {
+				weaponID = bv.WeaponID
+			} else {
+				respondText(w, 404, "entity not found\n")
+				return
+			}
 		}
 		// Determine which weapon type is equipped (nil = no weapon).
-		weaponDef := model.WeaponByID(bot.WeaponID)
+		weaponDef := model.WeaponByID(weaponID)
 		// Filter mods: keep universal mods and those matching the weapon's type.
 		var filtered []model.WeaponModDef
 		for _, mod := range model.WeaponModCatalog {
@@ -331,11 +403,22 @@ func main() {
 				filtered = append(filtered, mod)
 			}
 		}
+		var modPostURLBase, targetID string
+		switch kind {
+		case "spectre":
+			modPostURLBase = "/api/spectres/" + entityID + "/mod/" + slot
+			targetID = "spectre-card-" + entityID
+		default: // "bot"
+			modPostURLBase = "/api/bots/" + entityID + "/mod/" + slot
+			targetID = "bot-card-" + entityID
+		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "weapon_mod_selector", map[string]any{
-			"BotID": botID,
-			"Slot":  slot,
-			"Mods":  filtered,
+			"ModPostURLBase": modPostURLBase,
+			"ModClearURL":    modPostURLBase + "/none",
+			"TargetID":       targetID,
+			"Slot":           slot,
+			"Mods":           filtered,
 		})
 	})
 
@@ -446,6 +529,187 @@ func main() {
 			return
 		}
 		renderBotCard(w, bot)
+	})
+
+	// GET /api/spectres
+	// Returns the spectre list partial (full left+right panel).
+	http.HandleFunc("GET /api/spectres", func(w http.ResponseWriter, r *http.Request) {
+		renderSpectreList(w)
+	})
+
+	// POST /api/spectres
+	// Creates a new spectre. Form field: name. Returns updated spectre list.
+	http.HandleFunc("POST /api/spectres", func(w http.ResponseWriter, r *http.Request) {
+		name := strings.TrimSpace(r.FormValue("name"))
+		if name == "" {
+			respondText(w, 400, "missing name\n")
+			return
+		}
+		if _, err := createSpectre(db, name); err != nil {
+			respondText(w, 500, "create failed\n")
+			return
+		}
+		renderSpectreList(w)
+	})
+
+	// DELETE /api/spectres/{id}
+	// Removes a spectre. Returns the updated spectre list.
+	http.HandleFunc("DELETE /api/spectres/{id}", func(w http.ResponseWriter, r *http.Request) {
+		existed, err := deleteSpectre(db, r.PathValue("id"))
+		if err != nil {
+			respondText(w, 500, "delete failed\n")
+			return
+		}
+		if !existed {
+			respondText(w, 404, "not found\n")
+			return
+		}
+		renderSpectreList(w)
+	})
+
+	// GET /api/spectres/{id}/card
+	// Returns the bot_card partial for a single spectre (loads the right panel).
+	http.HandleFunc("GET /api/spectres/{id}/card", func(w http.ResponseWriter, r *http.Request) {
+		s, err := getSpectre(db, r.PathValue("id"))
+		if err != nil {
+			respondText(w, 404, "not found\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/character/{charId}
+	http.HandleFunc("POST /api/spectres/{id}/character/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		charID := r.PathValue("charId")
+		if model.CharacterByID(charID) == nil {
+			respondText(w, 400, "unknown character\n")
+			return
+		}
+		s, err := updateSpectreCharacter(db, r.PathValue("id"), charID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/weapon/{weaponId}
+	http.HandleFunc("POST /api/spectres/{id}/weapon/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
+		weaponID := r.PathValue("weaponId")
+		if model.WeaponByID(weaponID) == nil {
+			respondText(w, 400, "unknown weapon\n")
+			return
+		}
+		s, err := updateSpectreWeapon(db, r.PathValue("id"), weaponID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/mod/{slot}/{modId}
+	http.HandleFunc("POST /api/spectres/{id}/mod/{slot}/{modId}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		slotStr := r.PathValue("slot")
+		modID := r.PathValue("modId")
+		var slot int
+		switch slotStr {
+		case "1":
+			slot = 1
+		case "2":
+			slot = 2
+		default:
+			respondText(w, 400, "slot must be 1 or 2\n")
+			return
+		}
+		if modID != "none" && model.WeaponModByID(modID) == nil {
+			respondText(w, 400, "unknown mod\n")
+			return
+		}
+		if modID == "none" {
+			modID = ""
+		}
+		s, err := updateSpectreWeaponMod(db, spectreID, slot, modID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/power/{slot}/rankevo/{rank}/{evoIdx}/{choice}
+	http.HandleFunc("POST /api/spectres/{id}/power/{slot}/rankevo/{rank}/{evoIdx}/{choice}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		var slotIdx, rank, evoIdx int
+		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
+			respondText(w, 400, "slot must be 0–4\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("rank"), &rank); err != nil || rank < 4 || rank > 6 {
+			respondText(w, 400, "rank must be 4–6\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("evoIdx"), &evoIdx); err != nil || evoIdx < 0 || evoIdx > 2 {
+			respondText(w, 400, "evoIdx must be 0–2\n")
+			return
+		}
+		choice := r.PathValue("choice")
+		if choice != "A" && choice != "B" {
+			respondText(w, 400, "choice must be A or B\n")
+			return
+		}
+		s, err := updateSpectrePowerRankAndEvo(db, spectreID, slotIdx, rank, evoIdx, choice)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/power/{slot}/rank/{rank}
+	http.HandleFunc("POST /api/spectres/{id}/power/{slot}/rank/{rank}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		var slotIdx, rank int
+		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
+			respondText(w, 400, "slot must be 0–4\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("rank"), &rank); err != nil || rank < 0 || rank > 6 {
+			respondText(w, 400, "rank must be 0–6\n")
+			return
+		}
+		s, err := updateSpectrePowerRank(db, spectreID, slotIdx, rank)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
+	})
+
+	// POST /api/spectres/{id}/power/{slot}/evo/{evoIdx}/{choice}
+	http.HandleFunc("POST /api/spectres/{id}/power/{slot}/evo/{evoIdx}/{choice}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		var slotIdx, evoIdx int
+		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
+			respondText(w, 400, "slot must be 0–4\n")
+			return
+		}
+		if _, err := fmt.Sscan(r.PathValue("evoIdx"), &evoIdx); err != nil || evoIdx < 0 || evoIdx > 2 {
+			respondText(w, 400, "evoIdx must be 0–2\n")
+			return
+		}
+		choice := r.PathValue("choice")
+		if choice != "A" && choice != "B" {
+			respondText(w, 400, "choice must be A or B\n")
+			return
+		}
+		s, err := updateSpectrePowerEvolution(db, spectreID, slotIdx, evoIdx, choice)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		renderSpectreCard(w, s)
 	})
 
 	// GET /health

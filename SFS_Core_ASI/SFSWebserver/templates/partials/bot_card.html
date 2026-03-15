@@ -1,5 +1,5 @@
 {{define "bot_card"}}
-<div id="bot-card-{{.Bot.ID}}"
+<div id="{{.CardID}}"
      class="group relative w-full flex flex-row rounded-xl overflow-hidden
             border border-[#1e3a5f] bg-[#080c18]
             hover:border-[#00aaff]/40 transition-all duration-200">
@@ -10,7 +10,7 @@
                    cursor-pointer focus:outline-none
                    hover:brightness-110 transition-all duration-200
                    border-r border-[#1e3a5f]"
-            hx-get="/api/characters/selector?botId={{.Bot.ID}}"
+            hx-get="{{.CharSelectorURL}}"
             hx-target="#modal-body"
             hx-swap="innerHTML"
             @click="modalOpen=true"
@@ -43,10 +43,10 @@
             <!-- Delete bot -->
             <button class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity
                            p-0.5 rounded text-gray-600 hover:text-red-400"
-                    hx-delete="/api/bots/{{.Bot.ID}}"
-                    hx-target="#bot-card-{{.Bot.ID}}"
+                    hx-delete="{{.DeleteURL}}"
+                    hx-target="#{{.CardID}}"
                     hx-swap="outerHTML"
-                    hx-confirm="Remove this bot?"
+                    hx-confirm="{{.DeleteConfirm}}"
                     title="Remove bot">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
                      stroke="currentColor" stroke-width="2">
@@ -70,7 +70,7 @@
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]
                                transition-all duration-150 cursor-pointer focus:outline-none
                                min-w-0 w-full h-16"
-                        hx-get="/api/weapons/selector?botId={{.Bot.ID}}"
+                        hx-get="{{.WeaponSelectorURL}}"
                         hx-target="#modal-body"
                         hx-swap="innerHTML"
                         @click="modalOpen=true"
@@ -112,7 +112,7 @@
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]
                                transition-all duration-150 cursor-pointer focus:outline-none
                                min-w-0 w-full h-16"
-                        hx-get="/api/weapon-mods/selector?botId={{.Bot.ID}}&slot=1"
+                        hx-get="{{.Mod1SelectorURL}}"
                         hx-target="#modal-body"
                         hx-swap="innerHTML"
                         @click="modalOpen=true"
@@ -154,7 +154,7 @@
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]
                                transition-all duration-150 cursor-pointer focus:outline-none
                                min-w-0 w-full h-16"
-                        hx-get="/api/weapon-mods/selector?botId={{.Bot.ID}}&slot=2"
+                        hx-get="{{.Mod2SelectorURL}}"
                         hx-target="#modal-body"
                         hx-swap="innerHTML"
                         @click="modalOpen=true"
@@ -208,8 +208,8 @@
                 <!-- ── Rank 1 ── toggle: if rank≥1 → clear, else → set rank 1 -->
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;"
-                        hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/{{if ge $pv.Rank 1}}0{{else}}1{{end}}"
-                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                        hx-post="{{$pv.SlotBaseURL}}/rank/{{if ge $pv.Rank 1}}0{{else}}1{{end}}"
+                        hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                         @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 1', $el)"
                         @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 1}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
@@ -218,8 +218,8 @@
                 <!-- ── Rank 2 ── -->
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-64px 0px;background-repeat:no-repeat;"
-                        hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/2"
-                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                        hx-post="{{$pv.SlotBaseURL}}/rank/2"
+                        hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                         @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 2', $el)"
                         @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 2}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
@@ -228,8 +228,8 @@
                 <!-- ── Rank 3 ── -->
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-128px 0px;background-repeat:no-repeat;"
-                        hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/3"
-                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                        hx-post="{{$pv.SlotBaseURL}}/rank/3"
+                        hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                         @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 3', $el)"
                         @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 3}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
@@ -239,16 +239,16 @@
                 <div class="flex flex-col gap-0.5">
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px 0px;background-repeat:no-repeat;"
-                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/4/0/A"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            hx-post="{{$pv.SlotBaseURL}}/rankevo/4/0/A"
+                            hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 4 — Evolution A', $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px -64px;background-repeat:no-repeat;"
-                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/4/0/B"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            hx-post="{{$pv.SlotBaseURL}}/rankevo/4/0/B"
+                            hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 4 — Evolution B', $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
@@ -259,16 +259,16 @@
                 <div class="flex flex-col gap-0.5">
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px 0px;background-repeat:no-repeat;"
-                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/5/1/A"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            hx-post="{{$pv.SlotBaseURL}}/rankevo/5/1/A"
+                            hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 5 — Evolution A', $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px -64px;background-repeat:no-repeat;"
-                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/5/1/B"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            hx-post="{{$pv.SlotBaseURL}}/rankevo/5/1/B"
+                            hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 5 — Evolution B', $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
@@ -279,16 +279,16 @@
                 <div class="flex flex-col gap-0.5">
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px 0px;background-repeat:no-repeat;"
-                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/6/2/A"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            hx-post="{{$pv.SlotBaseURL}}/rankevo/6/2/A"
+                            hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 6 — Evolution A', $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px -64px;background-repeat:no-repeat;"
-                            hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/6/2/B"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            hx-post="{{$pv.SlotBaseURL}}/rankevo/6/2/B"
+                            hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 6 — Evolution B', $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
