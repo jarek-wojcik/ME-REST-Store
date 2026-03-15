@@ -218,7 +218,7 @@ void OverlayHost::OverlayThread()
     const int gameY = gameRect.top;
     const int gameW = gameRect.right  - gameRect.left;
     const int gameH = gameRect.bottom - gameRect.top;
-    const int winW  = gameW / 2;   // 50% of game window width
+    const int winW  = (gameW * k_OverlayWidthPercent) / 100;   // % of game window width
     const int winH  = gameH;
     const int winX  = gameX + gameW - winW;
     const int winY  = gameY;
@@ -418,7 +418,7 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
             ClientToScreen(gameWnd, &pt);
             const int cW = gc.right  - gc.left;
             const int cH = gc.bottom - gc.top;
-            const int overlayW = cW / 2;
+            const int overlayW = (cW * k_OverlayWidthPercent) / 100;
 
             if (m_panelVisible)
             {
@@ -452,10 +452,18 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         const int tabW = rc.right;
         const int tabH = rc.bottom;
 
-        // Background
-        HBRUSH bg = CreateSolidBrush(RGB(30, 30, 30));
+        // Background + border (rounded corners)
+        HBRUSH bg = CreateSolidBrush(RGB(30, 58, 95));
         FillRect(hdc, &rc, bg);
         DeleteObject(bg);
+
+        HPEN border = CreatePen(PS_SOLID, 1, RGB(0, 170, 255));
+        HGDIOBJ oldPen = SelectObject(hdc, border);
+        HBRUSH oldBrush = static_cast<HBRUSH>(SelectObject(hdc, GetStockObject(NULL_BRUSH)));
+        RoundRect(hdc, rc.left, rc.top, rc.right, rc.bottom, 8, 8);
+        SelectObject(hdc, oldBrush);
+        SelectObject(hdc, oldPen);
+        DeleteObject(border);
 
         const wchar_t* label = L"Spectre Portal";
 
@@ -470,7 +478,7 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
         );
         HFONT oldFont = static_cast<HFONT>(SelectObject(hdc, font));
         SetBkMode(hdc, TRANSPARENT);
-        SetTextColor(hdc, RGB(220, 220, 220));
+        SetTextColor(hdc, RGB(0, 170, 255));
 
         // Measure text in normal (unrotated) space
         SIZE sz{};

@@ -72,7 +72,8 @@ private:
     Microsoft::WRL::ComPtr<ICoreWebView2Controller>   m_controller;
     Microsoft::WRL::ComPtr<ICoreWebView2>             m_webView;
 
-    static constexpr wchar_t k_ClassName[]       = L"SFSOverlayHostWnd";
-    static constexpr wchar_t k_ToggleClassName[] = L"SFSOverlayToggleWnd";
-    static constexpr int     k_ToggleW           = 60;  // width of the tab in pixels
+    static constexpr wchar_t k_ClassName[]             = L"SFSOverlayHostWnd";
+    static constexpr wchar_t k_ToggleClassName[]       = L"SFSOverlayToggleWnd";
+    static constexpr int     k_ToggleW                 = 60;  // width of the tab in pixels
+    static constexpr int     k_OverlayWidthPercent     = 45;  // percentage of game window width
 };
