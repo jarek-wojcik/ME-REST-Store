@@ -190,6 +190,7 @@ func main() {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "bot_card", BotView{
 			Bot:           bot,
+			Name:          def.Name,
 			CharDef:       def,
 			WeaponDef:     model.WeaponByID(bot.WeaponID),
 			WeaponMod1Def: model.WeaponModByID(bot.WeaponMod1ID),

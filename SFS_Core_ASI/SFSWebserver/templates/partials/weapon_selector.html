@@ -42,9 +42,10 @@
     <div id="weapons-scroll" class="overflow-y-auto flex-1 min-h-0 pr-1 space-y-6"
          @scroll="
             const scroll = $el;
+            let el;
             {{range .Groups}}
-            const el{{.ID}} = document.getElementById('weapgroup-{{.ID}}');
-            if (el{{.ID}} && el{{.ID}}.getBoundingClientRect().top <= scroll.getBoundingClientRect().top + 40) {
+            el = document.getElementById('weapgroup-{{.ID}}');
+            if (el && el.getBoundingClientRect().top <= scroll.getBoundingClientRect().top + 40) {
                 activeTab = '{{.ID}}';
             }
             {{end}}

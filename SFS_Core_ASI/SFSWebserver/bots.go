@@ -54,6 +54,7 @@ type PowerSlotView struct {
 // for template rendering.
 type BotView struct {
 	model.Bot
+	Name              string // display name; derived from CharDef.Name (bots are not user-renameable)
 	CharDef           *model.CharacterDef
 	AppearanceCharDef *model.CharacterDef // always nil for bots; present so bot_card template compiles uniformly
 	WeaponDef         *model.WeaponDef    // nil when no weapon is assigned
@@ -367,6 +368,7 @@ func botViews(bots []model.Bot) []BotView {
 		urls := botURLs(bot.ID)
 		views = append(views, BotView{
 			Bot:           bot,
+			Name:          def.Name,
 			CharDef:       def,
 			WeaponDef:     model.WeaponByID(bot.WeaponID),
 			WeaponMod1Def: model.WeaponModByID(bot.WeaponMod1ID),
