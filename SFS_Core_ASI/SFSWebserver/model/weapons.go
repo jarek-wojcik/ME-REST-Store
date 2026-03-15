@@ -1,4 +1,6 @@
-package main
+package model
+
+import "strings"
 
 // WeaponType identifies the class of a weapon (and is used to filter mods).
 type WeaponType string
@@ -43,7 +45,7 @@ var WeaponCatalog = []WeaponDef{
 	{ID: "AssaultRifle_LMG", Name: "N7 Typhoon", Category: "Assault Rifle", PictureFile: "AssaultRifle_LMG.webp"},
 	{ID: "AssaultRifle_Mattock", Name: "Mattock", Category: "Assault Rifle", PictureFile: "AssaultRifle_Mattock.webp"},
 	{ID: "AssaultRifle_Prothean_MP", Name: "Prothean Particle Rifle", Category: "Assault Rifle", PictureFile: "AssaultRifle_Prothean_MP.webp"},
-	{ID: "AssaultRifle_Reckoning", Name: "Reckoning", Category: "Assault Rifle", PictureFile: "AssaultRifle_Reckoning.webp"},
+	// {ID: "AssaultRifle_Reckoning", Name: "Reckoning", Category: "Assault Rifle", PictureFile: "AssaultRifle_Reckoning.webp"}, //This is not in game.
 	{ID: "AssaultRifle_Revenant", Name: "Revenant", Category: "Assault Rifle", PictureFile: "AssaultRifle_Revenant.webp"},
 	{ID: "AssaultRifle_Saber", Name: "N7 Valiant", Category: "Assault Rifle", PictureFile: "AssaultRifle_Saber.webp"},
 	{ID: "AssaultRifle_Spitfire", Name: "Spitfire", Category: "Assault Rifle", PictureFile: "AssaultRifle_Spitfire.webp"},
@@ -115,4 +117,41 @@ var weaponIndex = func() map[string]*WeaponDef {
 // WeaponByID returns the WeaponDef for the given ID, or nil if not found.
 func WeaponByID(id string) *WeaponDef {
 	return weaponIndex[id]
+}
+
+// WeaponGroup holds weapons belonging to a single weapon category.
+type WeaponGroup struct {
+	Category string
+	ID       string // safe HTML ID (no spaces)
+	Weapons  []WeaponDef
+}
+
+// weaponTypeOrder defines the canonical display order for the weapon selector.
+var weaponTypeOrder = []WeaponType{
+	WeaponTypeAssaultRifle,
+	WeaponTypeSMG,
+	WeaponTypeShotgun,
+	WeaponTypeSniperRifle,
+	WeaponTypePistol,
+}
+
+func weaponTypeID(t WeaponType) string {
+	// IDs need to be valid HTML id attributes.
+	return strings.ReplaceAll(string(t), " ", "-")
+}
+
+// GroupedWeapons returns WeaponCatalog partitioned by Category,
+// in the canonical weaponTypeOrder order.
+func GroupedWeapons() []WeaponGroup {
+	buckets := make(map[WeaponType][]WeaponDef, len(weaponTypeOrder))
+	for _, w := range WeaponCatalog {
+		buckets[w.Category] = append(buckets[w.Category], w)
+	}
+	groups := make([]WeaponGroup, 0, len(weaponTypeOrder))
+	for _, wt := range weaponTypeOrder {
+		if weapons, ok := buckets[wt]; ok {
+			groups = append(groups, WeaponGroup{Category: string(wt), ID: weaponTypeID(wt), Weapons: weapons})
+		}
+	}
+	return groups
 }

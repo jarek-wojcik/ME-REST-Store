@@ -1,12 +1,10 @@
 {{define "weapon_selector"}}
-<div class="flex flex-col h-full">
+<div class="flex flex-col h-full"
+     x-data="{ activeTab: '{{(index .Groups 0).ID}}' }">
 
     <!-- Selector header -->
     <div class="flex items-center justify-between mb-5 flex-shrink-0">
-        <div>
-            <h2 class="text-base font-semibold text-gray-100 tracking-wide">Select Weapon</h2>
-            <p class="text-xs text-gray-500 mt-0.5">{{len .Weapons}} available</p>
-        </div>
+        <h2 class="text-base font-semibold text-gray-100 tracking-wide">Select Weapon</h2>
         <button class="p-1.5 rounded hover:bg-[#1e3a5f] text-gray-500 hover:text-gray-200
                        transition-colors"
                 @click="modalOpen=false"
@@ -17,42 +15,84 @@
         </button>
     </div>
 
-    <!-- Weapon grid -->
-    <div class="overflow-y-auto flex-1 min-h-0 pr-1">
-        <div class="grid grid-cols-3 gap-3">
-            {{range .Weapons}}
-            <button class="group flex items-center gap-3 rounded-lg overflow-hidden
-                           border border-[#1e3a5f] bg-[#080c18] px-3 py-2
-                           hover:border-[#00aaff]/60 hover:bg-[#0d1829]
-                           transition-all duration-150 cursor-pointer focus:outline-none
-                           focus:border-[#00aaff] text-left"
-                    hx-post="/api/bots/{{$.BotID}}/weapon/{{.ID}}"
-                    hx-target="#bot-card-{{$.BotID}}"
-                    hx-swap="outerHTML"
-                    @click="modalOpen=false"
-                    title="{{.Name}}">
-
-                <!-- Weapon image -->
-                <div class="w-20 h-14 flex-shrink-0 bg-gradient-to-b from-[#0d1829] to-[#060a12]
-                            rounded overflow-hidden flex items-center justify-center">
-                    <img src="{{.PictureURL}}"
-                         alt="{{.Name}}"
-                         class="w-full h-full object-contain
-                                group-hover:scale-105 transition-transform duration-200"/>
-                </div>
-
-                <!-- Name + category -->
-                <div class="min-w-0">
-                    <div class="text-xs font-medium text-gray-300 group-hover:text-[#00aaff]
-                                transition-colors leading-tight truncate">
-                        {{.Name}}
-                    </div>
-                    <div class="text-[10px] text-gray-600 mt-0.5 truncate">{{.Category}}</div>
-                </div>
-
+    <!-- Weapon type tabs -->
+    <div class="flex-shrink-0 mb-3">
+        <div class="flex gap-1 border-b border-[#1e3a5f]">
+            {{range .Groups}}
+            <button class="relative px-3 py-1.5 text-xs font-semibold tracking-wide rounded-t
+                           transition-colors duration-150 focus:outline-none"
+                    :class="activeTab === '{{.ID}}'
+                        ? 'text-[#00aaff] bg-[#0d1829]'
+                        : 'text-gray-500 hover:text-gray-300 hover:bg-[#0d1829]/50'"
+                    @click="
+                        activeTab = '{{.ID}}';
+                        document.getElementById('weapgroup-{{.ID}}')
+                            .scrollIntoView({block:'start'});
+                        document.getElementById('weapons-scroll').scrollTop -= 8;
+                    ">
+                {{.Category}}
+                <span class="absolute bottom-0 inset-x-0 h-0.5 rounded-full transition-colors duration-150"
+                      :class="activeTab === '{{.ID}}' ? 'bg-[#00aaff]' : 'bg-transparent'"></span>
             </button>
             {{end}}
         </div>
+    </div>
+
+    <!-- Weapon groups -->
+    <div id="weapons-scroll" class="overflow-y-auto flex-1 min-h-0 pr-1 space-y-6"
+         @scroll="
+            const scroll = $el;
+            {{range .Groups}}
+            const el{{.ID}} = document.getElementById('weapgroup-{{.ID}}');
+            if (el{{.ID}} && el{{.ID}}.getBoundingClientRect().top <= scroll.getBoundingClientRect().top + 40) {
+                activeTab = '{{.ID}}';
+            }
+            {{end}}
+         ">
+        {{range .Groups}}
+        <div id="weapgroup-{{.ID}}">
+            <!-- Weapon type heading -->
+            <div class="flex items-center gap-3 mb-2">
+                <span class="text-[11px] font-bold tracking-widest uppercase text-[#00aaff]/70">{{.Category}}</span>
+                <div class="flex-1 h-px bg-[#1e3a5f]"></div>
+                <span class="text-[10px] text-gray-600">{{len .Weapons}}</span>
+            </div>
+
+            <!-- Grid for this weapon type -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 justify-items-center">
+                {{$botID := $.BotID}}
+                {{range .Weapons}}
+                <button class="group flex flex-col items-center rounded-lg overflow-hidden
+                               border border-[#1e3a5f] bg-[#080c18] px-2 py-2
+                               hover:border-[#00aaff]/60 hover:bg-[#0d1829]
+                               transition-all duration-150 cursor-pointer focus:outline-none
+                               focus:border-[#00aaff]"
+                        hx-post="/api/bots/{{$botID}}/weapon/{{.ID}}"
+                        hx-target="#bot-card-{{$botID}}"
+                        hx-swap="outerHTML"
+                        @click="modalOpen=false"
+                        title="{{.Name}}">
+
+                    <!-- Weapon image -->
+                    <div class="w-[7.5rem] h-[7.5rem] bg-gradient-to-b from-[#0d1829] to-[#060a12]
+                                rounded overflow-hidden flex items-center justify-center">
+                        <img src="{{.PictureURL}}"
+                             alt="{{.Name}}"
+                             class="w-full h-full object-contain
+                                    group-hover:scale-105 transition-transform duration-200"/>
+                    </div>
+
+                    <!-- Name -->
+                    <div class="mt-2 text-[0.85rem] font-medium text-gray-300 group-hover:text-[#00aaff]
+                                 transition-colors text-center leading-tight break-words">
+                        {{.Name}}
+                    </div>
+
+                </button>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
     </div>
 
 </div>

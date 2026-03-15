@@ -1,9 +1,7 @@
-package main
+package model
 
 import (
 	"encoding/json"
-
-	"sfswebserver/model"
 
 	bolt "go.etcd.io/bbolt"
 )
@@ -19,15 +17,15 @@ func ensureTeamsBucket(db *bolt.DB) error {
 }
 
 // listTeams returns all teams ordered by insertion (BoltDB key order).
-func listTeams(db *bolt.DB) ([]model.Team, error) {
-	var teams []model.Team
+func listTeams(db *bolt.DB) ([]Team, error) {
+	var teams []Team
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(teamsBucket))
 		if b == nil {
 			return nil
 		}
 		return b.ForEach(func(_, v []byte) error {
-			var t model.Team
+			var t Team
 			if err := json.Unmarshal(v, &t); err != nil {
 				return err
 			}
@@ -39,11 +37,11 @@ func listTeams(db *bolt.DB) ([]model.Team, error) {
 }
 
 // createTeam persists a new team and returns it.
-func createTeam(db *bolt.DB, name string) (model.Team, error) {
-	t := model.Team{ID: newID(), Name: name}
+func createTeam(db *bolt.DB, name string) (Team, error) {
+	t := Team{ID: newID(), Name: name}
 	data, err := json.Marshal(t)
 	if err != nil {
-		return model.Team{}, err
+		return Team{}, err
 	}
 	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(teamsBucket))

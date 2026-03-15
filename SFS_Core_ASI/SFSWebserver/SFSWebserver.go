@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	"sfswebserver/model"
+
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -136,18 +138,18 @@ func main() {
 	}
 
 	// renderBotCard writes a single bot_card partial.
-	renderBotCard := func(w http.ResponseWriter, bot Bot) {
-		def := CharacterByID(bot.CharacterID)
+	renderBotCard := func(w http.ResponseWriter, bot model.Bot) {
+		def := model.CharacterByID(bot.CharacterID)
 		if def == nil {
-			def = &CharacterCatalog[0]
+			def = &model.CharacterCatalog[0]
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "bot_card", BotView{
 			Bot:           bot,
 			CharDef:       def,
-			WeaponDef:     WeaponByID(bot.WeaponID),
-			WeaponMod1Def: WeaponModByID(bot.WeaponMod1ID),
-			WeaponMod2Def: WeaponModByID(bot.WeaponMod2ID),
+			WeaponDef:     model.WeaponByID(bot.WeaponID),
+			WeaponMod1Def: model.WeaponModByID(bot.WeaponMod1ID),
+			WeaponMod2Def: model.WeaponModByID(bot.WeaponMod2ID),
 			PowerViews:    powerViews(bot.Powers),
 		})
 	}
@@ -249,7 +251,7 @@ func main() {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "character_selector", map[string]any{
 			"BotID":  botID,
-			"Groups": GroupedCharacters(),
+			"Groups": model.GroupedCharacters(),
 		})
 	})
 
@@ -258,7 +260,7 @@ func main() {
 	http.HandleFunc("POST /api/bots/{id}/character/{charId}", func(w http.ResponseWriter, r *http.Request) {
 		botID := r.PathValue("id")
 		charID := r.PathValue("charId")
-		if CharacterByID(charID) == nil {
+		if model.CharacterByID(charID) == nil {
 			respondText(w, 400, "unknown character\n")
 			return
 		}
@@ -280,8 +282,8 @@ func main() {
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = tmpl.ExecuteTemplate(w, "weapon_selector", map[string]any{
-			"BotID":   botID,
-			"Weapons": WeaponCatalog,
+			"BotID":  botID,
+			"Groups": model.GroupedWeapons(),
 		})
 	})
 
@@ -290,7 +292,7 @@ func main() {
 	http.HandleFunc("POST /api/bots/{id}/weapon/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
 		botID := r.PathValue("id")
 		weaponID := r.PathValue("weaponId")
-		if WeaponByID(weaponID) == nil {
+		if model.WeaponByID(weaponID) == nil {
 			respondText(w, 400, "unknown weapon\n")
 			return
 		}
@@ -319,11 +321,11 @@ func main() {
 			return
 		}
 		// Determine which weapon type is equipped (nil = no weapon).
-		weaponDef := WeaponByID(bot.WeaponID)
+		weaponDef := model.WeaponByID(bot.WeaponID)
 		// Filter mods: keep universal mods and those matching the weapon's type.
-		var filtered []WeaponModDef
-		for _, mod := range WeaponModCatalog {
-			if mod.WeaponType == WeaponTypeAny {
+		var filtered []model.WeaponModDef
+		for _, mod := range model.WeaponModCatalog {
+			if mod.WeaponType == model.WeaponTypeAny {
 				filtered = append(filtered, mod)
 			} else if weaponDef != nil && mod.WeaponType == weaponDef.Category {
 				filtered = append(filtered, mod)
@@ -354,7 +356,7 @@ func main() {
 			return
 		}
 		// Allow clearing a slot by posting modId "none".
-		if modID != "none" && WeaponModByID(modID) == nil {
+		if modID != "none" && model.WeaponModByID(modID) == nil {
 			respondText(w, 400, "unknown mod\n")
 			return
 		}

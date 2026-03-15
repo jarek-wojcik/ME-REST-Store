@@ -1,4 +1,4 @@
-package main
+package model
 
 // WeaponSlot identifies which slot a weapon mod occupies.
 // Mods with the same WeaponSlot are mutually exclusive on a given bot slot.

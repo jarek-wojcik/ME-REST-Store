@@ -1,4 +1,4 @@
-package main
+package model
 
 // PowerDef is a read-only definition of a power.
 // ID doubles as the icon sprite filename stem (e.g. "Singularity" → "Singularity.webp").
@@ -107,9 +107,9 @@ func PowerByID(id string) *PowerDef {
 	return powerIndex[id]
 }
 
-// defaultPower returns a fresh PowerSlot for the given power ID with rank 0
+// DefaultPower returns a fresh PowerSlot for the given power ID with rank 0
 // and all evolutions defaulting to "A".
-func defaultPower(id string) PowerSlot {
+func DefaultPower(id string) PowerSlot {
 	return PowerSlot{
 		PowerID:   id,
 		Rank:      0,
