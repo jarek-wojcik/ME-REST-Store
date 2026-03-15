@@ -75,5 +75,5 @@ private:
     static constexpr wchar_t k_ClassName[]             = L"SFSOverlayHostWnd";
     static constexpr wchar_t k_ToggleClassName[]       = L"SFSOverlayToggleWnd";
     static constexpr int     k_ToggleW                 = 60;  // width of the tab in pixels
-    static constexpr int     k_OverlayWidthPercent     = 45;  // percentage of game window width
+    static constexpr int     k_OverlayWidthPercent     = 75;  // percentage of game window width
 };
