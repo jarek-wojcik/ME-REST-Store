@@ -209,7 +209,9 @@
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;"
                         hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/{{if ge $pv.Rank 1}}0{{else}}1{{end}}"
-                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 1">
+                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                        @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 1', $el)"
+                        @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 1}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                 </button>
 
@@ -217,7 +219,9 @@
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-64px 0px;background-repeat:no-repeat;"
                         hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/2"
-                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 2">
+                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                        @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 2', $el)"
+                        @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 2}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                 </button>
 
@@ -225,7 +229,9 @@
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-128px 0px;background-repeat:no-repeat;"
                         hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rank/3"
-                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 3">
+                        hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                        @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 3', $el)"
+                        @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 3}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                 </button>
 
@@ -234,13 +240,17 @@
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px 0px;background-repeat:no-repeat;"
                             hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/4/0/A"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 4 — Evolution A">
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 4 — Evolution A', $el)"
+                            @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px -64px;background-repeat:no-repeat;"
                             hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/4/0/B"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 4 — Evolution B">
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 4 — Evolution B', $el)"
+                            @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                 </div>
@@ -250,13 +260,17 @@
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px 0px;background-repeat:no-repeat;"
                             hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/5/1/A"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 5 — Evolution A">
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 5 — Evolution A', $el)"
+                            @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px -64px;background-repeat:no-repeat;"
                             hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/5/1/B"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 5 — Evolution B">
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 5 — Evolution B', $el)"
+                            @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                 </div>
@@ -266,13 +280,17 @@
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px 0px;background-repeat:no-repeat;"
                             hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/6/2/A"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 6 — Evolution A">
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 6 — Evolution A', $el)"
+                            @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px -64px;background-repeat:no-repeat;"
                             hx-post="/api/bots/{{$.Bot.ID}}/power/{{$pv.SlotIdx}}/rankevo/6/2/B"
-                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML" title="Rank 6 — Evolution B">
+                            hx-target="#bot-card-{{$.Bot.ID}}" hx-swap="outerHTML"
+                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', 'Rank 6 — Evolution B', $el)"
+                            @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                 </div>
