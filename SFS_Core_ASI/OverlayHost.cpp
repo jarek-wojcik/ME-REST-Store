@@ -218,7 +218,7 @@ void OverlayHost::OverlayThread()
     const int gameY = gameRect.top;
     const int gameW = gameRect.right  - gameRect.left;
     const int gameH = gameRect.bottom - gameRect.top;
-    const int winW  = (gameW * k_OverlayWidthPercent) / 100;   // % of game window width
+    const int winW  = (gameW * k_OverlayWidthPercent) / 100 - k_ToggleW;  // panel only; toggle+panel = k_OverlayWidthPercent%
     const int winH  = gameH;
     const int winX  = gameX + gameW - winW;
     const int winY  = gameY;
@@ -418,7 +418,7 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
             ClientToScreen(gameWnd, &pt);
             const int cW = gc.right  - gc.left;
             const int cH = gc.bottom - gc.top;
-            const int overlayW = (cW * k_OverlayWidthPercent) / 100;
+            const int overlayW = (cW * k_OverlayWidthPercent) / 100 - k_ToggleW;  // panel only; toggle+panel = k_OverlayWidthPercent%
 
             if (m_panelVisible)
             {
@@ -861,6 +861,19 @@ LRESULT CALLBACK OverlayHost::LowLevelKeyProc(int nCode, WPARAM wParam, LPARAM l
             if (isDown) s_numlockOn = !s_numlockOn;
             break;
         }
+    }
+
+    // ALT+S global shortcut — toggles the overlay panel open/closed.
+    // Works whether the panel is currently open or closed, as long as
+    // the toggle tab is on screen (i.e. we are in a multiplayer lobby).
+    if (s_instance && s_instance->m_toggleVisible &&
+        isDown && kb->vkCode == 'S' && s_altDown &&
+        !(kb->flags & LLKHF_INJECTED))
+    {
+        OvLog("[Overlay] ALT+S — toggling panel.\n");
+        if (s_instance->m_toggleHwnd)
+            PostMessage(s_instance->m_toggleHwnd, WM_LBUTTONUP, 0, 0);
+        return 1;  // suppress so ME3 does not see the keystroke
     }
 
     if (s_instance && s_instance->m_panelVisible && !(kb->flags & LLKHF_INJECTED))
