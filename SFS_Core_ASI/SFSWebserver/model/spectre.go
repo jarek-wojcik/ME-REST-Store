@@ -16,4 +16,5 @@ type Spectre struct {
 	Weapon2Mod2ID         string      `json:"weapon2Mod2Id,omitempty"` // mod slot 2 for second weapon
 	Powers                []PowerSlot `json:"powers"`
 	BorrowedPower         *PowerSlot  `json:"borrowedPower,omitempty"` // one borrowed power from another character class
+	Active                bool        `json:"active,omitempty"`        // whether this spectre is set as active
 }

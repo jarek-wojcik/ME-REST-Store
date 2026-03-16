@@ -1,9 +1,4 @@
-{{define "spectre_list"}}
-<div id="spectres-panel" class="flex gap-4" style="height: calc(100vh - 10rem);">
-
-    <!-- Left: Spectre list sidebar -->
-    <aside class="w-48 flex-shrink-0 flex flex-col gap-3">
-
+{{define "spectre_sidebar_inner"}}
         <!-- Section label + count -->
         <div class="flex items-center justify-between pb-1 border-b border-[#1e3a5f]">
             <span class="text-xs font-semibold tracking-widest uppercase text-gray-500">Spectres</span>
@@ -50,7 +45,7 @@
                     </svg>
                     <!-- Name + class -->
                     <div class="flex-1 min-w-0">
-                        <div class="text-sm text-gray-300 truncate">{{.Spectre.Name}}</div>
+                        <div class="text-sm truncate {{if .Spectre.Active}}text-green-400{{else}}text-gray-300{{end}}">{{.Spectre.Name}}</div>
                         <div class="text-[10px] text-gray-600 truncate">{{.CharDef.Name}}</div>
                     </div>
                     <!-- Delete -->
@@ -78,6 +73,20 @@
                 </div>
             {{end}}
         </nav>
+{{end}}
+
+{{define "spectre_sidebar_oob"}}
+<aside id="spectre-sidebar" hx-swap-oob="true" class="w-48 flex-shrink-0 flex flex-col gap-3">
+    {{template "spectre_sidebar_inner" .}}
+</aside>
+{{end}}
+
+{{define "spectre_list"}}
+<div id="spectres-panel" class="flex gap-4" style="height: calc(100vh - 10rem);">
+
+    <!-- Left: Spectre list sidebar -->
+    <aside id="spectre-sidebar" class="w-48 flex-shrink-0 flex flex-col gap-3">
+        {{template "spectre_sidebar_inner" .}}
     </aside>
 
     <!-- Right: Single spectre card panel -->

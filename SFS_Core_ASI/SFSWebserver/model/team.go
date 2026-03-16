@@ -5,6 +5,7 @@ package model
 // in BoltDB handles schema evolution gracefully as long as new fields are
 // optional/zero-valued.
 type Team struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Active bool   `json:"active,omitempty"` // only one team may be active at a time
 }

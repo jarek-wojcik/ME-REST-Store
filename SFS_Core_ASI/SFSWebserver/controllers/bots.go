@@ -1,4 +1,4 @@
-package main
+package controllers
 
 import (
 	"encoding/json"
@@ -36,6 +36,8 @@ type CardURLs struct {
 	Weapon2Mod2SelectorURL string // GET: opens weapon mod selector for second weapon mod 2 (spectres only)
 	WeaponClearURL         string // POST: clears weapon (spectres only)
 	Weapon2ClearURL        string // POST: clears second weapon (spectres only)
+	SetActiveURL           string // POST: toggles active state (spectres only)
+	IsActive               bool   // true when this spectre is currently active
 }
 
 // PowerSlotView pairs a persisted PowerSlot with its resolved PowerDef and
@@ -66,6 +68,14 @@ type BotView struct {
 	CardURLs
 }
 
+// EnsureBotsBucket creates the bots bucket if it does not already exist.
+func EnsureBotsBucket(db *bolt.DB) error {
+	return db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(botsBucket))
+		return err
+	})
+}
+
 // getBot fetches a single bot by ID. Returns an error if the bot is not found.
 func getBot(db *bolt.DB, botID string) (model.Bot, error) {
 	var bot model.Bot
@@ -81,14 +91,6 @@ func getBot(db *bolt.DB, botID string) (model.Bot, error) {
 		return json.Unmarshal(v, &bot)
 	})
 	return bot, err
-}
-
-// ensureBotsBucket creates the bots bucket if it does not already exist.
-func ensureBotsBucket(db *bolt.DB) error {
-	return db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(botsBucket))
-		return err
-	})
 }
 
 // listBotsForTeam returns all bots belonging to teamID, sorted by creation order.
@@ -203,6 +205,34 @@ func updateBotWeapon(db *bolt.DB, botID string, weaponID string) (model.Bot, err
 	return bot, err
 }
 
+// updateBotWeaponMod changes a bot's weapon mod in the given slot (1 or 2)
+// and returns the updated bot.
+func updateBotWeaponMod(db *bolt.DB, botID string, slot int, modID string) (model.Bot, error) {
+	var bot model.Bot
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(botsBucket))
+		v := b.Get([]byte(botID))
+		if v == nil {
+			return fmt.Errorf("bot not found")
+		}
+		if err := json.Unmarshal(v, &bot); err != nil {
+			return err
+		}
+		switch slot {
+		case 1:
+			bot.WeaponMod1ID = modID
+		case 2:
+			bot.WeaponMod2ID = modID
+		}
+		data, err := json.Marshal(bot)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(bot.ID), data)
+	})
+	return bot, err
+}
+
 // updateBotPowerRank sets the rank (0–6) of one power slot and returns the updated bot.
 func updateBotPowerRank(db *bolt.DB, botID string, slotIdx int, rank int) (model.Bot, error) {
 	var bot model.Bot
@@ -258,7 +288,7 @@ func updateBotPowerEvolution(db *bolt.DB, botID string, slotIdx int, evoIdx int,
 }
 
 // updateBotPowerRankAndEvo atomically sets a power slot's rank and one
-// evolution choice in a single DB write.  Used for rank-4/5/6 evo cell clicks.
+// evolution choice in a single DB write. Used for rank-4/5/6 evo cell clicks.
 func updateBotPowerRankAndEvo(db *bolt.DB, botID string, slotIdx int, rank int, evoIdx int, choice string) (model.Bot, error) {
 	var bot model.Bot
 	err := db.Update(func(tx *bolt.Tx) error {
@@ -304,34 +334,6 @@ func deleteBot(db *bolt.DB, botID string) (teamID string, existed bool, err erro
 		return b.Delete([]byte(botID))
 	})
 	return teamID, existed, err
-}
-
-// updateBotWeaponMod changes a bot's weapon mod in the given slot (1 or 2)
-// and returns the updated bot.
-func updateBotWeaponMod(db *bolt.DB, botID string, slot int, modID string) (model.Bot, error) {
-	var bot model.Bot
-	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(botsBucket))
-		v := b.Get([]byte(botID))
-		if v == nil {
-			return fmt.Errorf("bot not found")
-		}
-		if err := json.Unmarshal(v, &bot); err != nil {
-			return err
-		}
-		switch slot {
-		case 1:
-			bot.WeaponMod1ID = modID
-		case 2:
-			bot.WeaponMod2ID = modID
-		}
-		data, err := json.Marshal(bot)
-		if err != nil {
-			return err
-		}
-		return b.Put([]byte(bot.ID), data)
-	})
-	return bot, err
 }
 
 // powerViews resolves PowerDef, flattens evolutions, and pre-computes per-slot

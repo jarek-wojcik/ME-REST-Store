@@ -32,6 +32,18 @@
         Change Appearance
     </button>
     {{end}}
+    {{if .SetActiveURL}}
+    <button class="w-full text-[10px] font-semibold tracking-wide uppercase
+                   border-b border-[#1e3a5f] py-1.5 px-2
+                   transition-all duration-150 cursor-pointer focus:outline-none
+                   {{if .IsActive}}bg-[#0a1a0a] text-green-400 hover:bg-[#0d1b0d] hover:text-green-300{{else}}bg-[#0a0e1a] text-gray-400 hover:bg-[#0d1b2e] hover:text-green-400{{end}}"
+            hx-post="{{.SetActiveURL}}"
+            hx-target="#spectre-card-panel"
+            hx-swap="innerHTML"
+            title="{{if .IsActive}}Mark as inactive{{else}}Set as active spectre{{end}}">
+        {{if .IsActive}}&#10003; Active{{else}}Set Active{{end}}
+    </button>
+    {{end}}
     <!-- Portrait image -->
     <div class="relative flex-1 overflow-hidden
                 bg-gradient-to-b from-[#0d1829] to-[#060a12]{{if not .IsSpectre}} cursor-pointer{{end}}"
