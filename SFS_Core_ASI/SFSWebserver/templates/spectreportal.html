@@ -93,16 +93,16 @@
             scrollbar-color: #00aaff transparent;
         }
 
-        html, body {
+        html {
             height: 100%;
             overflow: hidden;
         }
 
         body {
+            height: 100%;
             background-color: #0a0e1a;
             font-family: 'Segoe UI', system-ui, sans-serif;
-            display: flex;
-            flex-direction: column;
+            overflow: hidden;
         }
 
         /* Subtle scanline overlay for ambience */
@@ -170,9 +170,11 @@
         }
     </style>
 </head>
-<body class="h-screen text-gray-200"
+<body class="text-gray-200"
       x-data="{
           activeTab: 'spectre',
+          scale: {{ .Scale }},
+          dragScale: {{ .Scale }},
           modalOpen: false,
           notifications: [],
           notify(message, type = 'info') {
@@ -198,6 +200,12 @@
       @sp-notify.window="notify($event.detail.message, $event.detail.type)"
       @sp-confirm.window="openConfirm($event.detail.message, $event.detail.issueRequest)"
       @keydown.escape.window="if (confirmDialog.open) { resolveConfirm(false) } else { modalOpen=false }">
+
+    <!-- Zoom root: dimensions shrink to (100/scale)vw × (100/scale)vh so that after
+         CSS zoom the div fills exactly one viewport with no layout overflow.
+         Fixed overlays live outside this div so they stay viewport-relative. -->
+    <div :style="`zoom: ${scale}; width: ${(100/scale).toFixed(4)}vw; height: ${(100/scale).toFixed(4)}vh`"
+         class="flex flex-col">
 
     <!-- Top bar -->
     <header class="border-b border-me-border bg-me-panel/80 backdrop-blur-sm sticky top-0 z-40">
@@ -235,13 +243,20 @@
                 >
                     Mission Parameters
                 </button>
+                <button
+                    class="tab-btn"
+                    :class="{ active: activeTab === 'settings' }"
+                    @click="activeTab = 'settings'"
+                >
+                    Portal Settings
+                </button>
             </nav>
 
         </div>
     </header>
 
     <!-- Tab content area -->
-    <main class="w-full px-6 py-8 flex-1 overflow-hidden">
+    <main class="w-full px-6 py-8 flex-1 overflow-y-auto">
 
         <!-- Spectre tab -->
         <div x-show="activeTab === 'spectre'" x-cloak class="tab-panel">
@@ -279,7 +294,57 @@
             <div class="text-gray-500 text-sm">— Content coming soon —</div>
         </div>
 
+        <!-- Portal Settings tab -->
+        <div x-show="activeTab === 'settings'" x-cloak class="tab-panel">
+            <div class="flex items-center gap-3 mb-6">
+                <h1 class="text-xl font-semibold tracking-wide text-gray-100">Portal Settings</h1>
+                <span class="text-xs text-me-blue border border-me-border px-2 py-0.5 rounded tracking-widest uppercase">Display</span>
+            </div>
+
+            <div class="max-w-md">
+                <div class="flex flex-col gap-4 p-5 rounded-xl border border-me-border bg-me-panel">
+
+                    <!-- Scale row -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-gray-200">Scale</div>
+                            <div class="text-xs text-gray-500 mt-0.5">Zoom the portal in or out</div>
+                        </div>
+                        <span class="text-sm font-mono text-me-blue" x-text="Math.round(dragScale * 100) + '%'"></span>
+                    </div>
+
+                    <!-- Slider -->
+                    <form hx-post="/api/settings/scale" hx-swap="none">
+                        <input type="hidden" name="scale" :value="scale">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-500 w-8 shrink-0">50%</span>
+                            <input
+                                type="range"
+                                min="0.5" max="2.0" step="0.05"
+                                x-model.number="dragScale"
+                                @mouseup="scale = dragScale; $nextTick(() => $el.closest('form').requestSubmit())"
+                                class="flex-1 accent-[#00aaff] cursor-pointer"
+                            />
+                            <span class="text-xs text-gray-500 w-8 shrink-0 text-right">200%</span>
+                        </div>
+
+                        <!-- Reset -->
+                        <button
+                            type="button"
+                            class="mt-4 self-start text-xs text-gray-500 hover:text-gray-300 transition-colors underline-offset-2 hover:underline"
+                            @click="scale = 1; dragScale = 1; $nextTick(() => $el.closest('form').requestSubmit())"
+                        >
+                            Reset to default
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
     </main>
+
+    </div><!-- /zoom-root -->
 
     <!-- ── Confirm dialog (replaces native hx-confirm pop-ups) ─────────── -->
     <div x-cloak

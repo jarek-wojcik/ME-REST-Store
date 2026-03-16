@@ -130,6 +130,9 @@ func main() {
 	if err := controllers.EnsureSpectresBucket(db); err != nil {
 		log.Fatalf("[FATAL] ensureSpectresBucket: %v", err)
 	}
+	if err := controllers.EnsureSettingsBucket(db); err != nil {
+		log.Fatalf("[FATAL] ensureSettingsBucket: %v", err)
+	}
 	log.Printf("[INFO] buckets ready")
 
 	// Parse all templates as a single set so partials can call each other
@@ -155,8 +158,9 @@ func main() {
 	// GET /spectreportal/
 	// Serves the main UI shell with tab navigation.
 	http.HandleFunc("/spectreportal/", func(w http.ResponseWriter, r *http.Request) {
+		scale, _ := controllers.GetSetting(db, "scale", "1")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if err := tmpl.ExecuteTemplate(w, "spectreportal", nil); err != nil {
+		if err := tmpl.ExecuteTemplate(w, "spectreportal", map[string]any{"Scale": scale}); err != nil {
 			respondText(w, 500, "template error\n")
 		}
 	})
@@ -168,6 +172,7 @@ func main() {
 	controllers.NewSpectreController(db, tmpl).Register()
 	controllers.NewSelectorsController(db, tmpl).Register()
 	controllers.NewMissionParamsController().Register()
+	controllers.NewSettingsController(db).Register()
 
 	// GET /health
 	// Simple health endpoint for checking whether the server is running.
