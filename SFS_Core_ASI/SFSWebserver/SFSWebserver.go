@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"sfswebserver/controllers"
+	me3integration "sfswebserver/controllers/me3Integration"
 
 	bolt "go.etcd.io/bbolt"
 )
@@ -173,6 +174,7 @@ func main() {
 	controllers.NewSelectorsController(db, tmpl).Register()
 	controllers.NewMissionParamsController().Register()
 	controllers.NewSettingsController(db).Register()
+	me3integration.NewMe3IntegrationController(db).Register()
 
 	// GET /health
 	// Simple health endpoint for checking whether the server is running.
