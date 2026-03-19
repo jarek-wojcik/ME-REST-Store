@@ -3,6 +3,9 @@
 
 #pragma comment(lib, "comctl32.lib")
 
+// Forward declaration for the console-command helper implemented in SFSCoreASI.cpp.
+// This keeps the full SDK headers out of OverlayHost.cpp (to avoid LNK2005).
+extern void ExecuteConsoleCommand(const wchar_t* cmd);
 // Static instance pointer used by the WH_KEYBOARD_LL hook proc.
 OverlayHost* OverlayHost::s_instance = nullptr;
 
@@ -559,6 +562,10 @@ LRESULT OverlayHost::HandleToggleMessage(HWND hwnd, UINT msg, WPARAM wp, LPARAM 
                              k_ToggleW, tabH,
                              SWP_NOACTIVATE | SWP_SHOWWINDOW);
             }
+
+            // Execute a console command in the game when the overlay is closed.
+            // This does not rely on our ProcessEvent hook.
+            ExecuteConsoleCommand(L"god");
         }
         else
         {

@@ -25,6 +25,21 @@ static HMODULE g_thisModule = NULL;
 static OverlayHost g_overlay;
 static std::atomic<bool> g_overlayShown{ false };
 
+// Cached player controller — refreshed on the game thread each IsPrivateMatch.
+static std::atomic<ABioPlayerController*> g_cachedPC{ nullptr };
+
+// Pending console command — written by the overlay thread, consumed by the game thread.
+// Avoids calling ProcessEvent from the overlay thread (UE3 script engine is single-threaded).
+static std::atomic<bool> g_pendingCommand{ false };
+
+// Called from OverlayHost.cpp (overlay thread). Sets the flag; the game thread executes it.
+void ExecuteConsoleCommand(const wchar_t* cmd)
+{
+    if (logger)
+        logger->writeToLog(string_format("[ExecuteConsoleCommand] Queuing cmd=%ls  PC=%p\n", cmd, (void*)g_cachedPC.load()), true);
+    g_pendingCommand.store(true);
+}
+
 static std::wstring GetModuleDirW(HMODULE module)
 {
     wchar_t path[MAX_PATH]{ 0 };
@@ -128,29 +143,45 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
 {
     const auto funcName = pFunction->GetFullName();
     if (isPartOf(funcName, "IsPrivateMatch")) {
+        // Refresh the cached PC every time IsPrivateMatch fires.
+        auto* candidate = (ABioPlayerController*)FindObjectOfType(ABioPlayerController::StaticClass());
+        g_cachedPC.store(candidate);
+        if (logger)
+            logger->writeToLog(string_format("[HookedPE] IsPrivateMatch: PC cache refreshed = %p\n", (void*)candidate), true);
+
         if (logger) {
             char* szName = pFunction->GetFullName();
             logger->writeToLog(string_format("%s\n", szName), true);
             logger->flush();
-
-             auto PC = (ABioPlayerController*)FindObjectOfType(ABioPlayerController::StaticClass());
-        
-            if (PC) {
-                PC->ConsoleCommand(FString(TEXT("god")), 0);
-            }
         }
 
         // On the first IsPrivateMatch, show only the toggle tab.
-        // The overlay panel starts hidden � the user opens it by clicking the tab.
+        // The overlay panel starts hidden - the user opens it by clicking the tab.
         bool expected = false;
         if (g_overlayShown.compare_exchange_strong(expected, true)) {
             if (logger) {
-                logger->writeToLog("[HookedPE] First IsPrivateMatch � showing toggle tab.\n", true);
+                logger->writeToLog("[HookedPE] First IsPrivateMatch - showing toggle tab.\n", true);
                 logger->flush();
             }
             g_overlay.ShowToggleOnly();
         }
     }
+
+    // Consume pending console command on the game thread.
+    // ExecuteConsoleCommand (overlay thread) only sets the flag; execution happens here.
+    bool pending = true;
+    if (g_pendingCommand.compare_exchange_strong(pending, false)) {
+        ABioPlayerController* PC = g_cachedPC.load();
+        if (logger)
+            logger->writeToLog(string_format("[HookedPE] Executing pending command on game thread. PC=%p\n", (void*)PC), true);
+        if (PC) {
+            PC->ConsoleCommand(FString(TEXT("god")), 0);
+            if (logger) logger->writeToLog("[HookedPE] ConsoleCommand dispatched.\n", true);
+        } else {
+            if (logger) logger->writeToLog("[HookedPE] Pending command dropped: PC is null.\n", true);
+        }
+    }
+
     ProcessEvent(pObject, pFunction, pParms, pResult);
 }
 
