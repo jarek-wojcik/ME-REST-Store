@@ -235,6 +235,8 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Armax -------------------------------------------------------------
 	{ID: "Char_SimHenchmen.SimJack", Name: "Jack", SubClass: "Squadmate", PictureFile: "/SP/AAA_CSC_-_A_-_Jack.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"}},
+	{ID: "Char_SimHenchmen.SimLiara", Name: "Liara", SubClass: "Squadmate", PictureFile: "/SP/Liara0Glow.png",
+		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"}},
 }
 
 // ---------------------------------------------------------------------------

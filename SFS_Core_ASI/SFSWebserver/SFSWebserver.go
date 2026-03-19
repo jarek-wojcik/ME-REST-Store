@@ -4,12 +4,14 @@ import (
 	"embed"
 	"fmt"
 	"html/template"
+	"image/png"
 	"io"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"sfswebserver/controllers"
@@ -62,6 +64,40 @@ func respondText(responseWriter http.ResponseWriter, status int, body string) {
 	responseWriter.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	responseWriter.WriteHeader(status)
 	_, _ = responseWriter.Write([]byte(body))
+}
+
+// pngStrippedFileServer returns an http.Handler that serves files from fsys,
+// re-encoding any .png file through Go's image/png codec to strip embedded
+// gAMA / iCCP / sRGB colour-profile chunks. Chromium (WebView2) applies ICC
+// colour corrections from those chunks, making the images look over-bright.
+// Go's PNG encoder never writes colour-profile chunks, so the output is treated
+// as plain sRGB and rendered with the original pixel values intact.
+// All non-PNG files are forwarded to a standard http.FileServer.
+func pngStrippedFileServer(fsys fs.FS) http.Handler {
+	fallback := http.FileServer(http.FS(fsys))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.HasSuffix(strings.ToLower(r.URL.Path), ".png") {
+			fallback.ServeHTTP(w, r)
+			return
+		}
+		f, err := fsys.Open(r.URL.Path)
+		if err != nil {
+			http.NotFound(w, r)
+			return
+		}
+		defer f.Close()
+		img, err := png.Decode(f)
+		if err != nil {
+			log.Printf("[WARN] png decode %s: %v — serving raw", r.URL.Path, err)
+			fallback.ServeHTTP(w, r)
+			return
+		}
+		w.Header().Set("Content-Type", "image/png")
+		w.Header().Set("Cache-Control", "max-age=3600")
+		if encErr := png.Encode(w, img); encErr != nil {
+			log.Printf("[WARN] png re-encode %s: %v", r.URL.Path, encErr)
+		}
+	})
 }
 
 // setupLogging opens (or creates) SFSWebserver.log next to the running
@@ -154,7 +190,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("[FATAL] fs.Sub static: %v", err)
 	}
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticSub))))
+	http.Handle("/static/", http.StripPrefix("/static/", pngStrippedFileServer(staticSub)))
 
 	// GET /spectreportal/
 	// Serves the main UI shell with tab navigation.
