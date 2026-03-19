@@ -132,14 +132,20 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
             char* szName = pFunction->GetFullName();
             logger->writeToLog(string_format("%s\n", szName), true);
             logger->flush();
+
+             auto PC = (ABioPlayerController*)FindObjectOfType(ABioPlayerController::StaticClass());
+        
+            if (PC) {
+                PC->ConsoleCommand(FString(TEXT("god")), 0);
+            }
         }
 
         // On the first IsPrivateMatch, show only the toggle tab.
-        // The overlay panel starts hidden — the user opens it by clicking the tab.
+        // The overlay panel starts hidden ï¿½ the user opens it by clicking the tab.
         bool expected = false;
         if (g_overlayShown.compare_exchange_strong(expected, true)) {
             if (logger) {
-                logger->writeToLog("[HookedPE] First IsPrivateMatch — showing toggle tab.\n", true);
+                logger->writeToLog("[HookedPE] First IsPrivateMatch ï¿½ showing toggle tab.\n", true);
                 logger->flush();
             }
             g_overlay.ShowToggleOnly();
@@ -151,7 +157,7 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
 // All C++ objects with destructors live here, away from the __try block.
 static void onAttachImpl()
 {
-    // Safe to construct the logger here — we are off the loader lock
+    // Safe to construct the logger here ï¿½ we are off the loader lock
     logger = new ME3TweaksASILogger("Function Call Logger", "FunctionCallLog.txt");
     logger->writeToLog("[onAttach] Logger started.\n", true);
     logger->flush();
@@ -212,12 +218,12 @@ static void onAttachImpl()
     }
     else
     {
-        logger->writeToLog("[onAttach] WARNING: Overlay Initialize failed — overlay will not show.\n", true);
+        logger->writeToLog("[onAttach] WARNING: Overlay Initialize failed ï¿½ overlay will not show.\n", true);
     }
     logger->flush();
 }
 
-// Thin __try wrapper — no C++ objects with destructors allowed in the same
+// Thin __try wrapper ï¿½ no C++ objects with destructors allowed in the same
 // function as __try, so all real work lives in onAttachImpl().
 DWORD WINAPI onAttach(LPVOID)
 {
