@@ -11,9 +11,13 @@ type Spectre struct {
 	WeaponID              string      `json:"weaponId"`
 	WeaponMod1ID          string      `json:"weaponMod1Id"`
 	WeaponMod2ID          string      `json:"weaponMod2Id"`
-	Weapon2ID             string      `json:"weapon2Id,omitempty"`     // second weapon slot (spectres only)
-	Weapon2Mod1ID         string      `json:"weapon2Mod1Id,omitempty"` // mod slot 1 for second weapon
-	Weapon2Mod2ID         string      `json:"weapon2Mod2Id,omitempty"` // mod slot 2 for second weapon
+	Weapon2ID             string      `json:"weapon2Id,omitempty"`          // second weapon slot (spectres only)
+	Weapon2Mod1ID         string      `json:"weapon2Mod1Id,omitempty"`      // mod slot 1 for second weapon
+	Weapon2Mod2ID         string      `json:"weapon2Mod2Id,omitempty"`      // mod slot 2 for second weapon
+	ArmorConsumableID     string      `json:"armorConsumableId,omitempty"`  // equipped armor consumable
+	WeaponConsumableID    string      `json:"weaponConsumableId,omitempty"` // equipped weapon consumable
+	AmmoConsumableID      string      `json:"ammoConsumableId,omitempty"`   // equipped ammo consumable
+	GearConsumableID      string      `json:"gearConsumableId,omitempty"`   // equipped gear consumable
 	Powers                []PowerSlot `json:"powers"`
 	BorrowedPower         *PowerSlot  `json:"borrowedPower,omitempty"` // one borrowed power from another character class
 	Active                bool        `json:"active,omitempty"`        // whether this spectre is set as active

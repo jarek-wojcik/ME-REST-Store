@@ -36,7 +36,7 @@
                      fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
-                <span class="text-xs text-gray-600 group-hover:text-red-400 transition-colors">Clear slot</span>
+                <span class="text-base text-gray-600 group-hover:text-red-400 transition-colors">Clear slot</span>
             </button>
 
             {{range .Mods}}
@@ -52,7 +52,7 @@
                     title="{{.Name}}">
 
                 <!-- Mod image -->
-                <div class="w-16 h-16 flex-shrink-0 bg-gradient-to-b from-[#0d1829] to-[#060a12]
+                <div class="w-[7.5rem] h-[7.5rem] flex-shrink-0 bg-gradient-to-b from-[#0d1829] to-[#060a12]
                             rounded overflow-hidden flex items-center justify-center">
                     <img src="{{.PictureURL}}"
                          alt="{{.Name}}"
@@ -62,11 +62,11 @@
 
                 <!-- Name + slot -->
                 <div class="min-w-0">
-                    <div class="text-xs font-medium text-gray-300 group-hover:text-[#00aaff]
+                    <div class="text-base font-medium text-gray-300 group-hover:text-[#00aaff]
                                 transition-colors leading-tight truncate">
                         {{.Name}}
                     </div>
-                    <div class="text-[10px] text-gray-600 mt-0.5 truncate">{{.Socket}}</div>
+                    <div class="text-[16px] text-gray-600 mt-0.5 truncate">{{.Socket}}</div>
                 </div>
 
             </button>

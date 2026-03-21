@@ -150,4 +150,50 @@ func (c *SelectorsController) Register() {
 			"Mods":           filtered,
 		})
 	})
+
+	// GET /api/consumables/selector?entityId={id}&kind={spectre}&category={armor|weapon|ammo|gear}
+	// Returns the consumable selector grid partial for use in the modal.
+	http.HandleFunc("GET /api/consumables/selector", func(w http.ResponseWriter, r *http.Request) {
+		entityID := r.URL.Query().Get("entityId")
+		kind := r.URL.Query().Get("kind")
+		categoryStr := r.URL.Query().Get("category")
+		if entityID == "" || categoryStr == "" {
+			respondText(w, 400, "missing entityId or category\n")
+			return
+		}
+
+		var consumableCategory model.ConsumableCategory
+		switch categoryStr {
+		case "armor":
+			consumableCategory = model.ConsumableCategoryArmor
+		case "weapon":
+			consumableCategory = model.ConsumableCategoryWeapon
+		case "ammo":
+			consumableCategory = model.ConsumableCategoryAmmo
+		case "gear":
+			consumableCategory = model.ConsumableCategoryGear
+		default:
+			respondText(w, 400, "category must be armor, weapon, ammo, or gear\n")
+			return
+		}
+
+		var postURLBase, targetID string
+		switch kind {
+		case "spectre":
+			postURLBase = "/api/spectres/" + entityID + "/consumable/" + categoryStr
+			targetID = "spectre-card-" + entityID
+		default:
+			respondText(w, 400, "kind must be spectre\n")
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		_ = c.tmpl.ExecuteTemplate(w, "consumable_selector", map[string]any{
+			"ConsumablePostURLBase": postURLBase,
+			"ConsumableClearURL":    postURLBase + "/none",
+			"TargetID":              targetID,
+			"CategoryTitle":         string(consumableCategory),
+			"Consumables":           model.ConsumablesByCategory(consumableCategory),
+		})
+	})
 }

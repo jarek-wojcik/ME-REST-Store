@@ -16,15 +16,19 @@ const spectresBucket = "spectres"
 // bot-specific routing was replaced by the embedded CardURLs fields.
 type SpectreView struct {
 	model.Spectre
-	CharDef           *model.CharacterDef
-	AppearanceCharDef *model.CharacterDef // visual override portrait; nil means use CharDef image
-	WeaponDef         *model.WeaponDef
-	WeaponMod1Def     *model.WeaponModDef
-	WeaponMod2Def     *model.WeaponModDef
-	Weapon2Def        *model.WeaponDef    // second weapon slot
-	Weapon2Mod1Def    *model.WeaponModDef // mod slot 1 for second weapon
-	Weapon2Mod2Def    *model.WeaponModDef // mod slot 2 for second weapon
-	PowerViews        []PowerSlotView
+	CharDef             *model.CharacterDef
+	AppearanceCharDef   *model.CharacterDef // visual override portrait; nil means use CharDef image
+	WeaponDef           *model.WeaponDef
+	WeaponMod1Def       *model.WeaponModDef
+	WeaponMod2Def       *model.WeaponModDef
+	Weapon2Def          *model.WeaponDef     // second weapon slot
+	Weapon2Mod1Def      *model.WeaponModDef  // mod slot 1 for second weapon
+	Weapon2Mod2Def      *model.WeaponModDef  // mod slot 2 for second weapon
+	ArmorConsumableDef  *model.ConsumableDef // equipped armor consumable; nil when slot is empty
+	WeaponConsumableDef *model.ConsumableDef // equipped weapon consumable; nil when slot is empty
+	AmmoConsumableDef   *model.ConsumableDef // equipped ammo consumable; nil when slot is empty
+	GearConsumableDef   *model.ConsumableDef // equipped gear consumable; nil when slot is empty
+	PowerViews          []PowerSlotView
 	CardURLs
 }
 
@@ -32,25 +36,29 @@ type SpectreView struct {
 func spectreURLs(spectreID string) CardURLs {
 	base := "/api/spectres/" + spectreID
 	return CardURLs{
-		CardID:                 "spectre-card-" + spectreID,
-		DeleteURL:              base,
-		DeleteConfirm:          "Remove this spectre?",
-		CharSelectorURL:        "/api/characters/selector?entityId=" + spectreID + "&kind=spectre",
-		WeaponSelectorURL:      "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre",
-		Mod1SelectorURL:        "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=1",
-		Mod2SelectorURL:        "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=2",
-		PowerBaseURL:           base + "/power",
-		IsSpectre:              true,
-		AddPowerURL:            base + "/borrowed-power/selector",
-		ClearBorrowedPowerURL:  base + "/borrowed-power",
-		AppearanceSelectorURL:  "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
-		RenameURL:              base + "/rename",
-		Weapon2SelectorURL:     "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon2",
-		Weapon2Mod1SelectorURL: "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=1",
-		Weapon2Mod2SelectorURL: "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=2",
-		WeaponClearURL:         base + "/weapon/none",
-		Weapon2ClearURL:        base + "/weapon2/none",
-		SetActiveURL:           base + "/active/toggle",
+		CardID:                      "spectre-card-" + spectreID,
+		DeleteURL:                   base,
+		DeleteConfirm:               "Remove this spectre?",
+		CharSelectorURL:             "/api/characters/selector?entityId=" + spectreID + "&kind=spectre",
+		WeaponSelectorURL:           "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre",
+		Mod1SelectorURL:             "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=1",
+		Mod2SelectorURL:             "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=2",
+		PowerBaseURL:                base + "/power",
+		IsSpectre:                   true,
+		AddPowerURL:                 base + "/borrowed-power/selector",
+		ClearBorrowedPowerURL:       base + "/borrowed-power",
+		AppearanceSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
+		RenameURL:                   base + "/rename",
+		Weapon2SelectorURL:          "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon2",
+		Weapon2Mod1SelectorURL:      "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=1",
+		Weapon2Mod2SelectorURL:      "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=2",
+		WeaponClearURL:              base + "/weapon/none",
+		Weapon2ClearURL:             base + "/weapon2/none",
+		SetActiveURL:                base + "/active/toggle",
+		ArmorConsumableSelectorURL:  "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=armor",
+		WeaponConsumableSelectorURL: "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=weapon",
+		AmmoConsumableSelectorURL:   "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=ammo",
+		GearConsumableSelectorURL:   "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=gear",
 	}
 }
 
@@ -515,6 +523,38 @@ func updateSpectreBorrowedPowerRankAndEvo(db *bolt.DB, spectreID string, rank, e
 	return s, err
 }
 
+// updateSpectreConsumable sets one of the four consumable slots on a spectre
+// and returns the updated spectre. An empty consumableID clears the slot.
+func updateSpectreConsumable(db *bolt.DB, spectreID string, category model.ConsumableCategory, consumableID string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		switch category {
+		case model.ConsumableCategoryArmor:
+			s.ArmorConsumableID = consumableID
+		case model.ConsumableCategoryWeapon:
+			s.WeaponConsumableID = consumableID
+		case model.ConsumableCategoryAmmo:
+			s.AmmoConsumableID = consumableID
+		case model.ConsumableCategoryGear:
+			s.GearConsumableID = consumableID
+		}
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(s.ID), data)
+	})
+	return s, err
+}
+
 // toggleSpectreActive flips the Active flag for a spectre.
 func toggleSpectreActive(db *bolt.DB, spectreID string) (model.Spectre, error) {
 	var s model.Spectre
@@ -598,17 +638,21 @@ func spectreViews(spectres []model.Spectre) []SpectreView {
 		urls.HasBorrowedPower = s.BorrowedPower != nil
 		urls.IsActive = s.Active
 		views = append(views, SpectreView{
-			Spectre:           s,
-			CharDef:           def,
-			AppearanceCharDef: model.CharacterByID(s.AppearanceCharacterID),
-			WeaponDef:         model.WeaponByID(s.WeaponID),
-			WeaponMod1Def:     model.WeaponModByID(s.WeaponMod1ID),
-			WeaponMod2Def:     model.WeaponModByID(s.WeaponMod2ID),
-			Weapon2Def:        model.WeaponByID(s.Weapon2ID),
-			Weapon2Mod1Def:    model.WeaponModByID(s.Weapon2Mod1ID),
-			Weapon2Mod2Def:    model.WeaponModByID(s.Weapon2Mod2ID),
-			PowerViews:        spectrePowerViews(s, urls),
-			CardURLs:          urls,
+			Spectre:             s,
+			CharDef:             def,
+			AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
+			WeaponDef:           model.WeaponByID(s.WeaponID),
+			WeaponMod1Def:       model.WeaponModByID(s.WeaponMod1ID),
+			WeaponMod2Def:       model.WeaponModByID(s.WeaponMod2ID),
+			Weapon2Def:          model.WeaponByID(s.Weapon2ID),
+			Weapon2Mod1Def:      model.WeaponModByID(s.Weapon2Mod1ID),
+			Weapon2Mod2Def:      model.WeaponModByID(s.Weapon2Mod2ID),
+			ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
+			WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
+			AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
+			GearConsumableDef:   model.ConsumableByID(s.GearConsumableID),
+			PowerViews:          spectrePowerViews(s, urls),
+			CardURLs:            urls,
 		})
 	}
 	return views

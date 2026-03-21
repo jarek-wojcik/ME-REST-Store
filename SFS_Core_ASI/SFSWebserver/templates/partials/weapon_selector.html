@@ -19,7 +19,7 @@
     <div class="flex-shrink-0 mb-3">
         <div class="flex gap-1 border-b border-[#1e3a5f]">
             {{range .Groups}}
-            <button class="relative px-3 py-1.5 text-xs font-semibold tracking-wide rounded-t
+            <button class="relative px-3 py-1.5 text-base font-semibold tracking-wide rounded-t
                            transition-colors duration-150 focus:outline-none"
                     :class="activeTab === '{{.ID}}'
                         ? 'text-[#00aaff] bg-[#0d1829]'
@@ -54,7 +54,7 @@
         <div id="weapgroup-{{.ID}}">
             <!-- Weapon type heading -->
             <div class="flex items-center gap-3 mb-2">
-                <span class="text-[11px] font-bold tracking-widest uppercase text-[#00aaff]/70">{{.Category}}</span>
+                <span class="text-base font-bold tracking-widest uppercase text-[#00aaff]/70">{{.Category}}</span>
                 <div class="flex-1 h-px bg-[#1e3a5f]"></div>
                 <span class="text-[10px] text-gray-600">{{len .Weapons}}</span>
             </div>
@@ -74,7 +74,7 @@
                         title="{{.Name}}">
 
                     <!-- Weapon image -->
-                    <div class="w-[7.5rem] h-[7.5rem] bg-gradient-to-b from-[#0d1829] to-[#060a12]
+                    <div class="w-[10.875rem] h-[10.875rem] bg-gradient-to-b from-[#0d1829] to-[#060a12]
                                 rounded overflow-hidden flex items-center justify-center">
                         <img src="{{.PictureURL}}"
                              alt="{{.Name}}"
@@ -83,7 +83,7 @@
                     </div>
 
                     <!-- Name -->
-                    <div class="mt-2 text-[0.85rem] font-medium text-gray-300 group-hover:text-[#00aaff]
+                    <div class="mt-2 text-base font-medium text-gray-300 group-hover:text-[#00aaff]
                                  transition-colors text-center leading-tight break-words">
                         {{.Name}}
                     </div>

@@ -30,17 +30,21 @@ func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre) {
 	urls.IsActive = s.Active
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "bot_card", SpectreView{
-		Spectre:           s,
-		CharDef:           def,
-		AppearanceCharDef: model.CharacterByID(s.AppearanceCharacterID),
-		WeaponDef:         model.WeaponByID(s.WeaponID),
-		WeaponMod1Def:     model.WeaponModByID(s.WeaponMod1ID),
-		WeaponMod2Def:     model.WeaponModByID(s.WeaponMod2ID),
-		Weapon2Def:        model.WeaponByID(s.Weapon2ID),
-		Weapon2Mod1Def:    model.WeaponModByID(s.Weapon2Mod1ID),
-		Weapon2Mod2Def:    model.WeaponModByID(s.Weapon2Mod2ID),
-		PowerViews:        spectrePowerViews(s, urls),
-		CardURLs:          urls,
+		Spectre:             s,
+		CharDef:             def,
+		AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
+		WeaponDef:           model.WeaponByID(s.WeaponID),
+		WeaponMod1Def:       model.WeaponModByID(s.WeaponMod1ID),
+		WeaponMod2Def:       model.WeaponModByID(s.WeaponMod2ID),
+		Weapon2Def:          model.WeaponByID(s.Weapon2ID),
+		Weapon2Mod1Def:      model.WeaponModByID(s.Weapon2Mod1ID),
+		Weapon2Mod2Def:      model.WeaponModByID(s.Weapon2Mod2ID),
+		ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
+		WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
+		AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
+		GearConsumableDef:   model.ConsumableByID(s.GearConsumableID),
+		PowerViews:          spectrePowerViews(s, urls),
+		CardURLs:            urls,
 	})
 }
 
@@ -520,5 +524,40 @@ func (c *SpectreController) Register() {
 		_ = c.tmpl.ExecuteTemplate(w, "spectre_sidebar_oob", map[string]any{
 			"Spectres": spectreViews(spectres),
 		})
+	})
+
+	// POST /api/spectres/{id}/consumable/{category}/{consumableId}
+	// Sets one of the four consumable slots on a spectre. Use consumableId "none" to clear.
+	http.HandleFunc("POST /api/spectres/{id}/consumable/{category}/{consumableId}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		categoryStr := r.PathValue("category")
+		consumableID := r.PathValue("consumableId")
+
+		var category model.ConsumableCategory
+		switch categoryStr {
+		case "armor":
+			category = model.ConsumableCategoryArmor
+		case "weapon":
+			category = model.ConsumableCategoryWeapon
+		case "ammo":
+			category = model.ConsumableCategoryAmmo
+		case "gear":
+			category = model.ConsumableCategoryGear
+		default:
+			respondText(w, 400, "category must be armor, weapon, ammo, or gear\n")
+			return
+		}
+		if consumableID == "none" {
+			consumableID = ""
+		} else if model.ConsumableByID(consumableID) == nil {
+			respondText(w, 400, "unknown consumable\n")
+			return
+		}
+		s, err := updateSpectreConsumable(c.db, spectreID, category, consumableID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s)
 	})
 }
