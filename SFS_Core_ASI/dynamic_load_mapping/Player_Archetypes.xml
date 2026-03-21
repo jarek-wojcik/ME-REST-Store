@@ -1,0 +1,111 @@
+<Property name="dynamicloadmapping">
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Adept.MaleShepard_Adept",SeekFreePackageName="SFXCharacterClass_Adept")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Adept.MaleShepard_AdeptNonCombat",SeekFreePackageName="SFXCharacterClass_Adept")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Adept.MaleShepard_AdeptInjured",SeekFreePackageName="SFXCharacterClass_Adept")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Engineer.MaleShepard_Engineer",SeekFreePackageName="SFXCharacterClass_Engineer")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Engineer.MaleShepard_EngineerNonCombat",SeekFreePackageName="SFXCharacterClass_Engineer")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Engineer.MaleShepard_EngineerInjured",SeekFreePackageName="SFXCharacterClass_Engineer")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Infiltrator.MaleShepard_Infiltrator",SeekFreePackageName="SFXCharacterClass_Infiltrator")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Infiltrator.MaleShepard_InfiltratorNonCombat",SeekFreePackageName="SFXCharacterClass_Infiltrator")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Infiltrator.MaleShepard_InfiltratorInjured",SeekFreePackageName="SFXCharacterClass_Infiltrator")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Sentinel.MaleShepard_Sentinel",SeekFreePackageName="SFXCharacterClass_Sentinel")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Sentinel.MaleShepard_SentinelNonCombat",SeekFreePackageName="SFXCharacterClass_Sentinel")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Sentinel.MaleShepard_SentinelInjured",SeekFreePackageName="SFXCharacterClass_Sentinel")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Soldier.MaleShepard_Soldier",SeekFreePackageName="SFXCharacterClass_Soldier")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Soldier.MaleShepard_SoldierNonCombat",SeekFreePackageName="SFXCharacterClass_Soldier")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Soldier.MaleShepard_SoldierInjured",SeekFreePackageName="SFXCharacterClass_Soldier")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Vanguard.MaleShepard_Vanguard",SeekFreePackageName="SFXCharacterClass_Vanguard")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Vanguard.MaleShepard_VanguardNonCombat",SeekFreePackageName="SFXCharacterClass_Vanguard")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Vanguard.MaleShepard_VanguardInjured",SeekFreePackageName="SFXCharacterClass_Vanguard")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.UIWorld.MaleShepard_CharCreation",SeekFreePackageName="SFXCharacterClass_Soldier")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Adept.FemaleShepard_Adept",SeekFreePackageName="SFXCharacterClass_Adept")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Adept.FemaleShepard_AdeptNonCombat",SeekFreePackageName="SFXCharacterClass_Adept")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Adept.FemaleShepard_AdeptInjured",SeekFreePackageName="SFXCharacterClass_Adept")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Engineer.FemaleShepard_Engineer",SeekFreePackageName="SFXCharacterClass_Engineer")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Engineer.FemaleShepard_EngineerNonCombat",SeekFreePackageName="SFXCharacterClass_Engineer")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Engineer.FemaleShepard_EngineerInjured",SeekFreePackageName="SFXCharacterClass_Engineer")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Infiltrator.FemaleShepard_Infiltrator",SeekFreePackageName="SFXCharacterClass_Infiltrator")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Infiltrator.FemaleShepard_InfiltratorNonCombat",SeekFreePackageName="SFXCharacterClass_Infiltrator")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Infiltrator.FemaleShepard_InfiltratorInjured",SeekFreePackageName="SFXCharacterClass_Infiltrator")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Sentinel.FemaleShepard_Sentinel",SeekFreePackageName="SFXCharacterClass_Sentinel")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Sentinel.FemaleShepard_SentinelNonCombat",SeekFreePackageName="SFXCharacterClass_Sentinel")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Sentinel.FemaleShepard_SentinelInjured",SeekFreePackageName="SFXCharacterClass_Sentinel")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Soldier.FemaleShepard_Soldier",SeekFreePackageName="SFXCharacterClass_Soldier")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Soldier.FemaleShepard_SoldierNonCombat",SeekFreePackageName="SFXCharacterClass_Soldier")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Soldier.FemaleShepard_SoldierInjured",SeekFreePackageName="SFXCharacterClass_Soldier")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Vanguard.FemaleShepard_Vanguard",SeekFreePackageName="SFXCharacterClass_Vanguard")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Vanguard.FemaleShepard_VanguardNonCombat",SeekFreePackageName="SFXCharacterClass_Vanguard")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.Vanguard.FemaleShepard_VanguardInjured",SeekFreePackageName="SFXCharacterClass_Vanguard")</Value>
+    <Value type="2">(ObjectName="BioChar_Player.Archetypes.UIWorld.FemaleShepard_CharCreation",SeekFreePackageName="SFXCharacterClass_Soldier")</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Adept.HumanMale_Adept",SeekFreePackageName="HumanMale_Adept_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Engineer.HumanMale_Engineer",SeekFreePackageName="HumanMale_Engineer_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Infiltrator.HumanMale_Infiltrator",SeekFreePackageName="HumanMale_Infiltrator_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Sentinel.HumanMale_Sentinel",SeekFreePackageName="HumanMale_Sentinel_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Soldier.HumanMale_Soldier",SeekFreePackageName="HumanMale_Soldier_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Vanguard.HumanMale_Vanguard",SeekFreePackageName="HumanMale_Vanguard_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Soldier.HumanMale_SoldierBF3",SeekFreePackageName="HumanMale_SoldierBF3_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Adept.HumanFemale_Adept",SeekFreePackageName="HumanFemale_Adept_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Engineer.HumanFemale_Engineer",SeekFreePackageName="HumanFemale_Engineer_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Infiltrator.HumanFemale_Infiltrator",SeekFreePackageName="HumanFemale_Infiltrator_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Sentinel.HumanFemale_Sentinel",SeekFreePackageName="HumanFemale_Sentinel_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Soldier.HumanFemale_Soldier",SeekFreePackageName="HumanFemale_Soldier_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Vanguard.HumanFemale_Vanguard",SeekFreePackageName="HumanFemale_Vanguard_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Infiltrator.HumanFemale_InfiltratorBF3",SeekFreePackageName="HumanFemale_InfBF3_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Adept.Asari_Adept",SeekFreePackageName="Asari_Adept_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Adept.Drell_Adept2",SeekFreePackageName="Drell_Adept_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Engineer.Quarian_Engineer",SeekFreePackageName="Quarian_Engineer_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Engineer.Salarian_Engineer2",SeekFreePackageName="Salar_Engineer_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Infiltrator.Salarian_Infiltrator",SeekFreePackageName="Salarian_Infiltrator_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Infiltrator.Quarian_Infiltrator2",SeekFreePackageName="Quarian_Infiltrator_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Sentinel.Turian_Sentinel",SeekFreePackageName="Turian_Sentinel_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Sentinel.Krogan_Sentinel",SeekFreePackageName="Krogan_Sentinel_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Soldier.Krogan_Soldier",SeekFreePackageName="Krogan_Soldier_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Soldier.Turian_Soldier2",SeekFreePackageName="Turian_Soldier_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Vanguard.Drell_Vanguard",SeekFreePackageName="Drell_Vanguard_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_MPPlayers.Archetypes.Vanguard.Asari_Vanguard2",SeekFreePackageName="Asari_Vanguard_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Cerberus.AssaultTrooper",SeekFreePackageName="SFXPawn_Trooper", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Cerberus.Centurion",SeekFreePackageName="SFXPawn_Centurion", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Cerberus.Engineer",SeekFreePackageName="SFXPawn_Gunner", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Cerberus.Guardian",SeekFreePackageName="SFXPawn_Guardian", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Cerberus.Nemesis",SeekFreePackageName="SFXPawn_Nemesis", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Cerberus.Atlas",SeekFreePackageName="SFXPawn_Atlas", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Reapers.Cannibal",SeekFreePackageName="SFXPawn_Cannibal", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Reapers.Marauder",SeekFreePackageName="SFXPawn_Marauder", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Reapers.Brute",SeekFreePackageName="SFXPawn_Brute", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Reapers.Banshee",SeekFreePackageName="SFXPawn_Banshee", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Reapers.Harvester",SeekFreePackageName="SFXPawn_Harvester", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Reapers.Husk",SeekFreePackageName="SFXPawn_Husk", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Reapers.Ravager",SeekFreePackageName="SFXPawn_Ravager", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Geth.GethTrooper",SeekFreePackageName="SFXPawn_GethTrooper", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Geth.GethRocketTrooper",SeekFreePackageName="SFXPawn_GethRocketTrooper", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Geth.GethPyro",SeekFreePackageName="SFXPawn_GethPyro", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Geth.GethHunter",SeekFreePackageName="SFXPawn_GethHunter", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Geth.GethPrime",SeekFreePackageName="SFXPawn_GethPrime", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies.Archetypes.Cerberus.Phantom",SeekFreePackageName="SFXPawn_Phantom", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP1_MPPlayers.Archetypes.Geth_Engineer",SeekFreePackageName="Geth_Engineer_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP1_MPPlayers.Archetypes.Geth_Infiltrator",SeekFreePackageName="Geth_Infiltrator_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP1_MPPlayers.Archetypes.Batarian_Soldier",SeekFreePackageName="Batarian_Soldier_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP1_MPPlayers.Archetypes.Batarian_Sentinel",SeekFreePackageName="Batarian_Sentinel_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP1_MPPlayers.Archetypes.Krogan_Vanguard",SeekFreePackageName="Krogan_Vanguard_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP1_MPPlayers.Archetypes.AsariCommando_Adept",SeekFreePackageName="AsariCommando_Adept_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP2_MPPlayers.Archetypes.VorchaMale_Soldier",SeekFreePackageName="Vorcha_Soldier_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP2_MPPlayers.Archetypes.VorchaMale_Sentinel",SeekFreePackageName="Vorcha_Sentinel_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP2_MPPlayers.Archetypes.QuarianMale_Engineer",SeekFreePackageName="QuarianMale_Engineer_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP2_MPPlayers.Archetypes.QuarianMale_Infiltrator",SeekFreePackageName="QuarianMale_Infiltrator_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP2_MPPlayers.Archetypes.CerberusMale_Adept",SeekFreePackageName="Cerberus_Adept_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="BioChar_DLC_MP2_MPPlayers.Archetypes.CerberusMale_Vanguard",SeekFreePackageName="Cerberus_Vanguard_MP", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP3.Archetypes.Cerberus.Phantom",SeekFreePackageName="SFXPawn_Phantom2", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Collectors.CollectorTrooper",SeekFreePackageName="SFXPawn_CollectorTrooper", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Collectors.CollectorCaptain",SeekFreePackageName="SFXPawn_CollectorCaptain", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Collectors.Abomination",SeekFreePackageName="SFXPawn_Abomination", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Collectors.Scion",SeekFreePackageName="SFXPawn_Scion", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Collectors.Praetorian",SeekFreePackageName="SFXPawn_Praetorian", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Cerberus.Phoenix",SeekFreePackageName="SFXPawn_Phoenix", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Cerberus.Atlas",SeekFreePackageName="SFXPawn_Atlas2", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Geth.GethBomber",SeekFreePackageName="SFXPawn_GethBomber", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Geth.GethPyro",SeekFreePackageName="SFXPawn_GethPyro2", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Reapers.Cannibal",SeekFreePackageName="SFXPawn_Cannibal2", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Reapers.Marauder",SeekFreePackageName="SFXPawn_Marauder2", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP4.Archetypes.Reapers.Banshee",SeekFreePackageName="SFXPawn_Banshee2", bReplicate=true)</Value>
+    <Value type="2">(ObjectName="Char_Enemies_MP5.Archetypes.Geth.GethPrime",SeekFreePackageName="SFXPawn_GethPrime2", bReplicate=true)</Value>
+</Property>

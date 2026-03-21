@@ -2,23 +2,22 @@ package model
 
 // WeaponSlot identifies which slot a weapon mod occupies.
 // Mods with the same WeaponSlot are mutually exclusive on a given bot slot.
-type WeaponSlot string
+type Socket string
 
 const (
-	WeaponSlotMagazine  WeaponSlot = "Magazine"
-	WeaponSlotMelee     WeaponSlot = "Melee"
-	WeaponSlotPower     WeaponSlot = "Power"
-	WeaponSlotStability WeaponSlot = "Stability"
-	WeaponSlotScope     WeaponSlot = "Scope"
-	WeaponSlotDamage    WeaponSlot = "Damage"
+	Barrel   Socket = "Barrel"
+	Scope    Socket = "Scope"
+	Blade    Socket = "Blade"
+	Internal Socket = "Internal"
 )
 
 // WeaponModDef is a read-only definition of a weapon modification.
 // Like WeaponDef it is compiled into the binary and never stored in BoltDB.
 type WeaponModDef struct {
-	ID          string     // matches the asset filename stem, e.g. "AssaultRifleDamage"
+	ID          string
+	RootPath    string     // UE3 package namespace: SFXGameContent, SFXGameContentDLC_Shared, or SFXGameContentDLC_CON_MP5
 	Name        string     // human-readable display name
-	WeaponSlot  WeaponSlot // which slot this mod occupies
+	Socket      Socket     // which slot this mod occupies
 	WeaponType  WeaponType // compatible weapon class; WeaponTypeAny means universal
 	PictureFile string     // filename inside /static/assets/weapon_mods/
 }
@@ -30,44 +29,77 @@ func (m WeaponModDef) PictureURL() string {
 
 // WeaponModCatalog is the full list of available weapon modifications.
 var WeaponModCatalog = []WeaponModDef{
-	// ---- Assault Rifle mods -----------------------------------------------
-	{ID: "AssaultRifleAccuracy", Name: "AR Precision Barrel", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAssaultRifle, PictureFile: "AssaultRifleAccuracy.webp"},
-	{ID: "AssaultRifleDamage", Name: "AR High-Velocity Barrel", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAssaultRifle, PictureFile: "AssaultRifleDamage.webp"},
-	{ID: "AssaultRifleSuperPen", Name: "AR Piercing Mod", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAssaultRifle, PictureFile: "AssaultRifleSuperPen.webp"},
-	{ID: "AssaultRifleSuperScope", Name: "AR Extended Barrel", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAssaultRifle, PictureFile: "AssaultRifleSuperScope.webp"},
+	// ---- Assault Rifle mods (SFXGameContent) --------------------------------
+	{ID: "SFXWeaponMod_AssaultRifleAccuracy", RootPath: "SFXGameContent", Name: "Precision Scope", Socket: Scope, WeaponType: WeaponTypeAssaultRifle, PictureFile: "AssaultRifleAccuracy.webp"},
+	{ID: "SFXWeaponMod_AssaultRifleDamage", RootPath: "SFXGameContent", Name: "Extended Barrel", Socket: Barrel, WeaponType: WeaponTypeAssaultRifle, PictureFile: "AssaultRifleDamage.webp"},
+	{ID: "SFXWeaponMod_AssaultRifleForce", RootPath: "SFXGameContent", Name: "Piercing Mod", Socket: Internal, WeaponType: WeaponTypeAssaultRifle, PictureFile: "PiercingMod.webp"},
+	{ID: "SFXWeaponMod_AssaultRifleMagSize", RootPath: "SFXGameContent", Name: "Magazine Upgrade", Socket: Internal, WeaponType: WeaponTypeAssaultRifle, PictureFile: "MagSize.webp"},
+	{ID: "SFXWeaponMod_AssaultRifleStability", RootPath: "SFXGameContent", Name: "Stability Dampener", Socket: Internal, WeaponType: WeaponTypeAssaultRifle, PictureFile: "Stability.webp"},
 
-	// ---- Pistol mods -------------------------------------------------------
-	{ID: "PistolHeadShot", Name: "Pistol High-Caliber Barrel", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypePistol, PictureFile: "PistolHeadShot.webp"},
-	{ID: "PistolPowerDamage_MP5", Name: "Pistol Power Magnifier", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypePistol, PictureFile: "PistolPowerDamage_MP5.webp"},
-	{ID: "PistolStability", Name: "Pistol Stability Dampener", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypePistol, PictureFile: "PistolStability.webp"},
-	{ID: "PistolSuperDamage", Name: "Pistol Piercing Mod", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypePistol, PictureFile: "PistolSuperDamage.webp"},
+	// ---- Assault Rifle mods (SFXGameContentDLC_Shared) ----------------------
+	{ID: "SFXWeaponMod_AssaultRifleMelee", RootPath: "SFXGameContentDLC_Shared", Name: "Omni-Blade", Socket: Blade, WeaponType: WeaponTypeAssaultRifle, PictureFile: "OmniBlade.webp"},
+	{ID: "SFXWeaponMod_AssaultRifleSuperPen", RootPath: "SFXGameContentDLC_Shared", Name: "High-Velocity Barrel", Socket: Barrel, WeaponType: WeaponTypeAssaultRifle, PictureFile: "AssaultRifleSuperPen.webp"},
+	{ID: "SFXWeaponMod_AssaultRifleSuperScope", RootPath: "SFXGameContentDLC_Shared", Name: "Thermal Scope", Socket: Scope, WeaponType: WeaponTypeAssaultRifle, PictureFile: "AssaultRifleSuperScope.webp"},
 
-	// ---- Shotgun mods -------------------------------------------------------
-	{ID: "ShotgunAccuracy", Name: "Shotgun Smart Choke", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunAccuracy.webp"},
-	{ID: "ShotgunDamage", Name: "Shotgun High-Caliber Barrel", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunDamage.webp"},
-	{ID: "ShotgunDamageAndPen", Name: "Shotgun Penetration Mod", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunDamageAndPen.webp"},
-	{ID: "ShotgunMeleeDamage", Name: "Shotgun Blade Attachment", WeaponSlot: WeaponSlotMelee, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunMeleeDamage.webp"},
-	{ID: "ShotgunReloadSpeed", Name: "Shotgun Spare Thermal Clip", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunReloadSpeed.webp"},
+	// ---- Assault Rifle mods (SFXGameContentDLC_CON_MP5) ---------------------
+	{ID: "SFXWeaponMod_AssaultRifleUltraLight_MP5", RootPath: "SFXGameContentDLC_CON_MP5", Name: "Ultralight Materials", Socket: Internal, WeaponType: WeaponTypeAssaultRifle, PictureFile: "UltraLight.webp"},
 
-	// ---- SMG mods ----------------------------------------------------------
-	{ID: "SMGConstraintDamage", Name: "SMG Heat Sink", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeSMG, PictureFile: "SMGConstraintDamage.webp"},
-	{ID: "SMGPenetration", Name: "SMG Penetration Mod", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeSMG, PictureFile: "SMGPenetration.webp"},
-	{ID: "SMGPowerDamage_MP5", Name: "SMG Power Magnifier", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeSMG, PictureFile: "SMGPowerDamage_MP5.webp"},
+	// ---- Pistol mods (SFXGameContent) ---------------------------------------
+	{ID: "SFXWeaponMod_PistolAccuracy", RootPath: "SFXGameContent", Name: "Scope", Socket: Scope, WeaponType: WeaponTypePistol, PictureFile: "Scope.webp"},
+	{ID: "SFXWeaponMod_PistolDamage", RootPath: "SFXGameContent", Name: "High Caliber Barrel", Socket: Barrel, WeaponType: WeaponTypePistol, PictureFile: "HighCaliberBarrel.webp"},
+	{ID: "SFXWeaponMod_PistolMagSize", RootPath: "SFXGameContent", Name: "Magazine Upgrade", Socket: Internal, WeaponType: WeaponTypePistol, PictureFile: "MagSize.webp"},
+	{ID: "SFXWeaponMod_PistolReloadSpeed", RootPath: "SFXGameContent", Name: "Piercing Mod", Socket: Internal, WeaponType: WeaponTypePistol, PictureFile: "PiercingMod.webp"},
+	{ID: "SFXWeaponMod_PistolStability", RootPath: "SFXGameContent", Name: "Melee Stunner", Socket: Internal, WeaponType: WeaponTypePistol, PictureFile: "PistolStability.webp"},
 
-	// ---- Sniper Rifle mods -------------------------------------------------
-	{ID: "SniperRifleAccuracy", Name: "SR Precision Scope", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeSniperRifle, PictureFile: "SniperRifleAccuracy.webp"},
-	{ID: "SniperRifleDamageAndPen", Name: "SR High-Velocity Barrel", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeSniperRifle, PictureFile: "SniperRifleDamageAndPen.webp"},
-	{ID: "SniperRifleSuperScope", Name: "SR Electronic Scope", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeSniperRifle, PictureFile: "SniperRifleSuperScope.webp"},
+	// ---- Pistol mods (SFXGameContentDLC_Shared) -----------------------------
+	{ID: "SFXWeaponMod_PistolHeadShot", RootPath: "SFXGameContentDLC_Shared", Name: "Cranial Trauma System", Socket: Internal, WeaponType: WeaponTypePistol, PictureFile: "PistolHeadShot.webp"},
+	{ID: "SFXWeaponMod_PistolSuperDamage", RootPath: "SFXGameContentDLC_Shared", Name: "Heavy Barrel", Socket: Barrel, WeaponType: WeaponTypePistol, PictureFile: "PistolSuperDamage.webp"},
+	{ID: "SFXWeaponMod_PistolUltraLight", RootPath: "SFXGameContentDLC_Shared", Name: "Ultralight Materials", Socket: Internal, WeaponType: WeaponTypePistol, PictureFile: "UltraLight.webp"},
 
-	// ---- Universal mods (WeaponTypeAny — compatible with every weapon) ------
-	{ID: "HighCaliberBarrel", Name: "High-Caliber Barrel", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAny, PictureFile: "HighCaliberBarrel.webp"},
-	{ID: "MagSize", Name: "Magazine Upgrade", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAny, PictureFile: "MagSize.webp"},
-	{ID: "OmniBlade", Name: "OmniTool Omni-Blade", WeaponSlot: WeaponSlotMelee, WeaponType: WeaponTypeAny, PictureFile: "OmniBlade.webp"},
-	{ID: "PiercingMod", Name: "Piercing Mod", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAny, PictureFile: "PiercingMod.webp"},
-	{ID: "Scope", Name: "Scope", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAny, PictureFile: "Scope.webp"},
-	{ID: "SpareThermalClip", Name: "Spare Thermal Clip", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAny, PictureFile: "SpareThermalClip.webp"},
-	{ID: "Stability", Name: "Stability Dampener", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAny, PictureFile: "Stability.webp"},
-	{ID: "UltraLight", Name: "Ultralight Materials", WeaponSlot: WeaponSlotDamage, WeaponType: WeaponTypeAny, PictureFile: "UltraLight.webp"},
+	// ---- Pistol mods (SFXGameContentDLC_CON_MP5) ----------------------------
+	{ID: "SFXWeaponMod_PistolPowerDamage_MP5", RootPath: "SFXGameContentDLC_CON_MP5", Name: "Power Magnifier", Socket: Scope, WeaponType: WeaponTypePistol, PictureFile: "PistolPowerDamage_MP5.webp"},
+
+	// ---- Shotgun mods (SFXGameContent) --------------------------------------
+	{ID: "SFXWeaponMod_ShotgunAccuracy", RootPath: "SFXGameContent", Name: "Smart Choke", Socket: Internal, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunAccuracy.webp"},
+	{ID: "SFXWeaponMod_ShotgunDamage", RootPath: "SFXGameContent", Name: "High-Caliber Barrel", Socket: Barrel, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunDamage.webp"},
+	{ID: "SFXWeaponMod_ShotgunMeleeDamage", RootPath: "SFXGameContent", Name: "Blade Attachment", Socket: Blade, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunMeleeDamage.webp"},
+	{ID: "SFXWeaponMod_ShotgunReloadSpeed", RootPath: "SFXGameContent", Name: "Shredder Mod", Socket: Internal, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunReloadSpeed.webp"},
+	{ID: "SFXWeaponMod_ShotgunStability", RootPath: "SFXGameContent", Name: "Spare Thermal Clip", Socket: Internal, WeaponType: WeaponTypeShotgun, PictureFile: "SpareThermalClip.webp"},
+
+	// ---- Shotgun mods (SFXGameContentDLC_Shared) ----------------------------
+	{ID: "SFXWeaponMod_ShotgunDamageAndPen", RootPath: "SFXGameContentDLC_Shared", Name: "High-Velocity Barrel", Socket: Barrel, WeaponType: WeaponTypeShotgun, PictureFile: "ShotgunDamageAndPen.webp"},
+	{ID: "SFXWeaponMod_ShotgunSuperMelee", RootPath: "SFXGameContentDLC_Shared", Name: "Omni-Blade", Socket: Blade, WeaponType: WeaponTypeShotgun, PictureFile: "OmniBlade.webp"},
+
+	// ---- Shotgun mods (SFXGameContentDLC_CON_MP5) ---------------------------
+	{ID: "SFXWeaponMod_ShotgunUltraLight_MP5", RootPath: "SFXGameContentDLC_CON_MP5", Name: "Ultralight Materials", Socket: Internal, WeaponType: WeaponTypeShotgun, PictureFile: "UltraLight.webp"},
+
+	// ---- SMG mods (SFXGameContent) ------------------------------------------
+	{ID: "SFXWeaponMod_SMGAccuracy", RootPath: "SFXGameContent", Name: "Scope", Socket: Scope, WeaponType: WeaponTypeSMG, PictureFile: "Scope.webp"},
+	{ID: "SFXWeaponMod_SMGConstraintDamage", RootPath: "SFXGameContent", Name: "Heat Sink", Socket: Internal, WeaponType: WeaponTypeSMG, PictureFile: "SMGConstraintDamage.webp"},
+	{ID: "SFXWeaponMod_SMGDamage", RootPath: "SFXGameContent", Name: "High-Caliber Barrel", Socket: Barrel, WeaponType: WeaponTypeSMG, PictureFile: "HighCaliberBarrel.webp"},
+	{ID: "SFXWeaponMod_SMGMagSize", RootPath: "SFXGameContent", Name: "Magazine Upgrade", Socket: Internal, WeaponType: WeaponTypeSMG, PictureFile: "MagSize.webp"},
+	{ID: "SFXWeaponMod_SMGStability", RootPath: "SFXGameContent", Name: "Ultralight Materials", Socket: Internal, WeaponType: WeaponTypeSMG, PictureFile: "UltraLight.webp"},
+
+	// ---- SMG mods (SFXGameContentDLC_Shared) --------------------------------
+	{ID: "SFXWeaponMod_SMGPenetration", RootPath: "SFXGameContentDLC_Shared", Name: "High-Velocity Barrel", Socket: Barrel, WeaponType: WeaponTypeSMG, PictureFile: "SMGPenetration.webp"},
+	{ID: "SFXWeaponMod_SMGStabilization", RootPath: "SFXGameContentDLC_Shared", Name: "Recoil System", Socket: Internal, WeaponType: WeaponTypeSMG, PictureFile: "Stability.webp"},
+
+	// ---- SMG mods (SFXGameContentDLC_CON_MP5) -------------------------------
+	{ID: "SFXWeaponMod_SMGPowerDamage_MP5", RootPath: "SFXGameContentDLC_CON_MP5", Name: "Power Magnifier", Socket: Scope, WeaponType: WeaponTypeSMG, PictureFile: "SMGPowerDamage_MP5.webp"},
+
+	// ---- Sniper Rifle mods (SFXGameContent) ---------------------------------
+	{ID: "SFXWeaponMod_SniperRifleAccuracy", RootPath: "SFXGameContent", Name: "Enhanced Scope", Socket: Scope, WeaponType: WeaponTypeSniperRifle, PictureFile: "SniperRifleAccuracy.webp"},
+	{ID: "SFXWeaponMod_SniperRifleConstraintDamage", RootPath: "SFXGameContent", Name: "Piercing Mod", Socket: Internal, WeaponType: WeaponTypeSniperRifle, PictureFile: "PiercingMod.webp"},
+	{ID: "SFXWeaponMod_SniperRifleDamage", RootPath: "SFXGameContent", Name: "Extended Barrel", Socket: Barrel, WeaponType: WeaponTypeSniperRifle, PictureFile: "SniperRifleBarrel.png"},
+	{ID: "SFXWeaponMod_SniperRifleReloadSpeed", RootPath: "SFXGameContent", Name: "Spare Thermal Clip", Socket: Internal, WeaponType: WeaponTypeSniperRifle, PictureFile: "SpareThermalClip.webp"},
+	//Single Player Only {ID: "SFXWeaponMod_SniperRifleTimeDilation", RootPath: "SFXGameContent", Name: "SR Time Dilation Scope", Socket: Scope, WeaponType: WeaponTypeSniperRifle, PictureFile: "SniperRifleTimeDilation.webp"},
+
+	// ---- Sniper Rifle mods (SFXGameContentDLC_Shared) -----------------------
+	{ID: "SFXWeaponMod_SniperRifleDamageAndPen", RootPath: "SFXGameContentDLC_Shared", Name: "High-Velocity Barrel", Socket: Barrel, WeaponType: WeaponTypeSniperRifle, PictureFile: "SniperRifleDamageAndPen.webp"},
+	{ID: "SFXWeaponMod_SniperRifleSuperScope", RootPath: "SFXGameContentDLC_Shared", Name: "Thermal Scope", Socket: Scope, WeaponType: WeaponTypeSniperRifle, PictureFile: "SniperRifleSuperScope.webp"},
+
+	// ---- Sniper Rifle mods (SFXGameContentDLC_CON_MP5) ----------------------
+	{ID: "SFXWeaponMod_SniperRifleUltraLight_MP5", RootPath: "SFXGameContentDLC_CON_MP5", Name: "Ultralight Materials", Socket: Internal, WeaponType: WeaponTypeSniperRifle, PictureFile: "UltraLight.webp"},
 }
 
 // weaponModIndex is a map built once at startup for O(1) lookups.

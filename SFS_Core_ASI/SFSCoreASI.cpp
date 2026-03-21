@@ -175,7 +175,7 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
         if (logger)
             logger->writeToLog(string_format("[HookedPE] Executing pending command on game thread. PC=%p\n", (void*)PC), true);
         if (PC) {
-            PC->ConsoleCommand(FString(TEXT("god")), 0);
+            PC->ConsoleCommand(FString(TEXT("GetMorinth")), 0);
             if (logger) logger->writeToLog("[HookedPE] ConsoleCommand dispatched.\n", true);
         } else {
             if (logger) logger->writeToLog("[HookedPE] Pending command dropped: PC is null.\n", true);
