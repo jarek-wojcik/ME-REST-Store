@@ -101,8 +101,8 @@ def parse_powers_ts(ts_path: Path) -> Dict[str, dict]:
     powers = {}
     
     # More robust parsing: split by power IDs at the start of lines
-    # Pattern: "  powerID: {" where powerID is word chars
-    power_splits = list(re.finditer(r'\n  (\w+): \{', powers_content))
+    # Pattern: "  powerID: {" where powerID can include $, letters, numbers
+    power_splits = list(re.finditer(r'\n  ([\w$]+): \{', powers_content))
     
     for i, match in enumerate(power_splits):
         power_id = match.group(1)
@@ -193,30 +193,31 @@ def parse_evolutions(evolutions_content: str) -> List[dict]:
         description = description.replace('\\n', '\n')
         
         # Extract attributes
-        attr_match = re.search(r'attributes:\s*\{([^}]+)\}', evo_text)
+        attr_match = re.search(r'attributes:\s*\{([^}]*)\}', evo_text)
         if not attr_match:
-            print(f"Warning: Could not extract attributes for evolution: {name}")
-            continue
-        
-        attributes_str = attr_match.group(1)
-        attributes = {}
-        
-        # Parse attributes - format is "key: value," or "key: value\n"
-        for attr_pair in re.finditer(r'(\w+):\s*([^,\n]+)', attributes_str):
-            key = attr_pair.group(1).strip()
-            value_str = attr_pair.group(2).strip()
+            print(f"Warning: Could not extract attributes block for evolution: {name}")
+            # Don't skip - use empty attributes
+            attributes = {}
+        else:
+            attributes_str = attr_match.group(1)
+            attributes = {}
             
-            # Try to parse as number
-            try:
-                if '.' in value_str:
-                    value = float(value_str)
-                else:
-                    value = int(value_str)
-            except ValueError:
-                # Keep as string (remove quotes if present)
-                value = value_str.strip('"\'')
-            
-            attributes[key] = value
+            # Parse attributes - format is "key: value," or "key: value\n"
+            for attr_pair in re.finditer(r'(\w+):\s*([^,\n]+)', attributes_str):
+                key = attr_pair.group(1).strip()
+                value_str = attr_pair.group(2).strip()
+                
+                # Try to parse as number
+                try:
+                    if '.' in value_str:
+                        value = float(value_str)
+                    else:
+                        value = int(value_str)
+                except ValueError:
+                    # Keep as string (remove quotes if present)
+                    value = value_str.strip('"\'')
+                
+                attributes[key] = value
         
         evolutions.append({
             'name': name,
@@ -269,7 +270,8 @@ def format_go_description(description: str) -> str:
     description = description.replace('\\', '\\\\')
     # Escape quotes
     description = description.replace('"', '\\"')
-    # Keep \n as literal \n (Go will interpret it)
+    # Escape actual newlines to \n for Go string literals
+    description = description.replace('\n', '\\n')
     return description
 
 
@@ -347,18 +349,19 @@ def update_powers_go(go_path: Path, mapping: Dict[str, str], ts_powers: Dict[str
         # Generate the new RankDescs
         new_rank_descs = generate_rank_descs_go(ts_power['evolutions'])
         
-        # Find the power definition in the Go file
-        # Pattern: ID: "PowerID", ...  RankDescs: []RankDesc{ ... },
-        pattern = rf'(ID: "{re.escape(go_power_id)}"[^{{]+RankDescs: \[\]RankDesc\{{)\s*(.*?)\s*(\}},)'
+        # Find the power definition in the Go file        
+        # Match from ID through RankDescs array closing with proper indentation
+        # The RankDescs array closes with:\n\t\t}, (two tabs before closing brace)
+        pattern = rf'(ID: "{re.escape(go_power_id)}"[^{{]+RankDescs: \[\]RankDesc\{{)(.*?)(\n\t\t\}},)'
         
         match = re.search(pattern, content, re.DOTALL)
         if match:
             # Replace the RankDescs content
             old_rank_descs = match.group(2)
-            replacement = f'{match.group(1)}\n{new_rank_descs}\n\t\t{match.group(3)}'
+            replacement = f'{match.group(1)}\n{new_rank_descs}{match.group(3)}'
             content = content[:match.start()] + replacement + content[match.end():]
             updates_made += 1
-            print(f"✓ Updated {go_power_id} -> {ts_power_id}")
+            print(f"[OK] Updated {go_power_id} -> {ts_power_id}")
             
             if dry_run:
                 # Show a sample of the change
@@ -367,7 +370,7 @@ def update_powers_go(go_path: Path, mapping: Dict[str, str], ts_powers: Dict[str
                                           ts_power['evolutions'][0]['attributes'])
                 print(f"  Desc:   {first_desc[:80]}...")
         else:
-            print(f"✗ Could not find {go_power_id} in powers.go")
+            print(f"[ERR] Could not find {go_power_id} in powers.go")
     
     # Write the updated content unless dry run
     if not dry_run:

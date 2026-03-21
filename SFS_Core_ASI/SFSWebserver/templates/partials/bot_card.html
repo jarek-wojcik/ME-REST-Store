@@ -459,7 +459,9 @@
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;"
                         hx-post="{{$pv.SlotBaseURL}}/rank/{{if ge $pv.Rank 1}}0{{else}}1{{end}}"
                         hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                        @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 1}}', $el)"
+                        data-tooltip-title="{{$pv.PowerDef.Name}}"
+                        data-tooltip-desc="{{$pv.PowerDef.DescForRank 1}}"
+                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                         @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 1}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                 </button>
@@ -469,7 +471,9 @@
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-64px 0px;background-repeat:no-repeat;"
                         hx-post="{{$pv.SlotBaseURL}}/rank/2"
                         hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                        @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 2}}', $el)"
+                        data-tooltip-title="{{$pv.PowerDef.Name}}"
+                        data-tooltip-desc="{{$pv.PowerDef.DescForRank 2}}"
+                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                         @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 2}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                 </button>
@@ -479,7 +483,9 @@
                         style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-128px 0px;background-repeat:no-repeat;"
                         hx-post="{{$pv.SlotBaseURL}}/rank/3"
                         hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                        @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 3}}', $el)"
+                        data-tooltip-title="{{$pv.PowerDef.Name}}"
+                        data-tooltip-desc="{{$pv.PowerDef.DescForRank 3}}"
+                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                         @mouseleave="$store.tooltip.hide()">
                     {{if lt $pv.Rank 3}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                 </button>
@@ -490,7 +496,9 @@
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px 0px;background-repeat:no-repeat;"
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/4/0/A"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 4}}', $el)"
+                            data-tooltip-title="{{$pv.PowerDef.Name}}"
+                            data-tooltip-desc="{{$pv.PowerDef.DescForRank 4}}"
+                            @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
@@ -498,7 +506,9 @@
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px -64px;background-repeat:no-repeat;"
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/4/0/B"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 5}}', $el)"
+                            data-tooltip-title="{{$pv.PowerDef.Name}}"
+                            data-tooltip-desc="{{$pv.PowerDef.DescForRank 5}}"
+                            @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
@@ -510,7 +520,9 @@
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px 0px;background-repeat:no-repeat;"
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/5/1/A"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 6}}', $el)"
+                            data-tooltip-title="{{$pv.PowerDef.Name}}"
+                            data-tooltip-desc="{{$pv.PowerDef.DescForRank 6}}"
+                            @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
@@ -518,7 +530,9 @@
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px -64px;background-repeat:no-repeat;"
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/5/1/B"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 7}}', $el)"
+                            data-tooltip-title="{{$pv.PowerDef.Name}}"
+                            data-tooltip-desc="{{$pv.PowerDef.DescForRank 7}}"
+                            @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
@@ -530,7 +544,9 @@
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px 0px;background-repeat:no-repeat;"
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/6/2/A"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 8}}', $el)"
+                            data-tooltip-title="{{$pv.PowerDef.Name}}"
+                            data-tooltip-desc="{{$pv.PowerDef.DescForRank 8}}"
+                            @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
@@ -538,7 +554,9 @@
                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px -64px;background-repeat:no-repeat;"
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/6/2/B"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
-                            @mouseenter="$store.tooltip.show('{{$pv.PowerDef.Name}}', '{{$pv.PowerDef.DescForRank 9}}', $el)"
+                            data-tooltip-title="{{$pv.PowerDef.Name}}"
+                            data-tooltip-desc="{{$pv.PowerDef.DescForRank 9}}"
+                            @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
                             @mouseleave="$store.tooltip.hide()">
                         {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "B"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
