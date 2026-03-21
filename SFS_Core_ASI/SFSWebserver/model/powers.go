@@ -112,6 +112,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_InfernoGrenade_Batarian", Name: "Inferno Grenade (Batarian)", Picture: "InfernoGrenade.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Cluster-bomb a small area with incendiary munitions.\n\nDamage can be sustained indefinitely with Incendiary ammo. Applies fire DoT."},
+			{Rank: 2, Description: "Increase grenade capacity by 1."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Increase damage by 30%."},
+			{Rank: 5, Description: "Increase impact radius by 30%."},
+			{Rank: 6, Description: "Increase grenade capacity by 2."},
+			{Rank: 7, Description: "Increase damage by 40%."},
+			{Rank: 8, Description: "Increase damage to armor by 50%."},
+			{Rank: 9, Description: "Increase impact radius by 50%.\nIncrease shrapnel by 1 fragments."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_AIHacking", Name: "AI Hacking", Picture: "Hacking.webp",
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
@@ -202,21 +217,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_DarkChannel", Name: "Dark Channel", Picture: "DarkChannel.webp",
-		RootPath: "SFXGameMPContent",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Plague an opponent with a persistent, damaging biotic field.\n\nEffect transfers to a second target if the first is killed.\nEffect's length depends on Dark Channel's duration.\nOnly one field may be active at a time."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},               // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},                       // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},                       // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase power duration by 40%."},               // Rank 4 - Evolution B
-			{Rank: 6, Description: "Slow target's movement speed by -30%."},         // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase recharge speed by 35%."},               // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage by 50%."},                       // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase damage to armor and barriers by 75%."}, // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_Carnage", Name: "Carnage", Picture: "Carnage.webp",
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
@@ -232,6 +232,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_Carnage_KroganVanguard", Name: "Carnage (Krogan Vanguard)", Picture: "Carnage.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Rip a target into shreds with this vicious blast.\n\nMajor collateral damage to enemies nearby.\nEffective against armor."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Increase impact radius by 50%."},
+			{Rank: 5, Description: "Increase damage by 30%."},
+			{Rank: 6, Description: "Incapacitate enemies by knocking them down."},
+			{Rank: 7, Description: "Increase recharge speed by 35%."},
+			{Rank: 8, Description: "Increase damage to armored units by 65%."},
+			{Rank: 9, Description: "Increase damage by 50%."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_Cloak", Name: "Tactical Cloak", Picture: "Cloak.webp",
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
@@ -244,6 +259,36 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase melee damage by 50% while cloaked."},                                          // Rank 5 - Evolution B
 			{Rank: 8, Description: "Fire one power while cloaked and remain hidden."},                                      // Rank 6 - Evolution A
 			{Rank: 9, Description: "Increase sniper rifle damage by 25% while cloaked."},                                   // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_Cloak_Geth", Name: "Tactical Cloak (Geth Infiltrator)", Picture: "Cloak.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase power duration by 30%."},
+			{Rank: 4, Description: "Increase power duration by 150%."},
+			{Rank: 5, Description: "Increase damage bonus by 40%."},
+			{Rank: 6, Description: "Increase recharge speed by 30%."},
+			{Rank: 7, Description: "Increase melee damage by 50% while cloaked."},
+			{Rank: 8, Description: "Fire one power while cloaked and remain hidden."},
+			{Rank: 9, Description: "Increase sniper rifle damage by 25% while cloaked."},
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_Cloak_N7Infiltrator", Name: "Tactical Cloak (N7 Shadow)", Picture: "Cloak.webp",
+		RootPath: "SFXGameContentDLC_CON_MP3",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase power duration by 30%."},
+			{Rank: 4, Description: "Increase power duration by 150%."},
+			{Rank: 5, Description: "Increase damage bonus by 40%."},
+			{Rank: 6, Description: "Increase recharge speed by 30%."},
+			{Rank: 7, Description: "Increase melee damage by 50% while cloaked."},
+			{Rank: 8, Description: "Fire one power while cloaked and remain hidden."},
+			{Rank: 9, Description: "Increase sniper rifle damage by 25% while cloaked."},
 		},
 	},
 	{
@@ -322,18 +367,33 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Barrier", Name: "Barrier", Picture: "Barrier.webp",
-		RootPath: "SFXGameMPContent",
+		ID: "SFXPowerCustomActionMP_Barrier_Shared", Name: "Barrier", Picture: "Barrier.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Reinforce armor with this biotic field. Detonate the field to lift and dangle nearby targets.\n\nReduce all forms of damage taken.\nSlows power use by -50%."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed after detonation by 25%."},                                                                                                             // Rank 2
-			{Rank: 3, Description: "Increase the damage, force, and radius of the detonation by 20%."},                                                                                             // Rank 3
-			{Rank: 4, Description: "Increase the damage, force, and radius of the detonation by 30%."},                                                                                             // Rank 4 - Evolution A
-			{Rank: 5, Description: "Decrease damage taken by 5%."},                                                                                                                                 // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase shield regeneration rate by 15% while Barrier is active."},                                                                                            // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase damage and force by 30% while Barrier is active."},                                                                                                    // Rank 5 - Evolution B
-			{Rank: 8, Description: "Reduce power speed penalty by 30%."},                                                                                                                           // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase damage protection by 10%."},                                                                                                                           // Rank 6 - Evolution B
+			{Rank: 1, Description: "Reinforce armor with this biotic field. Detonate the field to lift and dangle nearby targets.\n\nReduce all forms of damage taken.\nSlows power use by -50%."},
+			{Rank: 2, Description: "Increase recharge speed after detonation by 25%."},
+			{Rank: 3, Description: "Increase the damage, force, and radius of the detonation by 20%."},
+			{Rank: 4, Description: "Increase the damage, force, and radius of the detonation by 30%."},
+			{Rank: 5, Description: "Decrease damage taken by 5%."},
+			{Rank: 6, Description: "Increase shield regeneration rate by 15% while Barrier is active."},
+			{Rank: 7, Description: "Increase damage and force by 30% while Barrier is active."},
+			{Rank: 8, Description: "Reduce power speed penalty by 30%."},
+			{Rank: 9, Description: "Increase damage protection by 10%."},
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_Barrier_KroganVanguard", Name: "Barrier (Krogan Vanguard)", Picture: "Barrier.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Reinforce armor with this biotic field. Detonate the field to lift and dangle nearby targets.\n\nReduce all forms of damage taken.\nSlows power use by -50%."},
+			{Rank: 2, Description: "Increase recharge speed after detonation by 25%."},
+			{Rank: 3, Description: "Increase the damage, force, and radius of the detonation by 20%."},
+			{Rank: 4, Description: "Increase the damage, force, and radius of the detonation by 30%."},
+			{Rank: 5, Description: "Decrease damage taken by 5%."},
+			{Rank: 6, Description: "Increase shield regeneration rate by 15% while Barrier is active."},
+			{Rank: 7, Description: "Increase damage and force by 30% while Barrier is active."},
+			{Rank: 8, Description: "Reduce power speed penalty by 30%."},
+			{Rank: 9, Description: "Increase damage protection by 10%."},
 		},
 	},
 	{
@@ -367,6 +427,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_ProximityMine_Geth", Name: "Proximity Mine (Geth)", Picture: "ProximityMine.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Fire this sticky mine into traffic. It will detonate when an enemy steps within range."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Increase damage by 30%."},
+			{Rank: 5, Description: "Increase impact radius by 50%."},
+			{Rank: 6, Description: "Increase damage dealt to targets from all sources by 20% for 8 seconds."},
+			{Rank: 7, Description: "Slow target's movement speed by -30% for 8 seconds."},
+			{Rank: 8, Description: "Increase damage by 50%."},
+			{Rank: 9, Description: "Increase recharge speed by 40%."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_Pull", Name: "Pull", Picture: "Pull.webp",
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
@@ -379,6 +454,21 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase all damage to targets lifted by Pull by 30%."},                                                         // Rank 5 - Evolution B
 			{Rank: 8, Description: "Increase duration by 50%, and increase the force and damage of biotic detonations on affected targets by 75%."}, // Rank 6 - Evolution A
 			{Rank: 9, Description: "Increase recharge speed by 150%."},                                                                              // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_Pull_Asari", Name: "Pull (Asari Justicar)", Picture: "Pull.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Yank an opponent helplessly off the ground."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase duration by 50%."},
+			{Rank: 4, Description: "Increase duration by 100%."},
+			{Rank: 5, Description: "Increase impact radius by 2.5 meters."},
+			{Rank: 6, Description: "Inflict 75 damage per second to lifted targets."},
+			{Rank: 7, Description: "Increase all damage to targets lifted by Pull by 30%."},
+			{Rank: 8, Description: "Increase duration by 50%, and increase the force and damage of biotic detonations on affected targets by 75%."},
+			{Rank: 9, Description: "Increase recharge speed by 150%."},
 		},
 	},
 	{
@@ -397,18 +487,18 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_GethShieldBoost", Name: "Shield Boost", Picture: "ShieldBoost.webp",
-		RootPath: "SFXGameMPContent",
+		ID: "SFXPowerCustomActionMP_Reave_Asari", Name: "Reave (Asari Justicar)", Picture: "Reave.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Repair your shields and those of nearby allies, providing a large initial boost to shields, and then restoring shields every second for 3 seconds."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                                       // Rank 2
-			{Rank: 3, Description: "Increase shields restored by 30%."},                                                                     // Rank 3
-			{Rank: 4, Description: "Increase impact radius by 40%."},                                                                        // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase shields restored by 40%."},                                                                     // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase recharge speed by 35%."},                                                                       // Rank 5 - Evolution A
-			{Rank: 7, Description: "Reduce the delay before shields start regenerating by 20% for 12 seconds for you and affected allies."}, // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase the duration that shields are restored by 100%."},                                              // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase shield restoration by 50%, causing you and affected allies to take 50% less damage for 6 seconds.\nTotal damage reduction from all sources cannot exceed 90%."}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Drain a target's health and disrupt their resistances, receiving increased damage protection while this power is in effect.\n\nEffective against barriers and armor."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase duration by 35%."},
+			{Rank: 4, Description: "Increase duration by 40%."},
+			{Rank: 5, Description: "Increase impact radius by 3 meters."},
+			{Rank: 6, Description: "Increase damage protection by 10%."},
+			{Rank: 7, Description: "Increase recharge speed by 35%."},
+			{Rank: 8, Description: "Increase effectiveness against armor and barriers by 75%."},
+			{Rank: 9, Description: "Increase damage by 30%.\nIncrease duration by 30%.\nIncrease damage protection bonus by 15%."},
 		},
 	},
 	{
@@ -427,6 +517,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_Shockwave_Batarian", Name: "Shockwave (Batarian)", Picture: "Shockwave.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Topple a row of enemies with this cascading shockwave."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage and force by 25%."},
+			{Rank: 4, Description: "Increase damage and force by 30%."},
+			{Rank: 5, Description: "Increase impact radius by 30%."},
+			{Rank: 6, Description: "Increase force and damage of biotic detonations by 65%."},
+			{Rank: 7, Description: "Increase the distance that Shockwave cascades by 50%."},
+			{Rank: 8, Description: "Increase recharge speed by 40%."},
+			{Rank: 9, Description: "Suspend targets in the air for a short time."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_Overload", Name: "Overload", Picture: "Overload.webp",
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
@@ -439,6 +544,21 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase recharge speed by 25%."},                                                        // Rank 5 - Evolution B
 			{Rank: 8, Description: "Increase damage by 15%.\nHit 1 additional target within 8 meters with 60% less damage."}, // Rank 6 - Evolution A
 			{Rank: 9, Description: "Increase damage to barriers and shields by an additional 100%."},                         // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_Overload_Geth", Name: "Overload (Geth)", Picture: "Overload.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Overload electronics with this power surge, stunning your enemy.\n\nEffective against shields, barriers, and synthetics.\nNot as effective against organics."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Hit 1 additional target within 8 meters with 60% less damage."},
+			{Rank: 5, Description: "Increase damage by 30%."},
+			{Rank: 6, Description: "Incapacitate weaker organic enemies for a short duration."},
+			{Rank: 7, Description: "Increase recharge speed by 25%."},
+			{Rank: 8, Description: "Increase damage by 15%.\nHit 1 additional target within 8 meters with 60% less damage."},
+			{Rank: 9, Description: "Increase damage to barriers and shields by an additional 100%."},
 		},
 	},
 	{
@@ -514,6 +634,36 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase melee damage by 40% while the power is active."},                                                           // Rank 5 - Evolution B
 			{Rank: 8, Description: "Reduce power speed penalty by 30%."},                                                                                // Rank 6 - Evolution A
 			{Rank: 9, Description: "Increase damage protection by an additional 10%."},                                                                  // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_TechArmor_Krogan", Name: "Tech Armor (Krogan)", Picture: "TechArmor.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Protect yourself with this holographic armor or detonate it to damage nearby enemies.\n\nSlows power use by -50%."},
+			{Rank: 2, Description: "Increase recharge speed after armor detonation by 25%."},
+			{Rank: 3, Description: "Increase detonation damage by 20%.\nIncrease impact radius by 20%."},
+			{Rank: 4, Description: "Increase detonation damage by 30%.\nIncrease impact radius by 30%."},
+			{Rank: 5, Description: "Increase damage protection by an additional 5%."},
+			{Rank: 6, Description: "Increase power damage and force by 30% while armor is active."},
+			{Rank: 7, Description: "Increase melee damage by 40% while the power is active."},
+			{Rank: 8, Description: "Reduce power speed penalty by 30%."},
+			{Rank: 9, Description: "Increase damage protection by an additional 10%."},
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_TechArmor_Turian", Name: "Tech Armor (Turian)", Picture: "TechArmor.webp",
+		RootPath: "SFXGameMPContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Protect yourself with this holographic armor or detonate it to damage nearby enemies.\n\nSlows power use by -50%."},
+			{Rank: 2, Description: "Increase recharge speed after armor detonation by 25%."},
+			{Rank: 3, Description: "Increase detonation damage by 20%.\nIncrease impact radius by 20%."},
+			{Rank: 4, Description: "Increase detonation damage by 30%.\nIncrease impact radius by 30%."},
+			{Rank: 5, Description: "Increase damage protection by an additional 5%."},
+			{Rank: 6, Description: "Increase power damage and force by 30% while armor is active."},
+			{Rank: 7, Description: "Increase melee damage by 40% while the power is active."},
+			{Rank: 8, Description: "Reduce power speed penalty by 30%."},
+			{Rank: 9, Description: "Increase damage protection by an additional 10%."},
 		},
 	},
 	{
@@ -988,6 +1138,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_Supercharge_Shared", Name: "Geth Turbocharge", Picture: "Supercharge.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Advanced diagnostics redirect power into offensive systems, boosting combat capabilities.\n\nFaster movement.\nSee through smoke and objects.\nMore weapon, power, and melee damage.\nGreater weapon accuracy.\nShields reduced by -50%."},
+			{Rank: 2, Description: "Increase movement speed by 5%."},
+			{Rank: 3, Description: "Increase damage bonus by 2%."},
+			{Rank: 4, Description: "Increase recharge speed of all powers by 20% while active."},
+			{Rank: 5, Description: "Increase weapon accuracy bonus by 15%."},
+			{Rank: 6, Description: "Increase damage of all powers by 15% while active."},
+			{Rank: 7, Description: "Increase rate of fire of all weapons by 15% while active."},
+			{Rank: 8, Description: "Increase movement speed bonus by 10%.\nIncrease the range of your enhanced vision by 60%."},
+			{Rank: 9, Description: "Increase damage bonus by 10%."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_SupplyTurret", Name: "Supply Drone", Picture: "SupplyTurret.webp",
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
@@ -1063,6 +1228,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_AnnihilationSphere_Shared", Name: "Annihilation Field", Picture: "AnnihilationSphere.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Spin this fiery effect around you to burn nearby enemies. When active, the field can be recast to blast a short-range area and to detonate combos."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Increase damage by 30%."},
+			{Rank: 5, Description: "Increase impact radius by 30%."},
+			{Rank: 6, Description: "Targets caught in the field take 15% additional damage from all sources."},
+			{Rank: 7, Description: "Increase movement speed by 20% while active."},
+			{Rank: 8, Description: "Increase damage by 65%."},
+			{Rank: 9, Description: "Increase duration by 100%.\nDrain 100% of the damage done to enemy shields/barriers to restore your own shields."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_BatarianArmor", Name: "Batarian Armor", Picture: "BatarianArmor.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
@@ -1075,6 +1255,21 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase damage returned to targets that melee you by 24%."}, // Rank 5 - Evolution B
 			{Rank: 8, Description: "Reduce power speed penalty by 30%."},                         // Rank 6 - Evolution A
 			{Rank: 9, Description: "Increase damage protection by an additional 10%."},           // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_BatarianArmor_Shared", Name: "Batarian Armor", Picture: "BatarianArmor.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Reinforce armor with razor-sharp blades to damage enemies that melee.\n\nLess damage taken.\nMore melee damage dealt.\nSlows power use by -50%."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase melee damage bonus by 10%."},
+			{Rank: 4, Description: "Increase damage protection by 5%."},
+			{Rank: 5, Description: "Increase melee damage bonus by 15%."},
+			{Rank: 6, Description: "Increase shield recharge rate by 15%."},
+			{Rank: 7, Description: "Increase damage returned to targets that melee you by 24%."},
+			{Rank: 8, Description: "Reduce power speed penalty by 30%."},
+			{Rank: 9, Description: "Increase damage protection by an additional 10%."},
 		},
 	},
 	{
@@ -1105,6 +1300,21 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase recharge speed by 45%."},                                                           // Rank 5 - Evolution B
 			{Rank: 8, Description: "Increase damage to shields and barriers by 50%."},                                           // Rank 6 - Evolution A
 			{Rank: 9, Description: "Improve the electrified net to deal 150 points of damage across 6 meters every 1 seconds."}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_BatarianNet_Shared", Name: "Batarian Net", Picture: "BatarianNet.webp",
+		RootPath: "SFXGameContentDLC_CON_MP2",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Entangle opponents in an electrified net, dealing massive damage to armored targets and incapacitating unarmored targets as they break free.\n\nTargets build up resistances to the grappling effects of the net."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage by 30%.\nIncrease duration by 30%."},
+			{Rank: 4, Description: "Increase damage by 40%."},
+			{Rank: 5, Description: "Incapacitate targets 100% longer."},
+			{Rank: 6, Description: "Increase damage by 40%.\nSlow armored targets by 30% for 10 seconds."},
+			{Rank: 7, Description: "Increase recharge speed by 45%."},
+			{Rank: 8, Description: "Increase damage to shields and barriers by 50%."},
+			{Rank: 9, Description: "Improve the electrified net to deal 150 points of damage across 6 meters every 1 seconds."},
 		},
 	},
 	{
@@ -1165,6 +1375,21 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase weapon damage bonus of each stack by 5%."},                         // Rank 5 - Evolution B
 			{Rank: 8, Description: "Increase movement speed bonus by 5%.\nIncrease melee damage bonus by 10%."}, // Rank 6 - Evolution A
 			{Rank: 9, Description: "Increase health regeneration of each stack by an additional 100%."},         // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_Bloodlust_Shared", Name: "Bloodlust", Picture: "Bloodlust.webp",
+		RootPath: "SFXGameContentDLC_CON_MP2",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "The vorcha flies into a frenzy, increasing movement speed, health regeneration, and melee damage. Each kill intensifies these effects and can stack up to three times.\n\nAdditional stacks last for 15 seconds.\nSlows power use by -60%.\nLasts until deactivated."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase health regeneration by 30%."},
+			{Rank: 4, Description: "Increase melee damage of each stack by 10%."},
+			{Rank: 5, Description: "Increase health regeneration of each stack by 50%"},
+			{Rank: 6, Description: "Increase power damage bonus of each stack by 5%."},
+			{Rank: 7, Description: "Increase weapon damage bonus of each stack by 5%."},
+			{Rank: 8, Description: "Increase movement speed bonus by 5%.\nIncrease melee damage bonus by 10%."},
+			{Rank: 9, Description: "Increase health regeneration of each stack by an additional 100%."},
 		},
 	},
 	{
@@ -1258,6 +1483,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_Damping_Shared", Name: "Damping", Picture: "Damping.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Reveal weaknesses in defenses, increasing all damage done to the target and slowing its movement speed.\n\nProvide the entire squad with a tactical readout. Only one scan can be active on a target."},
+			{Rank: 2, Description: "Increase recharge speed by 50%."},
+			{Rank: 3, Description: "Increase duration by 30%."},
+			{Rank: 4, Description: "Increase all weapon damage done to the target by 8%."},
+			{Rank: 5, Description: "Increase all power damage done to the target by 8%."},
+			{Rank: 6, Description: "This evolution is bugged and doesn't work."},
+			{Rank: 7, Description: "Increase the target's movement speed penalty by 15%."},
+			{Rank: 8, Description: "Increase all damage done to the target by 10%."},
+			{Rank: 9, Description: "Increase scan duration by 100%.\nMomentarily reveal enemies within 20 meters of the target with an initial scanning pulse."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomAction_DarkSingularity", Name: "Dark Singularity", Picture: "DarkSingularity.webp",
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
@@ -1333,6 +1573,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_Flamer_Shared", Name: "Flamer", Picture: "Flamer.webp",
+		RootPath: "SFXGameContentDLC_CON_MP2",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Fire a powerful short-range flame attack. The flames will persist for a max duration and can be canceled early for a faster recharge.\n\nHighly effective against armor.\n\nSubject to a self-stacking glitch; damage can reach 3 times the presented value with continuous fire. Applies fire DoT."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Increase damage by 30%."},
+			{Rank: 5, Description: "Increase range by 50%."},
+			{Rank: 6, Description: "Increase damage by 40%."},
+			{Rank: 7, Description: "Increase duration by 60%."},
+			{Rank: 8, Description: "Increase damage to armor by 50%."},
+			{Rank: 9, Description: "Increase damage to shields and barriers by 50%."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_GethSentryTurret", Name: "Geth Turret", Picture: "GethTurret.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
@@ -1348,18 +1603,18 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_JetPackCharge_Base", Name: "Havoc Strike", Picture: "HavocStrike.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
+		ID: "SFXPowerCustomActionMP_GethSentryTurret_MP5", Name: "Geth Turret (Juggernaut)", Picture: "GethTurret.webp",
+		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Use the propulsion pack to launch a devastating strike on multiple targets."},                           // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                                       // Rank 2
-			{Rank: 3, Description: "Increase damage and force by 25%."},                                                                     // Rank 3
-			{Rank: 4, Description: "Increase damage and force by 35%."},                                                                     // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase recharge speed by 30%."},                                                                       // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase weapon damage by 25% for 5 seconds after a successful charge."},                                // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase melee damage by 40% for 5 seconds after a successful charge."},                                 // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage by 55%."},                                                                               // Rank 6 - Evolution A
-			{Rank: 9, Description: "Expand the spread of the flame to hit up to 2 additional targets within 3 meters of the impact point."}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Deploy a multifunctional turret that deals heavy damage and repairs the shields of allies within 8 meters every 8 seconds."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase turret's shields by 30%.\nIncrease turret's damage by 30%."},
+			{Rank: 4, Description: "Increase turret's shields by 40%.\nIncrease turret's damage by 40%."},
+			{Rank: 5, Description: "Increase the shields restored to allies by 50%."},
+			{Rank: 6, Description: "Increase the turret's damage by 30%.\nIncrease the damage done to armor by 50%."},
+			{Rank: 7, Description: "Increase the shields restored to allies by 50%.\nIncrease the range of this ability by 40%."},
+			{Rank: 8, Description: "Upgrade turret with a close-range flamethrower that deals 55 points of damage per second."},
+			{Rank: 9, Description: "Increase the frequency of restoring shields by 60%."},
 		},
 	},
 	{
@@ -1393,6 +1648,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_HomingGrenade_Shared", Name: "Homing Grenade", Picture: "HomingGrenade.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Launch this seeking grenade to track down a target, causing a massive explosion on impact."},
+			{Rank: 2, Description: "Increase grenade capacity by 1."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Increase damage by 30%."},
+			{Rank: 5, Description: "Increase impact radius by 30%."},
+			{Rank: 6, Description: "Increase grenade capacity by 1."},
+			{Rank: 7, Description: "Add a fire effect to targets, dealing 50% additional damage over 5 seconds.\n\nApplies fire DoT."},
+			{Rank: 8, Description: "Increase damage to armor by 60%.\nDecrease weapon damage mitigation of armored targets by 50% for 8 seconds."},
+			{Rank: 9, Description: "Split a grenade in half to seek two targets that do 60% damage each."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_BioticCharge_Krogan", Name: "Biotic Charge (Krogan)", Picture: "KroganBioticCharge.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
@@ -1420,6 +1690,21 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Do an additional 100% damage over 10 seconds."},                                                                           // Rank 5 - Evolution B
 			{Rank: 8, Description: "Give the power a 35% chance of not causing a cooldown.\nIncrease the time that lifted targets can be detonated by 100%."}, // Rank 6 - Evolution A
 			{Rank: 9, Description: "Penetrate through shields and barriers, lifting any target without armor but with reduced force."},                        // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_Lash_Shared", Name: "Lash", Picture: "Lash.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Latch this biotic field onto enemies to jerk them toward you, doing massive damage in the process."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Increase damage by 30%."},
+			{Rank: 5, Description: "Increase force and damage of biotic detonations by 50%."},
+			{Rank: 6, Description: "Increase recharge speed by 35%."},
+			{Rank: 7, Description: "Do an additional 100% damage over 10 seconds."},
+			{Rank: 8, Description: "Give the power a 35% chance of not causing a cooldown.\nIncrease the time that lifted targets can be detonated by 100%."},
+			{Rank: 9, Description: "Penetrate through shields and barriers, lifting any target without armor but with reduced force."},
 		},
 	},
 	{
@@ -1467,6 +1752,21 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase recharge speed by 35%."},               // Rank 5 - Evolution B
 			{Rank: 8, Description: "Increase damage by 50%."},                       // Rank 6 - Evolution A
 			{Rank: 9, Description: "Increase damage to armor and barriers by 75%."}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_DarkChannel2_Shared", Name: "Dark Channel", Picture: "DarkChannel.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Plague an opponent with a persistent, damaging biotic field.\n\nEffect transfers to a second target if the first is killed.\nEffect's length depends on Dark Channel's duration.\nOnly one field may be active at a time."},
+			{Rank: 2, Description: "Increase recharge speed by 25%."},
+			{Rank: 3, Description: "Increase damage by 20%."},
+			{Rank: 4, Description: "Increase damage by 30%."},
+			{Rank: 5, Description: "Increase power duration by 40%."},
+			{Rank: 6, Description: "Slow target's movement speed by -30%."},
+			{Rank: 7, Description: "Increase recharge speed by 35%."},
+			{Rank: 8, Description: "Increase damage by 50%."},
+			{Rank: 9, Description: "Increase damage to armor and barriers by 75%."},
 		},
 	},
 	{
@@ -1647,8 +1947,26 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_GethMeleePassive_Shared", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds."}, {Rank: 2, Description: "Increase health and shield bonuses by 10%."}, {Rank: 3, Description: "Increase melee damage bonus by 20%."},
+			{Rank: 4, Description: "Increase damage bonus by 5% while Ascension Stance is active."}, {Rank: 5, Description: "Increase health and shield bonuses by 15%."}, {Rank: 6, Description: "Increase recharge speed by 10% while Ascension Stance is active."},
+			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."}, {Rank: 8, Description: "Increase damage by 10% and recharge speed by 10% while Ascension Stance is active at the expense of damage taken increasing by -10%."}, {Rank: 9, Description: "Increase health and shield bonuses by 25%."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_BatarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds."}, {Rank: 2, Description: "Increase health and shield bonuses by 10%."}, {Rank: 3, Description: "Increase melee damage bonus by 20%."},
+			{Rank: 4, Description: "Increase damage bonus by 5% while Ascension Stance is active."}, {Rank: 5, Description: "Increase health and shield bonuses by 15%."}, {Rank: 6, Description: "Increase recharge speed by 10% while Ascension Stance is active."},
+			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."}, {Rank: 8, Description: "Increase damage by 10% and recharge speed by 10% while Ascension Stance is active at the expense of damage taken increasing by -10%."}, {Rank: 9, Description: "Increase health and shield bonuses by 25%."},
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_BatarianMeleePassive_Shared", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds."}, {Rank: 2, Description: "Increase health and shield bonuses by 10%."}, {Rank: 3, Description: "Increase melee damage bonus by 20%."},
 			{Rank: 4, Description: "Increase damage bonus by 5% while Ascension Stance is active."}, {Rank: 5, Description: "Increase health and shield bonuses by 15%."}, {Rank: 6, Description: "Increase recharge speed by 10% while Ascension Stance is active."},
@@ -1693,6 +2011,15 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_MaleQuarianMeleePassive_Shared", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds."}, {Rank: 2, Description: "Increase health and shield bonuses by 10%."}, {Rank: 3, Description: "Increase melee damage bonus by 20%."},
+			{Rank: 4, Description: "Increase damage bonus by 5% while Ascension Stance is active."}, {Rank: 5, Description: "Increase health and shield bonuses by 15%."}, {Rank: 6, Description: "Increase recharge speed by 10% while Ascension Stance is active."},
+			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."}, {Rank: 8, Description: "Increase damage by 10% and recharge speed by 10% while Ascension Stance is active at the expense of damage taken increasing by -10%."}, {Rank: 9, Description: "Increase health and shield bonuses by 25%."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_VorchaMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
@@ -1701,16 +2028,16 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."}, {Rank: 8, Description: "Increase damage by 10% and recharge speed by 10% while Ascension Stance is active at the expense of damage taken increasing by -10%."}, {Rank: 9, Description: "Increase health and shield bonuses by 25%."},
 		},
 	},
-	// MP3
 	{
-		ID: "SFXPowerCustomActionMP_N7SoldierMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP3",
+		ID: "SFXPowerCustomActionMP_VorchaMeleePassive_Shared", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds."}, {Rank: 2, Description: "Increase health and shield bonuses by 10%."}, {Rank: 3, Description: "Increase melee damage bonus by 20%."},
 			{Rank: 4, Description: "Increase damage bonus by 5% while Ascension Stance is active."}, {Rank: 5, Description: "Increase health and shield bonuses by 15%."}, {Rank: 6, Description: "Increase recharge speed by 10% while Ascension Stance is active."},
 			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."}, {Rank: 8, Description: "Increase damage by 10% and recharge speed by 10% while Ascension Stance is active at the expense of damage taken increasing by -10%."}, {Rank: 9, Description: "Increase health and shield bonuses by 25%."},
 		},
 	},
+	// MP3
 	{
 		ID: "SFXPowerCustomActionMP_N7EngineerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP3",
@@ -1843,8 +2170,26 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_GethPassive_Shared", Name: "Geth Hardware", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "A decade of rigorous combat training in the Alliance starts to click.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, {Rank: 2, Description: "Increase power damage and force bonuses by 5%."}, {Rank: 3, Description: "Increase weapon damage bonus by 5%."},
+			{Rank: 4, Description: "Increase weapon damage bonus by 8%."}, {Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."}, {Rank: 6, Description: "Increase power damage and force bonuses by 15%."},
+			{Rank: 7, Description: "Increase headshot damage bonus by 20%."}, {Rank: 8, Description: "Decrease weight of all weapons by 20%."}, {Rank: 9, Description: "Increase weapon damage bonus by 10%."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_BatarianPassive", Name: "Batarian Enforcer", Picture: "MPPassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "A decade of rigorous combat training in the Alliance starts to click.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, {Rank: 2, Description: "Increase power damage and force bonuses by 5%."}, {Rank: 3, Description: "Increase weapon damage bonus by 5%."},
+			{Rank: 4, Description: "Increase weapon damage bonus by 8%."}, {Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."}, {Rank: 6, Description: "Increase power damage and force bonuses by 15%."},
+			{Rank: 7, Description: "Increase headshot damage bonus by 20%."}, {Rank: 8, Description: "Decrease weight of all weapons by 20%."}, {Rank: 9, Description: "Increase weapon damage bonus by 10%."},
+		},
+	},
+	{
+		ID: "SFXPowerCustomActionMP_BatarianPassive_Shared", Name: "Batarian Enforcer", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "A decade of rigorous combat training in the Alliance starts to click.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, {Rank: 2, Description: "Increase power damage and force bonuses by 5%."}, {Rank: 3, Description: "Increase weapon damage bonus by 5%."},
 			{Rank: 4, Description: "Increase weapon damage bonus by 8%."}, {Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."}, {Rank: 6, Description: "Increase power damage and force bonuses by 15%."},
@@ -1889,6 +2234,15 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_MaleQuarianPassive_Shared", Name: "Quarian Machinist", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContentDLC_CON_MP4",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "A decade of rigorous combat training in the Alliance starts to click.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, {Rank: 2, Description: "Increase power damage and force bonuses by 5%."}, {Rank: 3, Description: "Increase weapon damage bonus by 5%."},
+			{Rank: 4, Description: "Increase weapon damage bonus by 8%."}, {Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."}, {Rank: 6, Description: "Increase power damage and force bonuses by 15%."},
+			{Rank: 7, Description: "Increase headshot damage bonus by 20%."}, {Rank: 8, Description: "Decrease weight of all weapons by 20%."}, {Rank: 9, Description: "Increase weapon damage bonus by 10%."},
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_VorchaPassive", Name: "Vorcha Survivor", Picture: "MPPassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
@@ -1897,16 +2251,16 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase headshot damage bonus by 20%."}, {Rank: 8, Description: "Decrease weight of all weapons by 20%."}, {Rank: 9, Description: "Increase weapon damage bonus by 10%."},
 		},
 	},
-	// MP3
 	{
-		ID: "SFXPowerCustomActionMP_N7SoldierPassive", Name: "N7 Soldier", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP3",
+		ID: "SFXPowerCustomActionMP_VorchaPassive_Shared", Name: "Vorcha Survivor", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "A decade of rigorous combat training in the Alliance starts to click.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, {Rank: 2, Description: "Increase power damage and force bonuses by 5%."}, {Rank: 3, Description: "Increase weapon damage bonus by 5%."},
 			{Rank: 4, Description: "Increase weapon damage bonus by 8%."}, {Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."}, {Rank: 6, Description: "Increase power damage and force bonuses by 15%."},
 			{Rank: 7, Description: "Increase headshot damage bonus by 20%."}, {Rank: 8, Description: "Decrease weight of all weapons by 20%."}, {Rank: 9, Description: "Increase weapon damage bonus by 10%."},
 		},
 	},
+	// MP3
 	{
 		ID: "SFXPowerCustomActionMP_N7EngineerPassive", Name: "N7 Engineer", Picture: "MPPassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP3",
@@ -2059,69 +2413,6 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase power force and duration by 30%."},                                                                            // Rank 5 - Evolution B
 			{Rank: 8, Description: "Increase recharge speed of all squadmate biotic powers by 10%."},                                                       // Rank 6 - Evolution A
 			{Rank: 9, Description: "Health & Shield Bonus: 30% (Recharge Speed) 50%\nPower Recharge Speed Bonus: 160% (Recharge Speed) 120% (Durability)"}, // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomAction_WrexPassive", Name: "Urdnot Wrex", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_EXP_Pack003",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, {Rank: 2, Description: ""}, {Rank: 3, Description: ""},
-			{Rank: 4, Description: ""}, {Rank: 5, Description: ""}, {Rank: 6, Description: ""},
-			{Rank: 7, Description: ""}, {Rank: 8, Description: ""}, {Rank: 9, Description: ""},
-		},
-	},
-	{
-		ID: "SFXPowerCustomAction_GruntPassive", Name: "Urdnot Grunt", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_EXP_Pack003",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, {Rank: 2, Description: ""}, {Rank: 3, Description: ""},
-			{Rank: 4, Description: ""}, {Rank: 5, Description: ""}, {Rank: 6, Description: ""},
-			{Rank: 7, Description: ""}, {Rank: 8, Description: ""}, {Rank: 9, Description: ""},
-		},
-	},
-	{
-		ID: "SFXPowerCustomAction_JacobPassive", Name: "Jacob Taylor", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_EXP_Pack003",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, {Rank: 2, Description: ""}, {Rank: 3, Description: ""},
-			{Rank: 4, Description: ""}, {Rank: 5, Description: ""}, {Rank: 6, Description: ""},
-			{Rank: 7, Description: ""}, {Rank: 8, Description: ""}, {Rank: 9, Description: ""},
-		},
-	},
-	{
-		ID: "SFXPowerCustomAction_KasumiPassive", Name: "Kasumi Goto", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_EXP_Pack003",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, {Rank: 2, Description: ""}, {Rank: 3, Description: ""},
-			{Rank: 4, Description: ""}, {Rank: 5, Description: ""}, {Rank: 6, Description: ""},
-			{Rank: 7, Description: ""}, {Rank: 8, Description: ""}, {Rank: 9, Description: ""},
-		},
-	},
-	{
-		ID: "SFXPowerCustomAction_MirandaPassive", Name: "Miranda Lawson", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_EXP_Pack003",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, {Rank: 2, Description: ""}, {Rank: 3, Description: ""},
-			{Rank: 4, Description: ""}, {Rank: 5, Description: ""}, {Rank: 6, Description: ""},
-			{Rank: 7, Description: ""}, {Rank: 8, Description: ""}, {Rank: 9, Description: ""},
-		},
-	},
-	{
-		ID: "SFXPowerCustomAction_SamaraPassive", Name: "Samara", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_EXP_Pack003",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, {Rank: 2, Description: ""}, {Rank: 3, Description: ""},
-			{Rank: 4, Description: ""}, {Rank: 5, Description: ""}, {Rank: 6, Description: ""},
-			{Rank: 7, Description: ""}, {Rank: 8, Description: ""}, {Rank: 9, Description: ""},
-		},
-	},
-	{
-		ID: "SFXPowerCustomAction_ZaeedPassive", Name: "Zaeed Massani", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_EXP_Pack003",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, {Rank: 2, Description: ""}, {Rank: 3, Description: ""},
-			{Rank: 4, Description: ""}, {Rank: 5, Description: ""}, {Rank: 6, Description: ""},
-			{Rank: 7, Description: ""}, {Rank: 8, Description: ""}, {Rank: 9, Description: ""},
 		},
 	},
 	{
