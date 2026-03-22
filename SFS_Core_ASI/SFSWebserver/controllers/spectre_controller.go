@@ -20,13 +20,13 @@ func NewSpectreController(db *bolt.DB, tmpl *template.Template) *SpectreControll
 	return &SpectreController{db: db, tmpl: tmpl}
 }
 
-func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre) {
+func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre, fromTeam bool) {
 	def := model.CharacterByID(s.CharacterID)
 	if def == nil {
 		def = &model.CharacterCatalog[0]
 	}
 	var urls CardURLs
-	if s.TeamID != "" {
+	if fromTeam {
 		urls = teamSpectreURLs(s.ID)
 	} else {
 		urls = spectreURLs(s.ID)
@@ -254,7 +254,8 @@ func (c *SpectreController) Register() {
 			respondText(w, 404, "not found\n")
 			return
 		}
-		c.renderCard(w, s)
+		fromTeam := r.URL.Query().Get("from") == "team"
+		c.renderCard(w, s, fromTeam)
 	})
 
 	// POST /api/spectres/{id}/character/{charId}
@@ -269,7 +270,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/appearance/{charId}
@@ -285,7 +286,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/rename
@@ -305,7 +306,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 
 		// OOB refresh both roster sidebar and team panel (if currently on team)
 		spectres, _ := listSpectres(c.db)
@@ -332,7 +333,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/weapon/{weaponId}
@@ -347,7 +348,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/weapon2/none
@@ -357,7 +358,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/weapon2/{weaponId}
@@ -372,7 +373,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/mod/{slot}/{modId}
@@ -402,7 +403,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/mod2/{slot}/{modId} — mod slots for second weapon
@@ -428,7 +429,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/power/{slot}/rankevo/{rank}/{evoIdx}/{choice}
@@ -457,7 +458,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/power/{slot}/rank/{rank}
@@ -477,7 +478,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/power/{slot}/evo/{evoIdx}/{choice}
@@ -502,7 +503,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// GET /api/spectres/{id}/borrowed-power/selector
@@ -557,7 +558,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// DELETE /api/spectres/{id}/borrowed-power
@@ -568,7 +569,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/borrowed-power/rank/{rank}
@@ -585,7 +586,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/borrowed-power/rankevo/{rank}/{evoIdx}/{choice}
@@ -611,7 +612,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// GET /api/spectres/{id}/power/{slot}/change/selector
@@ -673,7 +674,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 
 	// POST /api/spectres/{id}/active/toggle
@@ -684,7 +685,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 		spectres, _ := listSpectres(c.db)
 		_ = c.tmpl.ExecuteTemplate(w, "spectre_sidebar_oob", map[string]any{
 			"Spectres": spectreViews(spectres),
@@ -723,6 +724,6 @@ func (c *SpectreController) Register() {
 			respondText(w, 500, "update failed\n")
 			return
 		}
-		c.renderCard(w, s)
+		c.renderCard(w, s, false)
 	})
 }

@@ -60,6 +60,17 @@ func (c *TeamsController) Register() {
 	// Deletes a team by ID. Returns the updated team list partial.
 	http.HandleFunc("DELETE /api/teams/{id}", func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
+
+		// Unassign any spectres belonging to this team first.
+		if teamSpectres, err := listSpectresForTeam(c.db, id); err == nil {
+			for _, s := range teamSpectres {
+				if _, err := unassignSpectreFromTeam(c.db, s.ID); err != nil {
+					respondText(w, 500, "unassign failed\n")
+					return
+				}
+			}
+		}
+
 		existed, err := deleteTeam(c.db, id)
 		if err != nil {
 			respondText(w, 500, "delete failed\n")
