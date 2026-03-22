@@ -682,7 +682,10 @@ func updateSpectrePowerRankAndEvo(db *bolt.DB, spectreID string, slotIdx, rank, 
 		if evoIdx < 0 || evoIdx > 2 {
 			return fmt.Errorf("invalid evo index")
 		}
-		s.Powers[slotIdx].Rank = rank
+		// Never downgrade an already-upgraded power by changing a lower-tier evolution
+		if s.Powers[slotIdx].Rank < rank {
+			s.Powers[slotIdx].Rank = rank
+		}
 		s.Powers[slotIdx].Evolution[evoIdx] = choice
 		data, err := json.Marshal(s)
 		if err != nil {
@@ -808,7 +811,10 @@ func updateSpectreBorrowedPowerRankAndEvo(db *bolt.DB, spectreID string, rank, e
 		if evoIdx < 0 || evoIdx > 2 {
 			return fmt.Errorf("invalid evo index")
 		}
-		s.BorrowedPower.Rank = rank
+		// Preserve the highest achieved rank when updating a lower rank evolution.
+		if s.BorrowedPower.Rank < rank {
+			s.BorrowedPower.Rank = rank
+		}
 		s.BorrowedPower.Evolution[evoIdx] = choice
 		data, err := json.Marshal(s)
 		if err != nil {

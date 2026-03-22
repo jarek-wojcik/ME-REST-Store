@@ -2730,6 +2730,38 @@ var PowerCatalog = []PowerDef{
 			{Rank: 9, Description: "Increase recharge speed by 35%."},                                                                                  // Rank 6 - Evolution B
 		},
 	},
+
+	// Aliased Powers ----------------------
+	{
+		ID: "SFXPowerCustomAction_N7SoldierMeleePassive", Name: "T5-V Internal Systems", Picture: "MPMeleePassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Upgrade the T5-V's internal systems to boost health, shields, melee damage, and durability."},                                      // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 10%"},                                                                                        // Rank 2
+			{Rank: 3, Description: "Increase melee damage bonus by 20%."},                                                                                              // Rank 3
+			{Rank: 4, Description: "Increase melee damage bonus by 30%."},                                                                                              // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase health and shield bonuses by 15%"},                                                                                        // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase melee damage by 75% for 30 seconds after an enemy is killed by a heavy melee."},                                           // Rank 5 - Evolution A
+			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."},                                                                                           // Rank 5 - Evolution B
+			{Rank: 8, Description: "Increase melee damage bonus by 30%.\nIncrease weapon damage bonus by 25% for 20 seconds after an enemy is killed by heavy melee."}, // Rank 6 - Evolution A
+			{Rank: 9, Description: "Increase health and shield bonuses by 25%"},                                                                                        // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_N7SoldierPassive", Name: "T5-V Battlesuit", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Upgrade the cutting-edge T5-V Battlesuit.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
+			{Rank: 2, Description: "Increase power damage and force bonuses by 5%."},                                                       // Rank 2
+			{Rank: 3, Description: "Increase weapon damage bonus by 5%."},                                                                  // Rank 3
+			{Rank: 4, Description: "Increase weapon damage bonus by 7%."},                                                                  // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."},        // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase power damage and force bonuses by 15%."},                                                      // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increase headshot damage bonus by 20%."},                                                               // Rank 5 - Evolution B
+			{Rank: 8, Description: "Decrease weight of all weapons by 20%."},                                                               // Rank 6 - Evolution A
+			{Rank: 9, Description: "Increase weapon damage bonus by 10%."},                                                                 // Rank 6 - Evolution B
+		},
+	},
 }
 
 // powerIndex is built once at startup for O(1) lookups.

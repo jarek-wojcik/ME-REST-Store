@@ -85,7 +85,7 @@ var CharacterCatalog = []CharacterDef{
 	{ID: "SentinelN7", Name: "N7 Paladin", SubClass: "Sentinel", PictureFile: "MP_AllianceSEN.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_EnergyDrain", "SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_CryoCone", "SFXPowerCustomActionMP_N7SentinelPassive", "SFXPowerCustomActionMP_N7SentinelMeleePassive"}},
 	{ID: "SoldierN7", Name: "N7 Destroyer", SubClass: "Soldier", PictureFile: "MP_AllianceSOL.webp",
-		PowerIDs: [5]string{"SFXPowerCustomAction_DevestatorMode", "SFXPowerCustomAction_MissileLauncher", "SFXPowerCustomAction_MultiFragGrenade", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Soldier"}},
+		PowerIDs: [5]string{"SFXPowerCustomAction_DevestatorMode", "SFXPowerCustomAction_MissileLauncher", "SFXPowerCustomAction_MultiFragGrenade", "SFXPowerCustomAction_N7SoldierPassive", "SFXPowerCustomAction_N7SoldierMeleePassive"}},
 	{ID: "VanguardN7", Name: "N7 Slayer", SubClass: "Vanguard", PictureFile: "MP_AllianceVAN.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BioticCharge", "SFXPowerCustomActionMP_PalmBlaster", "SFXPowerCustomActionMP_SonicSlash", "SFXPowerCustomActionMP_N7VanguardPassive", "SFXPowerCustomActionMP_N7VanguardMeleePassive"}},
 
