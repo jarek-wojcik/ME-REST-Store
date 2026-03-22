@@ -227,7 +227,7 @@
                     :class="{ active: activeTab === 'spectre' }"
                     @click="activeTab = 'spectre'"
                 >
-                    Spectre
+                    Operatives
                 </button>
                 <button
                     class="tab-btn"
@@ -261,7 +261,7 @@
         <!-- Spectre tab -->
         <div x-show="activeTab === 'spectre'" x-cloak class="tab-panel">
             <div class="flex items-center gap-3 mb-6">
-                <h1 class="text-xl font-semibold tracking-wide text-gray-100">Spectre</h1>
+                <h1 class="text-xl font-semibold tracking-wide text-gray-100">Operatives</h1>
                 <span class="text-xs text-me-blue border border-me-border px-2 py-0.5 rounded tracking-widest uppercase">Character Management</span>
             </div>
             <div hx-get="/api/spectres"
