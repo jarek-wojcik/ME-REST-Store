@@ -25,11 +25,16 @@ func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre) {
 	if def == nil {
 		def = &model.CharacterCatalog[0]
 	}
-	urls := spectreURLs(s.ID)
+	var urls CardURLs
+	if s.TeamID != "" {
+		urls = teamSpectreURLs(s.ID)
+	} else {
+		urls = spectreURLs(s.ID)
+		urls.IsActive = s.Active
+	}
 	urls.HasBorrowedPower = s.BorrowedPower != nil
-	urls.IsActive = s.Active
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_ = c.tmpl.ExecuteTemplate(w, "bot_card", SpectreView{
+	_ = c.tmpl.ExecuteTemplate(w, "character_card", SpectreView{
 		Spectre:             s,
 		CharDef:             def,
 		AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
@@ -45,6 +50,22 @@ func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre) {
 		GearConsumableDef:   model.ConsumableByID(s.GearConsumableID),
 		PowerViews:          spectrePowerViews(s, urls),
 		CardURLs:            urls,
+	})
+}
+
+func (c *SpectreController) renderBotPanel(w http.ResponseWriter, teamID string) {
+	team, err := getTeam(c.db, teamID)
+	if err != nil {
+		// Team no longer exists — fall back to the spectre list.
+		c.renderList(w)
+		return
+	}
+	spectres, _ := listSpectresForTeam(c.db, teamID)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
+		"TeamID":     teamID,
+		"Bots":       teamSpectreViews(spectres),
+		"TeamActive": team.Active,
 	})
 }
 
@@ -83,10 +104,11 @@ func (c *SpectreController) Register() {
 		c.renderList(w)
 	})
 
-	// DELETE /api/spectres/{id}
-	// Removes a spectre. Returns the updated spectre list.
+	// DELETE /api/spectres/{id}[?from=team]
+	// Removes a spectre. If ?from=team is set, returns the updated bot panel;
+	// otherwise (including spectre-tab deletes) returns the updated spectre list.
 	http.HandleFunc("DELETE /api/spectres/{id}", func(w http.ResponseWriter, r *http.Request) {
-		existed, err := deleteSpectre(c.db, r.PathValue("id"))
+		teamID, existed, err := deleteSpectre(c.db, r.PathValue("id"))
 		if err != nil {
 			respondText(w, 500, "delete failed\n")
 			return
@@ -95,11 +117,137 @@ func (c *SpectreController) Register() {
 			respondText(w, 404, "not found\n")
 			return
 		}
-		c.renderList(w)
+		if r.URL.Query().Get("from") == "team" && teamID != "" {
+			c.renderBotPanel(w, teamID)
+		} else {
+			c.renderList(w)
+		}
+	})
+
+	// GET /api/teams/{id}/spectres
+	// Returns the bot_panel partial for a team's spectres.
+	http.HandleFunc("GET /api/teams/{id}/spectres", func(w http.ResponseWriter, r *http.Request) {
+		c.renderBotPanel(w, r.PathValue("id"))
+	})
+
+	// POST /api/teams/{id}/spectres
+	// Creates a new spectre in the given team using the default character.
+	// Returns the updated bot_panel.
+	http.HandleFunc("POST /api/teams/{id}/spectres", func(w http.ResponseWriter, r *http.Request) {
+		teamID := r.PathValue("id")
+		const defaultChar = "AdeptHumanMale"
+		if _, err := createTeamSpectre(c.db, teamID, defaultChar); err != nil {
+			respondText(w, 500, "create failed\n")
+			return
+		}
+		c.renderBotPanel(w, teamID)
+	})
+
+	// GET /api/teams/{id}/spectres/picker[?step=existing|class]
+	// Returns the add-spectre picker partial (team_add_picker) into #bot-panel.
+	// ?step=existing — shows the roster of unassigned spectres to pick from.
+	// ?step=class    — renders the character_selector modal for building a new spectre.
+	// (no step)      — shows the initial two-choice screen.
+	http.HandleFunc("GET /api/teams/{id}/spectres/picker", func(w http.ResponseWriter, r *http.Request) {
+		teamID := r.PathValue("id")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		switch r.URL.Query().Get("step") {
+		case "existing":
+			all, _ := listSpectres(c.db)
+			var standalone []model.Spectre
+			for _, s := range all {
+				if s.TeamID == "" {
+					standalone = append(standalone, s)
+				}
+			}
+			// Group spectres by CharDef.SubClass
+			type SpectreGroup struct {
+				SubClass string
+				Spectres []SpectreView
+			}
+			subClassOrder := []string{"Soldier", "Adept", "Sentinel", "Engineer", "Vanguard", "Infiltrator", "Squadmate"}
+			buckets := make(map[string][]SpectreView)
+			for _, s := range standalone {
+				def := model.CharacterByID(s.CharacterID)
+				if def == nil {
+					def = &model.CharacterCatalog[0]
+				}
+				view := SpectreView{
+					Spectre:           s,
+					CharDef:           def,
+					AppearanceCharDef: model.CharacterByID(s.AppearanceCharacterID),
+				}
+				buckets[def.SubClass] = append(buckets[def.SubClass], view)
+			}
+			var groups []SpectreGroup
+			for _, sc := range subClassOrder {
+				if spectres, ok := buckets[sc]; ok {
+					groups = append(groups, SpectreGroup{SubClass: sc, Spectres: spectres})
+				}
+			}
+			_ = c.tmpl.ExecuteTemplate(w, "team_add_existing", map[string]any{
+				"TeamID": teamID,
+				"Groups": groups,
+			})
+		case "class":
+			_ = c.tmpl.ExecuteTemplate(w, "character_selector", map[string]any{
+				"CharPostURLBase": "/api/teams/" + teamID + "/spectres/class",
+				"TargetID":        "bot-panel",
+				"TargetSwap":      "innerHTML",
+				"Groups":          model.GroupedCharacters(),
+			})
+		default:
+			_ = c.tmpl.ExecuteTemplate(w, "team_add_picker", map[string]any{
+				"TeamID": teamID,
+			})
+		}
+	})
+
+	// POST /api/teams/{id}/spectres/class/{charId}
+	// Creates a new spectre in the team with the specified character class.
+	// Returns the updated bot_panel.
+	http.HandleFunc("POST /api/teams/{id}/spectres/class/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		teamID := r.PathValue("id")
+		charID := r.PathValue("charId")
+		if model.CharacterByID(charID) == nil {
+			respondText(w, 400, "unknown character\n")
+			return
+		}
+		if _, err := createTeamSpectre(c.db, teamID, charID); err != nil {
+			respondText(w, 500, "create failed\n")
+			return
+		}
+		c.renderBotPanel(w, teamID)
+	})
+
+	// POST /api/teams/{id}/spectres/pick/{spectreId}
+	// Assigns an existing standalone spectre to the team.
+	// Returns the updated bot_panel.
+	http.HandleFunc("POST /api/teams/{id}/spectres/pick/{spectreId}", func(w http.ResponseWriter, r *http.Request) {
+		teamID := r.PathValue("id")
+		spectreID := r.PathValue("spectreId")
+		if _, err := assignSpectreToTeam(c.db, spectreID, teamID); err != nil {
+			respondText(w, 500, "assign failed\n")
+			return
+		}
+		c.renderBotPanel(w, teamID)
+	})
+
+	// DELETE /api/teams/{id}/spectres/{spectreId}
+	// Removes a spectre from the team without deleting it — TeamID is cleared.
+	// Returns the updated bot_panel.
+	http.HandleFunc("DELETE /api/teams/{id}/spectres/{spectreId}", func(w http.ResponseWriter, r *http.Request) {
+		teamID := r.PathValue("id")
+		spectreID := r.PathValue("spectreId")
+		if _, err := unassignSpectreFromTeam(c.db, spectreID); err != nil {
+			respondText(w, 500, "unassign failed\n")
+			return
+		}
+		c.renderBotPanel(w, teamID)
 	})
 
 	// GET /api/spectres/{id}/card
-	// Returns the bot_card partial for a single spectre (loads the right panel).
+	// Returns the character_card partial for a single spectre (loads the right panel).
 	http.HandleFunc("GET /api/spectres/{id}/card", func(w http.ResponseWriter, r *http.Request) {
 		s, err := getSpectre(c.db, r.PathValue("id"))
 		if err != nil {

@@ -22,7 +22,7 @@ func NewSelectorsController(db *bolt.DB, tmpl *template.Template) *SelectorsCont
 
 // Register wires all selector routes onto the default mux.
 func (c *SelectorsController) Register() {
-	// GET /api/characters/selector?entityId={id}&kind={bot|spectre|spectre-appearance}
+	// GET /api/characters/selector?entityId={id}&kind={spectre|spectre-appearance}
 	// Returns the character selector grid partial for use in the modal.
 	http.HandleFunc("GET /api/characters/selector", func(w http.ResponseWriter, r *http.Request) {
 		entityID := r.URL.Query().Get("entityId")
@@ -33,18 +33,14 @@ func (c *SelectorsController) Register() {
 		}
 		var charPostURLBase, targetID, targetSwap string
 		switch kind {
-		case "spectre":
-			charPostURLBase = "/api/spectres/" + entityID + "/character"
-			targetID = "spectre-card-" + entityID
-			targetSwap = "outerHTML"
 		case "spectre-appearance":
 			charPostURLBase = "/api/spectres/" + entityID + "/appearance"
 			targetID = "spectre-card-" + entityID
 			targetSwap = "outerHTML"
-		default: // "bot"
-			charPostURLBase = "/api/bots/" + entityID + "/character"
-			targetID = "bot-panel"
-			targetSwap = "innerHTML"
+		default: // "spectre"
+			charPostURLBase = "/api/spectres/" + entityID + "/character"
+			targetID = "spectre-card-" + entityID
+			targetSwap = "outerHTML"
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = c.tmpl.ExecuteTemplate(w, "character_selector", map[string]any{
@@ -55,7 +51,7 @@ func (c *SelectorsController) Register() {
 		})
 	})
 
-	// GET /api/weapons/selector?entityId={id}&kind={bot|spectre|spectre-weapon2}
+	// GET /api/weapons/selector?entityId={id}&kind={spectre|spectre-weapon2}
 	// Returns the weapon selector grid partial for use in the modal.
 	http.HandleFunc("GET /api/weapons/selector", func(w http.ResponseWriter, r *http.Request) {
 		entityID := r.URL.Query().Get("entityId")
@@ -66,15 +62,12 @@ func (c *SelectorsController) Register() {
 		}
 		var weaponPostURLBase, targetID string
 		switch kind {
-		case "spectre":
-			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon"
-			targetID = "spectre-card-" + entityID
 		case "spectre-weapon2":
 			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon2"
 			targetID = "spectre-card-" + entityID
-		default: // "bot"
-			weaponPostURLBase = "/api/bots/" + entityID + "/weapon"
-			targetID = "bot-card-" + entityID
+		default: // "spectre"
+			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon"
+			targetID = "spectre-card-" + entityID
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = c.tmpl.ExecuteTemplate(w, "weapon_selector", map[string]any{
@@ -84,7 +77,7 @@ func (c *SelectorsController) Register() {
 		})
 	})
 
-	// GET /api/weapon-mods/selector?entityId={id}&kind={bot|spectre|spectre-weapon2}&slot={1|2}
+	// GET /api/weapon-mods/selector?entityId={id}&kind={bot|spectre|bot-weapon2|spectre-weapon2}&slot={1|2}
 	// Returns the weapon mod selector grid partial for use in the modal.
 	// Only mods compatible with the entity's currently equipped weapon are shown;
 	// universal mods (WeaponTypeAny) are always included.
@@ -98,13 +91,6 @@ func (c *SelectorsController) Register() {
 		}
 		var weaponID string
 		switch kind {
-		case "spectre":
-			if sv, err := getSpectre(c.db, entityID); err == nil {
-				weaponID = sv.WeaponID
-			} else {
-				respondText(w, 404, "entity not found\n")
-				return
-			}
 		case "spectre-weapon2":
 			if sv, err := getSpectre(c.db, entityID); err == nil {
 				weaponID = sv.Weapon2ID
@@ -112,9 +98,9 @@ func (c *SelectorsController) Register() {
 				respondText(w, 404, "entity not found\n")
 				return
 			}
-		default: // "bot"
-			if bv, err := getBot(c.db, entityID); err == nil {
-				weaponID = bv.WeaponID
+		default: // "spectre"
+			if sv, err := getSpectre(c.db, entityID); err == nil {
+				weaponID = sv.WeaponID
 			} else {
 				respondText(w, 404, "entity not found\n")
 				return
@@ -131,15 +117,12 @@ func (c *SelectorsController) Register() {
 		}
 		var modPostURLBase, targetID string
 		switch kind {
-		case "spectre":
-			modPostURLBase = "/api/spectres/" + entityID + "/mod/" + slot
-			targetID = "spectre-card-" + entityID
 		case "spectre-weapon2":
 			modPostURLBase = "/api/spectres/" + entityID + "/mod2/" + slot
 			targetID = "spectre-card-" + entityID
-		default: // "bot"
-			modPostURLBase = "/api/bots/" + entityID + "/mod/" + slot
-			targetID = "bot-card-" + entityID
+		default: // "spectre"
+			modPostURLBase = "/api/spectres/" + entityID + "/mod/" + slot
+			targetID = "spectre-card-" + entityID
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = c.tmpl.ExecuteTemplate(w, "weapon_mod_selector", map[string]any{
@@ -151,7 +134,7 @@ func (c *SelectorsController) Register() {
 		})
 	})
 
-	// GET /api/consumables/selector?entityId={id}&kind={spectre}&category={armor|weapon|ammo|gear}
+	// GET /api/consumables/selector?entityId={id}&kind=spectre&category={armor|weapon|ammo|gear}
 	// Returns the consumable selector grid partial for use in the modal.
 	http.HandleFunc("GET /api/consumables/selector", func(w http.ResponseWriter, r *http.Request) {
 		entityID := r.URL.Query().Get("entityId")
@@ -182,9 +165,9 @@ func (c *SelectorsController) Register() {
 		case "spectre":
 			postURLBase = "/api/spectres/" + entityID + "/consumable/" + categoryStr
 			targetID = "spectre-card-" + entityID
-		default:
-			respondText(w, 400, "kind must be spectre\n")
-			return
+		default: // "spectre"
+			postURLBase = "/api/spectres/" + entityID + "/consumable/" + categoryStr
+			targetID = "spectre-card-" + entityID
 		}
 
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")

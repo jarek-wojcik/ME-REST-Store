@@ -83,10 +83,10 @@ func (c *TeamsController) Register() {
 		}
 		// Primary: re-render the bot panel with the updated active state.
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		bots, _ := listBotsForTeam(c.db, id)
+		spectres, _ := listSpectresForTeam(c.db, id)
 		_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
 			"TeamID":     id,
-			"Bots":       botViews(bots),
+			"Bots":       teamSpectreViews(spectres),
 			"TeamActive": team.Active,
 		})
 		// OOB: refresh the sidebar so team name colours update.

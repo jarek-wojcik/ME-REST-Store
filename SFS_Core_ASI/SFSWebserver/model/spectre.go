@@ -21,4 +21,6 @@ type Spectre struct {
 	Powers                []PowerSlot `json:"powers"`
 	BorrowedPower         *PowerSlot  `json:"borrowedPower,omitempty"` // one borrowed power from another character class
 	Active                bool        `json:"active,omitempty"`        // whether this spectre is set as active
+	TeamID                string      `json:"teamId,omitempty"`        // non-empty for strike-team members
+	SortOrder             int64       `json:"sortOrder,omitempty"`     // creation time (unix nanos) for ordering within a team
 }

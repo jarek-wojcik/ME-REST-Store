@@ -6,7 +6,7 @@
 
 ## Motivation
 
-`bot_card.html` and the three selector partials (`character_selector`, `weapon_selector`, `weapon_mod_selector`) originally hard-coded `/api/bots/{id}/...` paths and `#bot-card-{id}` element IDs. The Spectre entity reuses the same card template. All routing was lifted out of templates into pre-computed Go fields.
+`character_card.html` and the three selector partials (`character_selector`, `weapon_selector`, `weapon_mod_selector`) originally hard-coded `/api/bots/{id}/...` paths and `#bot-card-{id}` element IDs. The Spectre entity reuses the same card template. All routing was lifted out of templates into pre-computed Go fields.
 
 ---
 
@@ -116,7 +116,7 @@ PowerBaseURL:      "/api/spectres/{id}/power"
 `ensureSpectresBucket(db)` called at startup alongside bots/teams.
 
 #### New render helpers
-- `renderSpectreCard(w, Spectre)` — executes `"bot_card"` template with a `SpectreView`
+- `renderSpectreCard(w, Spectre)` — executes `"character_card"` template with a `SpectreView`
 - `renderSpectreList(w)` — executes `"spectre_list"` template with `map["Spectres"]spectreViews(...)`
 
 #### Selector handlers — breaking changes
@@ -141,19 +141,19 @@ Template data keys changed:
 | `GET` | `/api/spectres` | `spectre_list` partial (full panel) |
 | `POST` | `/api/spectres` | form: `name`; returns `spectre_list` |
 | `DELETE` | `/api/spectres/{id}` | returns `spectre_list` |
-| `GET` | `/api/spectres/{id}/card` | `bot_card` partial for this spectre |
-| `POST` | `/api/spectres/{id}/character/{charId}` | returns `bot_card` |
-| `POST` | `/api/spectres/{id}/weapon/{weaponId}` | returns `bot_card` |
-| `POST` | `/api/spectres/{id}/mod/{slot}/{modId}` | `slot` 1\|2; `modId` "none" clears; returns `bot_card` |
-| `POST` | `/api/spectres/{id}/power/{slot}/rank/{rank}` | returns `bot_card` |
-| `POST` | `/api/spectres/{id}/power/{slot}/evo/{evoIdx}/{choice}` | returns `bot_card` |
-| `POST` | `/api/spectres/{id}/power/{slot}/rankevo/{rank}/{evoIdx}/{choice}` | returns `bot_card` |
+| `GET` | `/api/spectres/{id}/card` | `character_card` partial for this spectre |
+| `POST` | `/api/spectres/{id}/character/{charId}` | returns `character_card` |
+| `POST` | `/api/spectres/{id}/weapon/{weaponId}` | returns `character_card` |
+| `POST` | `/api/spectres/{id}/mod/{slot}/{modId}` | `slot` 1\|2; `modId` "none" clears; returns `character_card` |
+| `POST` | `/api/spectres/{id}/power/{slot}/rank/{rank}` | returns `character_card` |
+| `POST` | `/api/spectres/{id}/power/{slot}/evo/{evoIdx}/{choice}` | returns `character_card` |
+| `POST` | `/api/spectres/{id}/power/{slot}/rankevo/{rank}/{evoIdx}/{choice}` | returns `character_card` |
 
 ---
 
 ### Templates *(changed)*
 
-#### `templates/partials/bot_card.html`
+#### `templates/partials/character_card.html`
 All hard-coded `/api/bots/...` paths and `#bot-card-{id}` IDs replaced with `CardURLs` fields:
 
 | Was | Now |
@@ -169,7 +169,7 @@ All hard-coded `/api/bots/...` paths and `#bot-card-{id}` IDs replaced with `Car
 | `/api/bots/{id}/power/{slot}/rank/...` | `{{$pv.SlotBaseURL}}/rank/...` |
 | `/api/bots/{id}/power/{slot}/rankevo/...` | `{{$pv.SlotBaseURL}}/rankevo/...` |
 
-Template name `"bot_card"` is unchanged — it now renders both bots and spectres.
+Template name `"character_card"` is unchanged — it now renders both bots and spectres.
 
 #### `templates/partials/character_selector.html`
 - Removed `{{$botID := $.BotID}}` capture variable
@@ -204,8 +204,8 @@ Replaced the `"— Content coming soon —"` placeholder.
 
 ## Invariants
 
-- `"bot_card"` template is the single card renderer for both bots and spectres. Do not create a `"spectre_card"` template.
-- `SpectreView` must satisfy all fields accessed by `"bot_card"`: `CardID`, `DeleteURL`, `DeleteConfirm`, `CharSelectorURL`, `WeaponSelectorURL`, `Mod1SelectorURL`, `Mod2SelectorURL`, all `*Def` fields, `PowerViews[]` with `SlotBaseURL`.
+- `"character_card"` template is the single card renderer for both bots and spectres. Do not create a `"spectre_card"` template.
+- `SpectreView` must satisfy all fields accessed by `"character_card"`: `CardID`, `DeleteURL`, `DeleteConfirm`, `CharSelectorURL`, `WeaponSelectorURL`, `Mod1SelectorURL`, `Mod2SelectorURL`, all `*Def` fields, `PowerViews[]` with `SlotBaseURL`.
 - The weapon-mod selector uses `kind` to look up the correct bucket; add new entity kinds there if adding future entity types.
 - `powerViews(slots, powerBaseURL)` is the single source of `SlotBaseURL` — do not compute it elsewhere.
 
@@ -214,7 +214,7 @@ Replaced the `"— Content coming soon —"` placeholder.
 ## Phase 2 — Borrowed Power & Per-Slot Power Change *(added session 2)*
 
 ### Motivation
-Spectres are player operatives that can take one power from any character class (borrowed power) and can freely swap any of their five base powers. Bots have fixed powers (no swap, no borrow). All new UI is gated by `IsSpectre bool` on `CardURLs` / `ChangePowerURL string` on `PowerSlotView` so `"bot_card"` remains the single renderer for both entity types.
+Both bots and spectres can now take one power from any character class (borrowed power) and can freely swap any of their five base powers. The UI is unified, with `"character_card"` serving as the single renderer for both entity types. The presence of URL fields (like `ChangePowerURL`, `AddPowerURL`) determines which features are available.
 
 ---
 
@@ -231,7 +231,7 @@ BorrowedPower *PowerSlot `json:"borrowedPower,omitempty"`
 
 #### `CardURLs` — new fields
 ```go
-IsSpectre             bool   // gates borrow/change UI in bot_card
+IsSpectre             bool   // gates borrow/change UI in character_card
 HasBorrowedPower      bool   // true when BorrowedPower != nil; hides the Add button
 AddPowerURL           string // GET /api/spectres/{id}/borrowed-power/selector
 ClearBorrowedPowerURL string // DELETE /api/spectres/{id}/borrowed-power
@@ -240,7 +240,7 @@ ClearBorrowedPowerURL string // DELETE /api/spectres/{id}/borrowed-power
 #### `PowerSlotView` — new field
 ```go
 IsBorrowedPower bool   // true for the appended borrowed-power entry
-ChangePowerURL  string // GET: opens change-power flow for this slot; empty for bots
+ChangePowerURL  string // GET: opens change-power flow for this slot
 ```
 
 ---
@@ -304,7 +304,7 @@ ClearBorrowedPowerURL: "/api/spectres/{id}/borrowed-power"
 
 ### Templates *(changed/new)*
 
-#### `templates/partials/bot_card.html` *(changed)*
+#### `templates/partials/character_card.html` *(changed)*
 Power name column is now a flex-col div instead of a bare `<span>`. Additional conditional elements rendered when `$pv.IsBorrowedPower` or `$pv.ChangePowerURL != ""`:
 
 ```
@@ -332,7 +332,7 @@ Template `"spectre_borrow_power"`. Accepts:
 - `PostURLBase string` — each power button does `hx-post="{{$.PostURLBase}}/{{.ID}}"` → commits selection
 - `TargetCardID string` — `hx-target="#{{$.TargetCardID}}"` on each power button
 
-Power icon: `w-16 h-16` div with `background-size:384px 128px; background-position:0px 0px` — matches the rank-1 tile from `bot_card.html` exactly.
+Power icon: `w-16 h-16` div with `background-size:384px 128px; background-position:0px 0px` — matches the rank-1 tile from `character_card.html` exactly.
 
 ---
 
@@ -343,4 +343,4 @@ Power icon: `w-16 h-16` div with `background-size:384px 128px; background-positi
 - `spectre_borrow_char` and `spectre_borrow_power` are generic — they serve both the borrow flow and the change-slot flow. Do not hard-code entity IDs or route prefixes inside them; all routing comes from template data.
 - The borrowed-power slot's rank/evo buttons use the same `SlotBaseURL`-based paths as normal slots. The only difference is `SlotBaseURL = /api/spectres/{id}/borrowed-power` instead of `.../power/{n}`.
 - `updateSpectrePowerID` resets rank and all evolutions to defaults. The UI shows rank 0 immediately after a slot change.
-- `ChangePowerURL` is empty (`""`) for all bot `PowerSlotView` entries. The `{{if $pv.ChangePowerURL}}` guard in `bot_card.html` ensures the Change button is never rendered for bots.
+- The `{{if $pv.ChangePowerURL}}` guard in `character_card.html` ensures the Change button is only rendered when the URL is provided.

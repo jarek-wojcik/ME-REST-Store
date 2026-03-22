@@ -14,7 +14,6 @@ import (
 const (
 	spectresBucket = "spectres"
 	teamsBucket    = "teams"
-	botsBucket     = "bots"
 )
 
 // Me3IntegrationController exposes read-only JSON endpoints for the ME3 game
@@ -51,14 +50,14 @@ func (c *Me3IntegrationController) activeSpectre() (*model.Spectre, error) {
 	return found, err
 }
 
-// StrikeTeamResponse pairs a Team with its member Bots.
+// StrikeTeamResponse pairs a Team with its member Spectres.
 type StrikeTeamResponse struct {
 	model.Team
-	Bots []model.Bot `json:"bots"`
+	Spectres []model.Spectre `json:"spectres"`
 }
 
-// activeStrikeTeam returns the active team and all bots belonging to it, or
-// nil if no team is currently set as active.
+// activeStrikeTeam returns the active team and all spectres belonging to it,
+// or nil if no team is currently set as active.
 func (c *Me3IntegrationController) activeStrikeTeam() (*StrikeTeamResponse, error) {
 	var result *StrikeTeamResponse
 	err := c.db.View(func(tx *bolt.Tx) error {
@@ -86,17 +85,17 @@ func (c *Me3IntegrationController) activeStrikeTeam() (*StrikeTeamResponse, erro
 			return nil
 		}
 
-		// Collect bots belonging to the active team.
-		bb := tx.Bucket([]byte(botsBucket))
-		var bots []model.Bot
-		if bb != nil {
-			if err := bb.ForEach(func(_, v []byte) error {
-				var bot model.Bot
-				if err := json.Unmarshal(v, &bot); err != nil {
+		// Collect spectres belonging to the active team.
+		sb := tx.Bucket([]byte(spectresBucket))
+		var spectres []model.Spectre
+		if sb != nil {
+			if err := sb.ForEach(func(_, v []byte) error {
+				var s model.Spectre
+				if err := json.Unmarshal(v, &s); err != nil {
 					return err
 				}
-				if bot.TeamID == activeTeam.ID {
-					bots = append(bots, bot)
+				if s.TeamID == activeTeam.ID {
+					spectres = append(spectres, s)
 				}
 				return nil
 			}); err != nil {
@@ -104,7 +103,7 @@ func (c *Me3IntegrationController) activeStrikeTeam() (*StrikeTeamResponse, erro
 			}
 		}
 
-		result = &StrikeTeamResponse{Team: *activeTeam, Bots: bots}
+		result = &StrikeTeamResponse{Team: *activeTeam, Spectres: spectres}
 		return nil
 	})
 	return result, err
@@ -137,30 +136,36 @@ func spectreToFlat(s *model.Spectre) string {
 	}, "|")
 }
 
-// botToFlat serialises a Bot as a single pipe-delimited line.
-// Format: id|characterId|weaponId|weaponMod1Id|weaponMod2Id|power0|power1|power2|power3|power4
-func botToFlat(b model.Bot) string {
+// teamSpectreToFlat serialises a strike-team Spectre as a single pipe-delimited line.
+// Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower
+func teamSpectreToFlat(s model.Spectre) string {
 	powers := make([]string, 5)
 	for i := range powers {
-		if i < len(b.Powers) {
-			powers[i] = flatPower(b.Powers[i])
+		if i < len(s.Powers) {
+			powers[i] = flatPower(s.Powers[i])
 		}
 	}
+	borrowed := ""
+	if s.BorrowedPower != nil {
+		borrowed = flatPower(*s.BorrowedPower)
+	}
 	return strings.Join([]string{
-		b.ID, b.CharacterID,
-		b.WeaponID, b.WeaponMod1ID, b.WeaponMod2ID,
+		s.ID, s.Name, s.CharacterID, s.AppearanceCharacterID,
+		s.WeaponID, s.WeaponMod1ID, s.WeaponMod2ID,
+		s.Weapon2ID, s.Weapon2Mod1ID, s.Weapon2Mod2ID,
 		powers[0], powers[1], powers[2], powers[3], powers[4],
+		borrowed,
 	}, "|")
 }
 
 // strikeTeamToFlat serialises a StrikeTeamResponse as newline-separated lines.
 // Line 0: teamId|teamName
-// Lines 1-N: one bot per line (botToFlat format)
+// Lines 1-N: one spectre per line (teamSpectreToFlat format)
 func strikeTeamToFlat(r *StrikeTeamResponse) string {
-	lines := make([]string, 0, 1+len(r.Bots))
+	lines := make([]string, 0, 1+len(r.Spectres))
 	lines = append(lines, r.ID+"|"+r.Name)
-	for _, b := range r.Bots {
-		lines = append(lines, botToFlat(b))
+	for _, s := range r.Spectres {
+		lines = append(lines, teamSpectreToFlat(s))
 	}
 	return strings.Join(lines, "\n")
 }

@@ -153,6 +153,12 @@ func main() {
 	defer db.Close()
 	log.Printf("[INFO] database opened")
 
+	// Migrate legacy bots to the spectres bucket (safe to run every start).
+	log.Printf("[INFO] migrating legacy bots")
+	if err := controllers.MigrateBotsToSpectres(db); err != nil {
+		log.Printf("[WARN] migrateBotsToSpectres: %v", err)
+	}
+
 	// Ensure buckets exist before serving requests.
 	log.Printf("[INFO] ensuring buckets")
 	if err := controllers.EnsureKVBucket(db); err != nil {
@@ -160,9 +166,6 @@ func main() {
 	}
 	if err := controllers.EnsureTeamsBucket(db); err != nil {
 		log.Fatalf("[FATAL] ensureTeamsBucket: %v", err)
-	}
-	if err := controllers.EnsureBotsBucket(db); err != nil {
-		log.Fatalf("[FATAL] ensureBotsBucket: %v", err)
 	}
 	if err := controllers.EnsureSpectresBucket(db); err != nil {
 		log.Fatalf("[FATAL] ensureSpectresBucket: %v", err)
@@ -205,7 +208,6 @@ func main() {
 	// Register resource controllers.
 	controllers.NewKVController(db).Register()
 	controllers.NewTeamsController(db, tmpl).Register()
-	controllers.NewBotController(db, tmpl).Register()
 	controllers.NewSpectreController(db, tmpl).Register()
 	controllers.NewSelectorsController(db, tmpl).Register()
 	controllers.NewMissionParamsController().Register()

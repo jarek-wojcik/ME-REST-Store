@@ -20,23 +20,6 @@ type PowerSlot struct {
 	Evolution [3]string `json:"evolution"` // index 0=rank4, 1=rank5, 2=rank6; each "A" or "B"
 }
 
-// Bot is a character instance assigned to a team.
-// CharacterID references a CharacterDef in the catalog.
-// WeaponID references a WeaponDef in the catalog.
-// WeaponMod1ID / WeaponMod2ID reference WeaponModDef entries in the catalog.
-// Powers holds 0–5 slots; slots are initialised from the CharacterDef
-// defaults when a bot is first created.
-type Bot struct {
-	ID           string      `json:"id"`
-	TeamID       string      `json:"teamId"`
-	CharacterID  string      `json:"characterId"`
-	WeaponID     string      `json:"weaponId"`
-	WeaponMod1ID string      `json:"weaponMod1Id"`
-	WeaponMod2ID string      `json:"weaponMod2Id"`
-	Powers       []PowerSlot `json:"powers"`    // up to 5
-	SortOrder    int64       `json:"sortOrder"` // unix nanos at creation time; 0 for legacy bots
-}
-
 // ---------------------------------------------------------------------------
 // Character definition (static catalog)
 // ---------------------------------------------------------------------------
