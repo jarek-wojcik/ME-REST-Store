@@ -41,6 +41,10 @@ type CardURLs struct {
 	Weapon2Mod2SelectorURL      string // GET: opens weapon mod selector for second weapon mod 2
 	WeaponClearURL              string // POST: clears weapon
 	Weapon2ClearURL             string // POST: clears second weapon
+	ArmorConsumableClearURL     string // POST: clears armor consumable
+	WeaponConsumableClearURL    string // POST: clears weapon consumable
+	AmmoConsumableClearURL      string // POST: clears ammo consumable
+	GearConsumableClearURL      string // POST: clears gear consumable
 	SetActiveURL                string // POST: toggles active state; empty string hides the button
 	IsActive                    bool   // true when this entity is currently active
 	ArmorConsumableSelectorURL  string // GET: opens armor consumable selector modal
@@ -106,6 +110,10 @@ func spectreURLs(spectreID string) CardURLs {
 		Weapon2Mod2SelectorURL:      "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=2",
 		WeaponClearURL:              base + "/weapon/none",
 		Weapon2ClearURL:             base + "/weapon2/none",
+		ArmorConsumableClearURL:     base + "/consumable/armor/none",
+		WeaponConsumableClearURL:    base + "/consumable/weapon/none",
+		AmmoConsumableClearURL:      base + "/consumable/ammo/none",
+		GearConsumableClearURL:      base + "/consumable/gear/none",
 		SetActiveURL:                base + "/active/toggle",
 		ArmorConsumableSelectorURL:  "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=armor",
 		WeaponConsumableSelectorURL: "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=weapon",
@@ -140,6 +148,10 @@ func teamSpectreURLs(spectreID string) CardURLs {
 		Weapon2Mod2SelectorURL:      "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=2",
 		WeaponClearURL:              base + "/weapon/none",
 		Weapon2ClearURL:             base + "/weapon2/none",
+		ArmorConsumableClearURL:     base + "/consumable/armor/none",
+		WeaponConsumableClearURL:    base + "/consumable/weapon/none",
+		AmmoConsumableClearURL:      base + "/consumable/ammo/none",
+		GearConsumableClearURL:      base + "/consumable/gear/none",
 		SetActiveURL:                "", // team members don't have an individual active toggle
 		ArmorConsumableSelectorURL:  "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=armor",
 		WeaponConsumableSelectorURL: "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=weapon",

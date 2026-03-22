@@ -66,8 +66,8 @@
             <!-- Display mode -->
             <div x-show="!renaming" class="flex items-center gap-2 min-w-0 flex-1">
                 <span class="text-sm font-semibold text-gray-200 truncate"
-                      title="{{.Name}} ({{.CharDef.Name}})">
-                    {{.Name}} <span class="text-gray-500 font-normal">({{.CharDef.Name}})</span>
+                      title="{{.Name}} ({{if eq .CharDef.SubClass "Squadmate"}}Squadmate{{else}}{{.CharDef.Name}}{{end}})">
+                    {{.Name}} <span class="text-gray-500 font-normal">({{if eq .CharDef.SubClass "Squadmate"}}Squadmate{{else}}{{.CharDef.Name}}{{end}})</span>
                 </span>
                 {{if .RenameURL}}
                 <button @click="renaming=true; $nextTick(() => $refs.nameInput.select())"
@@ -417,7 +417,18 @@
 
             <!-- Armor Consumable -->
             <div class="flex flex-col gap-1 flex-1 min-w-[130px]">
-                <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-600">Armor</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-600">Armor</span>
+                    {{if .ArmorConsumableClearURL}}
+                    <button class="text-[10px] font-semibold text-gray-400 hover:text-[#00aaff] transition-colors focus:outline-none"
+                            hx-post="{{.ArmorConsumableClearURL}}"
+                            hx-target="#{{.CardID}}"
+                            hx-swap="outerHTML"
+                            title="Clear armor consumable">
+                        Clear
+                    </button>
+                    {{end}}
+                </div>
                 <button class="group/armor flex items-center gap-3 rounded-lg
                                border border-[#1e3a5f] bg-[#0a0e1a] px-3 py-2
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]
@@ -456,7 +467,18 @@
 
             <!-- Weapon Consumable -->
             <div class="flex flex-col gap-1 flex-1 min-w-[130px]">
-                <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-600">Weapon</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-600">Weapon</span>
+                    {{if .WeaponConsumableClearURL}}
+                    <button class="text-[10px] font-semibold text-gray-400 hover:text-[#00aaff] transition-colors focus:outline-none"
+                            hx-post="{{.WeaponConsumableClearURL}}"
+                            hx-target="#{{.CardID}}"
+                            hx-swap="outerHTML"
+                            title="Clear weapon consumable">
+                        Clear
+                    </button>
+                    {{end}}
+                </div>
                 <button class="group/wconsume flex items-center gap-3 rounded-lg
                                border border-[#1e3a5f] bg-[#0a0e1a] px-3 py-2
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]
@@ -495,7 +517,18 @@
 
             <!-- Ammo Consumable -->
             <div class="flex flex-col gap-1 flex-1 min-w-[130px]">
-                <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-600">Ammo</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-600">Ammo</span>
+                    {{if .AmmoConsumableClearURL}}
+                    <button class="text-[10px] font-semibold text-gray-400 hover:text-[#00aaff] transition-colors focus:outline-none"
+                            hx-post="{{.AmmoConsumableClearURL}}"
+                            hx-target="#{{.CardID}}"
+                            hx-swap="outerHTML"
+                            title="Clear ammo consumable">
+                        Clear
+                    </button>
+                    {{end}}
+                </div>
                 <button class="group/ammo flex items-center gap-3 rounded-lg
                                border border-[#1e3a5f] bg-[#0a0e1a] px-3 py-2
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]
@@ -534,7 +567,18 @@
 
             <!-- Gear Consumable -->
             <div class="flex flex-col gap-1 flex-1 min-w-[130px]">
-                <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-600">Gear</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-600">Gear</span>
+                    {{if .GearConsumableClearURL}}
+                    <button class="text-[10px] font-semibold text-gray-400 hover:text-[#00aaff] transition-colors focus:outline-none"
+                            hx-post="{{.GearConsumableClearURL}}"
+                            hx-target="#{{.CardID}}"
+                            hx-swap="outerHTML"
+                            title="Clear gear consumable">
+                        Clear
+                    </button>
+                    {{end}}
+                </div>
                 <button class="group/gear flex items-center gap-3 rounded-lg
                                border border-[#1e3a5f] bg-[#0a0e1a] px-3 py-2
                                hover:border-[#00aaff]/60 hover:bg-[#0d1829]

@@ -306,6 +306,23 @@ func (c *SpectreController) Register() {
 			return
 		}
 		c.renderCard(w, s)
+
+		// OOB refresh both roster sidebar and team panel (if currently on team)
+		spectres, _ := listSpectres(c.db)
+		_ = c.tmpl.ExecuteTemplate(w, "spectre_sidebar_oob", map[string]any{
+			"Spectres": spectreViews(spectres),
+		})
+		if s.TeamID != "" {
+			team, err := getTeam(c.db, s.TeamID)
+			if err == nil {
+				teamSpectres, _ := listSpectresForTeam(c.db, s.TeamID)
+				_ = c.tmpl.ExecuteTemplate(w, "bot_panel_oob", map[string]any{
+					"TeamID":     s.TeamID,
+					"Bots":       teamSpectreViews(teamSpectres),
+					"TeamActive": team.Active,
+				})
+			}
+		}
 	})
 
 	// POST /api/spectres/{id}/weapon/none
