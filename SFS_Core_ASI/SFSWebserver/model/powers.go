@@ -1,4 +1,4 @@
-package model
+﻿package model
 
 import (
 	"strconv"
@@ -22,16 +22,29 @@ type RankDesc struct {
 // ID is the logical power identifier; Picture is the webp filename under /static/assets/powers/.
 // Both are compiled into the binary and never stored in BoltDB.
 type PowerDef struct {
-	ID        string
-	RootPath  string
-	Name      string
-	Picture   string     // filename in /static/assets/powers/, e.g. "Warp.webp"
-	RankDescs []RankDesc // descriptions indexed 1â€“9 (see RankDesc comment for the mapping)
+	ID                 string
+	RootPath           string
+	Name               string
+	Picture            string     // filename in /static/assets/powers/, e.g. "Warp.webp"
+	RankDescs          []RankDesc // descriptions indexed 1â€“9 (see RankDesc comment for the mapping)
+	AmmoPowerSpriteDir string     // non-empty for ammo powers: path under /static/assets/powers/AmmoPowers/ containing 1.png-9.png
 }
 
 // IconURL returns the URL for the power's sprite sheet.
 func (p PowerDef) IconURL() string {
 	return "/static/assets/powers/" + p.Picture
+}
+
+// IsAmmoPower reports whether this power uses individual per-rank PNG sprites
+// (under AmmoPowers/) instead of a shared sprite sheet.
+func (p PowerDef) IsAmmoPower() bool {
+	return p.AmmoPowerSpriteDir != ""
+}
+
+// AmmoPowerRankURL returns the URL for the rank-index PNG sprite (1-9).
+// Only meaningful when IsAmmoPower() is true.
+func (p PowerDef) AmmoPowerRankURL(rank int) string {
+	return "/static/assets/powers/AmmoPowers/" + p.AmmoPowerSpriteDir + "/" + strconv.Itoa(rank) + ".png"
 }
 
 // DescForRank returns the description for the given index (1â€“9, per the RankDesc scheme).
@@ -2717,17 +2730,18 @@ var PowerCatalog = []PowerDef{
 	},
 	{
 		ID: "SFXPowerCustomAction_WarpAmmo", Name: "Warp Ammo", Picture: "Warp.webp",
-		RootPath: "SFXGameContent",
+		RootPath:           "SFXGameContent",
+		AmmoPowerSpriteDir: "WarpAmmo/sprites/DefineSprite_181",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Rip your enemy apart at a molecular level.\n\nStop targeted enemy from regenerating health.\nWeaken armor.\n\nApplies fire DoT."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                                                  // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},                                                                                          // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},                                                                                          // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase force, damage, and impact radius of combo detonations by 50%."},                                           // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase damage by 40%.\nIncrease duration by 60%."},                                                               // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase weapon damage taken by a target by 15%.\nIncrease power damage taken by a target by 15% for 10 seconds."}, // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage to barriers and armor by 50%.\nWeaken armored targets by an additional 25%."},                      // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase recharge speed by 35%."},                                                                                  // Rank 6 - Evolution B
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
 		},
 	},
 
