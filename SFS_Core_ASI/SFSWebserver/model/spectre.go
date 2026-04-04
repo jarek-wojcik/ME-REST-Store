@@ -1,5 +1,14 @@
 package model
 
+// PawnType describes how a character is spawned in ME3 multiplayer.
+type PawnType string
+
+const (
+	PawnTypePlayerMP PawnType = "PlayerMP"
+	PawnTypePawn     PawnType = "Pawn"
+	PawnTypeHenchman PawnType = "Henchman"
+)
+
 // Spectre is a single N7/Spectre character loadout.
 // Unlike a Bot it belongs to no team — it is a standalone slot for the
 // player's own operatives.
@@ -7,7 +16,8 @@ type Spectre struct {
 	ID                    string      `json:"id"`
 	Name                  string      `json:"name"`
 	CharacterID           string      `json:"characterId"`
-	AppearanceCharacterID string      `json:"appearanceCharId,omitempty"` // visual override; base class unchanged
+	AppearanceCharacterID string      `json:"appearanceCharId,omitempty"`   // visual override; base class unchanged
+	AppearancePawnType    PawnType    `json:"appearancePawnType,omitempty"` // pawn type derived from the character class
 	WeaponID              string      `json:"weaponId"`
 	WeaponMod1ID          string      `json:"weaponMod1Id"`
 	WeaponMod2ID          string      `json:"weaponMod2Id"`
@@ -23,4 +33,5 @@ type Spectre struct {
 	Active                bool        `json:"active,omitempty"`        // whether this spectre is set as active
 	TeamID                string      `json:"teamId,omitempty"`        // non-empty for strike-team members
 	SortOrder             int64       `json:"sortOrder,omitempty"`     // creation time (unix nanos) for ordering within a team
+
 }

@@ -1,9 +1,11 @@
 package me3integration
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
 	"strings"
 
 	"sfswebserver/model"
@@ -156,8 +158,41 @@ func flatPower(p model.PowerSlot) string {
 	return fmt.Sprintf("%s:%d:%s:%s:%s", powerID, p.Rank, p.Evolution[0], p.Evolution[1], p.Evolution[2])
 }
 
+// pawnTypeForCharacter resolves the PawnType for a given character ID.
+func pawnTypeForCharacter(characterID string) string {
+	if def := model.CharacterByID(characterID); def != nil {
+		return string(def.GetPawnType())
+	}
+	return string(model.PawnTypePlayerMP)
+}
+
+// qualifySpectre expands all bare IDs on s to their fully-qualified
+// "RootPath.ID" forms so that JSON and simpleJson responses contain the same
+// qualified values as the flat response.
+// Must be called AFTER AppearancePawnType is set (lookup uses the raw CharacterID).
+func qualifySpectre(s *model.Spectre) {
+	s.CharacterID = qualifiedCharacterID(s.CharacterID)
+	s.AppearanceCharacterID = qualifiedCharacterID(s.AppearanceCharacterID)
+	s.WeaponID = qualifiedWeaponID(s.WeaponID)
+	s.WeaponMod1ID = qualifiedModID(s.WeaponMod1ID)
+	s.WeaponMod2ID = qualifiedModID(s.WeaponMod2ID)
+	s.Weapon2ID = qualifiedWeaponID(s.Weapon2ID)
+	s.Weapon2Mod1ID = qualifiedModID(s.Weapon2Mod1ID)
+	s.Weapon2Mod2ID = qualifiedModID(s.Weapon2Mod2ID)
+	for i := range s.Powers {
+		if def := model.PowerByID(s.Powers[i].PowerID); def != nil {
+			s.Powers[i].PowerID = def.RootPath + "." + s.Powers[i].PowerID
+		}
+	}
+	if s.BorrowedPower != nil {
+		if def := model.PowerByID(s.BorrowedPower.PowerID); def != nil {
+			s.BorrowedPower.PowerID = def.RootPath + "." + s.BorrowedPower.PowerID
+		}
+	}
+}
+
 // spectreToFlat serialises a Spectre as a single pipe-delimited line.
-// Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower
+// Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower|armorConsumableId|weaponConsumableId|ammoConsumableId|gearConsumableId|pawnType
 // Weapon/mod/power ID fields are qualified as "RootPath.ID".
 // Power fields use the sub-format: rootPath.powerId:rank:evo0:evo1:evo2  (empty string when slot absent)
 func spectreToFlat(s *model.Spectre) string {
@@ -178,11 +213,12 @@ func spectreToFlat(s *model.Spectre) string {
 		powers[0], powers[1], powers[2], powers[3], powers[4],
 		borrowed,
 		s.ArmorConsumableID, s.WeaponConsumableID, s.AmmoConsumableID, s.GearConsumableID,
+		pawnTypeForCharacter(s.CharacterID),
 	}, "|")
 }
 
 // teamSpectreToFlat serialises a strike-team Spectre as a single pipe-delimited line.
-// Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower
+// Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower|armorConsumableId|weaponConsumableId|ammoConsumableId|gearConsumableId|pawnType
 // Weapon/mod/power ID fields are qualified as "RootPath.ID".
 func teamSpectreToFlat(s model.Spectre) string {
 	powers := make([]string, 5)
@@ -202,6 +238,7 @@ func teamSpectreToFlat(s model.Spectre) string {
 		powers[0], powers[1], powers[2], powers[3], powers[4],
 		borrowed,
 		s.ArmorConsumableID, s.WeaponConsumableID, s.AmmoConsumableID, s.GearConsumableID,
+		pawnTypeForCharacter(s.CharacterID),
 	}, "|")
 }
 
@@ -229,6 +266,60 @@ func respondJSON(w http.ResponseWriter, status int, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
+// respondSimpleJSON serialises v as a flat list of key:value lines.
+// Nested objects use dot-notation (borrowedPower.rank:6).
+// Arrays use bracket-notation (powers[0].powerId:X).
+// No quotes, braces, brackets, commas, or extra whitespace are emitted.
+// Keys within each object are sorted alphabetically for stable output.
+func respondSimpleJSON(w http.ResponseWriter, status int, v any) {
+	b, err := json.Marshal(v)
+	if err != nil {
+		http.Error(w, "marshal error", http.StatusInternalServerError)
+		return
+	}
+	// Decode with UseNumber so int64 values (e.g. sortOrder) are not
+	// converted to float64 and rendered in scientific notation.
+	var generic interface{}
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.UseNumber()
+	if err := dec.Decode(&generic); err != nil {
+		http.Error(w, "decode error", http.StatusInternalServerError)
+		return
+	}
+	var sb strings.Builder
+	flattenValue("", generic, &sb)
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(status)
+	_, _ = fmt.Fprint(w, sb.String())
+}
+
+// flattenValue recursively writes prefix:value lines into sb.
+func flattenValue(prefix string, v interface{}, sb *strings.Builder) {
+	switch val := v.(type) {
+	case map[string]interface{}:
+		keys := make([]string, 0, len(val))
+		for k := range val {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			subPrefix := k
+			if prefix != "" {
+				subPrefix = prefix + "." + k
+			}
+			flattenValue(subPrefix, val[k], sb)
+		}
+	case []interface{}:
+		for i, item := range val {
+			flattenValue(fmt.Sprintf("%s[%d]", prefix, i), item, sb)
+		}
+	case nil:
+		// omit null/absent fields
+	default:
+		sb.WriteString(prefix + ":" + fmt.Sprint(val) + "\n")
+	}
+}
+
 func respondNotFound(w http.ResponseWriter, msg string) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
@@ -254,6 +345,12 @@ func (c *Me3IntegrationController) Register() {
 			respondFlat(w, spectreToFlat(spectre))
 			return
 		}
+		spectre.AppearancePawnType = model.PawnType(pawnTypeForCharacter(spectre.CharacterID))
+		qualifySpectre(spectre)
+		if r.URL.Query().Get("simpleJson") == "true" {
+			respondSimpleJSON(w, http.StatusOK, spectre)
+			return
+		}
 		respondJSON(w, http.StatusOK, spectre)
 	})
 
@@ -273,6 +370,14 @@ func (c *Me3IntegrationController) Register() {
 		}
 		if r.URL.Query().Get("flat") == "true" {
 			respondFlat(w, strikeTeamToFlat(team))
+			return
+		}
+		for i := range team.Spectres {
+			team.Spectres[i].AppearancePawnType = model.PawnType(pawnTypeForCharacter(team.Spectres[i].CharacterID))
+			qualifySpectre(&team.Spectres[i])
+		}
+		if r.URL.Query().Get("simpleJson") == "true" {
+			respondSimpleJSON(w, http.StatusOK, team)
 			return
 		}
 		respondJSON(w, http.StatusOK, team)

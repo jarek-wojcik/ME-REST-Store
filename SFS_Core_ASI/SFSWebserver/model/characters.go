@@ -36,6 +36,15 @@ type CharacterDef struct {
 	PowerIDs    [5]string // default power IDs for this character class
 	RootPath    string    // UE3 archetype package path prefix (e.g. "BioChar_MPPlayers.Archetypes.Adept"); empty when ID already encodes the full path
 	ArchetypeID string    // last segment of the UE3 archetype path (e.g. "HumanFemale_Adept"); empty when it matches ID
+	PawnType    PawnType  // how the character is spawned; defaults to PlayerMP when unset
+}
+
+// GetPawnType returns the PawnType for this character, defaulting to PawnTypePlayerMP.
+func (c CharacterDef) GetPawnType() PawnType {
+	if c.PawnType == "" {
+		return PawnTypePlayerMP
+	}
+	return c.PawnType
 }
 
 // PictureURL returns the URL path for the character's portrait image.
@@ -284,9 +293,11 @@ var CharacterCatalog = []CharacterDef{
 
 	// ---- Armax -------------------------------------------------------------
 	{ID: "Char_SimHenchmen.SimJack", Name: "Jack", SubClass: "Squadmate", PictureFile: "/SP/AAA_CSC_-_A_-_Jack.webp",
-		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"}},
+		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"},
+		PawnType: PawnTypeHenchman},
 	{ID: "Char_SimHenchmen.SimLiara", Name: "Liara", SubClass: "Squadmate", PictureFile: "/SP/Liara0Glow.png",
-		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"}},
+		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"},
+		PawnType: PawnTypeHenchman},
 }
 
 // ---------------------------------------------------------------------------

@@ -6,6 +6,7 @@ struct SFSCharacterModelStruct
     var string Name;
     var string CharacterID;
     var string AppearanceCharID;
+    var string AppearancePawnType;
     var SFSWeaponModelStruct Weapon1;
     var bool bHasWeapon2;
     var SFSWeaponModelStruct Weapon2;
