@@ -8,7 +8,7 @@
 #include "../ME3SDK/SdkHeaders.h"
 #include "../detours/detours.h"
 #include "resource.h"
-#include <vector>
+#include "EventManager.h"
 #include <atomic>
 #include "OverlayHost.h"
 
@@ -17,7 +17,7 @@
 #pragma comment(lib, "shlwapi.lib")
 
 // Constructed in onAttach (off the loader lock) not as a global
-static ME3TweaksASILogger* logger = nullptr;
+ME3TweaksASILogger* logger = nullptr;
 static HANDLE g_sidecarProcess = NULL;
 static DWORD  g_sidecarPid = 0;
 static HMODULE g_thisModule = NULL;
@@ -142,33 +142,45 @@ static void StopSidecar()
 void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void* pParms, void* pResult)
 {
     const auto funcName = pFunction->GetFullName();
-    if (isPartOf(funcName, "IsPrivateMatch")) {
-        // Refresh the cached PC every time IsPrivateMatch fires.
+
+    LogEventOnce(funcName);
+
+    // ShouldShowStatusBar fires in the MP lobby — show the overlay toggle tab.
+    if (isPartOf(funcName, "ShouldShowStatusBar")) {
         auto* candidate = (ABioPlayerController*)FindObjectOfType(ABioPlayerController::StaticClass());
         g_cachedPC.store(candidate);
-        if (logger)
-            logger->writeToLog(string_format("[HookedPE] IsPrivateMatch: PC cache refreshed = %p\n", (void*)candidate), true);
 
-        if (logger) {
-            char* szName = pFunction->GetFullName();
-            logger->writeToLog(string_format("%s\n", szName), true);
-            logger->flush();
-        }
-
-        // On the first IsPrivateMatch, show only the toggle tab.
-        // The overlay panel starts hidden - the user opens it by clicking the tab.
         bool expected = false;
         if (g_overlayShown.compare_exchange_strong(expected, true)) {
             if (logger) {
-                logger->writeToLog("[HookedPE] First IsPrivateMatch - showing toggle tab.\n", true);
+                logger->writeToLog("[HookedPE] ShouldShowStatusBar - showing toggle tab.\n", true);
                 logger->flush();
             }
             g_overlay.ShowToggleOnly();
         }
     }
 
-    // Consume pending console command on the game thread.
-    // ExecuteConsoleCommand (overlay thread) only sets the flag; execution happens here.
+    // sfxgrimp.PostBeginPlay fires when the MP map starts — hide overlay and run GetMorinth.
+    if (isPartOf(funcName, "sfxgrimp") && isPartOf(funcName, "PostBeginPlay")) {
+        auto* candidate = (ABioPlayerController*)FindObjectOfType(ABioPlayerController::StaticClass());
+        g_cachedPC.store(candidate);
+
+        if (logger) {
+            logger->writeToLog("[HookedPE] sfxgrimp.PostBeginPlay - hiding overlay.\n", true);
+            logger->flush();
+        }
+        g_overlay.Hide();
+
+        ABioPlayerController* PC = g_cachedPC.load();
+        if (PC) {
+            PC->ConsoleCommand(FString(TEXT("GetMorinth")), 0);
+            if (logger) logger->writeToLog("[HookedPE] GetMorinth dispatched from PostBeginPlay.\n", true);
+        } else {
+            if (logger) logger->writeToLog("[HookedPE] PostBeginPlay: PC is null, GetMorinth skipped.\n", true);
+        }
+    }
+
+    // Consume any pending console command queued from the overlay thread.
     bool pending = true;
     if (g_pendingCommand.compare_exchange_strong(pending, false)) {
         ABioPlayerController* PC = g_cachedPC.load();
@@ -185,11 +197,17 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
     ProcessEvent(pObject, pFunction, pParms, pResult);
 }
 
+static void EventLogCallback(const char* msg)
+{
+    if (logger) { logger->writeToLog(msg, true); logger->flush(); }
+}
+
 // All C++ objects with destructors live here, away from the __try block.
 static void onAttachImpl()
 {
     // Safe to construct the logger here � we are off the loader lock
     logger = new ME3TweaksASILogger("Function Call Logger", "FunctionCallLog.txt");
+    SetEventManagerLogger(EventLogCallback);
     logger->writeToLog("[onAttach] Logger started.\n", true);
     logger->flush();
 

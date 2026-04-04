@@ -109,13 +109,57 @@ func (c *Me3IntegrationController) activeStrikeTeam() (*StrikeTeamResponse, erro
 	return result, err
 }
 
+// qualifiedCharacterID returns "RootPath.ArchetypeID" for a character, or the bare id
+// when the character is not found or its RootPath is empty (e.g. Jack/Liara whose ID
+// already encodes the full path). ArchetypeID falls back to ID when not set.
+func qualifiedCharacterID(id string) string {
+	if id == "" {
+		return ""
+	}
+	if def := model.CharacterByID(id); def != nil && def.RootPath != "" {
+		archetypeID := def.ArchetypeID
+		if archetypeID == "" {
+			archetypeID = def.ID
+		}
+		return def.RootPath + "." + archetypeID
+	}
+	return id
+}
+
+// qualifiedWeaponID returns "RootPath.ID" for a weapon, or the bare id when not found.
+func qualifiedWeaponID(id string) string {
+	if id == "" {
+		return ""
+	}
+	if def := model.WeaponByID(id); def != nil {
+		return def.RootPath + "." + id
+	}
+	return id
+}
+
+// qualifiedModID returns "RootPath.ID" for a weapon mod, or the bare id when not found.
+func qualifiedModID(id string) string {
+	if id == "" {
+		return ""
+	}
+	if def := model.WeaponModByID(id); def != nil {
+		return def.RootPath + "." + id
+	}
+	return id
+}
+
 func flatPower(p model.PowerSlot) string {
-	return fmt.Sprintf("%s:%d:%s:%s:%s", p.PowerID, p.Rank, p.Evolution[0], p.Evolution[1], p.Evolution[2])
+	powerID := p.PowerID
+	if def := model.PowerByID(p.PowerID); def != nil {
+		powerID = def.RootPath + "." + p.PowerID
+	}
+	return fmt.Sprintf("%s:%d:%s:%s:%s", powerID, p.Rank, p.Evolution[0], p.Evolution[1], p.Evolution[2])
 }
 
 // spectreToFlat serialises a Spectre as a single pipe-delimited line.
 // Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower
-// Power fields use the sub-format: powerId:rank:evo0:evo1:evo2  (empty string when slot absent)
+// Weapon/mod/power ID fields are qualified as "RootPath.ID".
+// Power fields use the sub-format: rootPath.powerId:rank:evo0:evo1:evo2  (empty string when slot absent)
 func spectreToFlat(s *model.Spectre) string {
 	powers := make([]string, 5)
 	for i := range powers {
@@ -128,16 +172,18 @@ func spectreToFlat(s *model.Spectre) string {
 		borrowed = flatPower(*s.BorrowedPower)
 	}
 	return strings.Join([]string{
-		s.ID, s.Name, s.CharacterID, s.AppearanceCharacterID,
-		s.WeaponID, s.WeaponMod1ID, s.WeaponMod2ID,
-		s.Weapon2ID, s.Weapon2Mod1ID, s.Weapon2Mod2ID,
+		s.ID, s.Name, qualifiedCharacterID(s.CharacterID), qualifiedCharacterID(s.AppearanceCharacterID),
+		qualifiedWeaponID(s.WeaponID), qualifiedModID(s.WeaponMod1ID), qualifiedModID(s.WeaponMod2ID),
+		qualifiedWeaponID(s.Weapon2ID), qualifiedModID(s.Weapon2Mod1ID), qualifiedModID(s.Weapon2Mod2ID),
 		powers[0], powers[1], powers[2], powers[3], powers[4],
 		borrowed,
+		s.ArmorConsumableID, s.WeaponConsumableID, s.AmmoConsumableID, s.GearConsumableID,
 	}, "|")
 }
 
 // teamSpectreToFlat serialises a strike-team Spectre as a single pipe-delimited line.
 // Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower
+// Weapon/mod/power ID fields are qualified as "RootPath.ID".
 func teamSpectreToFlat(s model.Spectre) string {
 	powers := make([]string, 5)
 	for i := range powers {
@@ -150,11 +196,12 @@ func teamSpectreToFlat(s model.Spectre) string {
 		borrowed = flatPower(*s.BorrowedPower)
 	}
 	return strings.Join([]string{
-		s.ID, s.Name, s.CharacterID, s.AppearanceCharacterID,
-		s.WeaponID, s.WeaponMod1ID, s.WeaponMod2ID,
-		s.Weapon2ID, s.Weapon2Mod1ID, s.Weapon2Mod2ID,
+		s.ID, s.Name, qualifiedCharacterID(s.CharacterID), qualifiedCharacterID(s.AppearanceCharacterID),
+		qualifiedWeaponID(s.WeaponID), qualifiedModID(s.WeaponMod1ID), qualifiedModID(s.WeaponMod2ID),
+		qualifiedWeaponID(s.Weapon2ID), qualifiedModID(s.Weapon2Mod1ID), qualifiedModID(s.Weapon2Mod2ID),
 		powers[0], powers[1], powers[2], powers[3], powers[4],
 		borrowed,
+		s.ArmorConsumableID, s.WeaponConsumableID, s.AmmoConsumableID, s.GearConsumableID,
 	}, "|")
 }
 

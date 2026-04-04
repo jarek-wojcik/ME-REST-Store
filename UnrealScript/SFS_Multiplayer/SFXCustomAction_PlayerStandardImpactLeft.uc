@@ -1,0 +1,12 @@
+Class SFXCustomAction_PlayerStandardImpactLeft extends SFXCustomAction_DamageReaction
+    config(Game);
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    BS_Reaction = {
+                   AnimName = ('None', 'DG_Right', 'None')
+                  }
+    OverrideList = (Class'SFXCustomAction_Ragdoll', Class'SFXCustomAction_AnimatedRagdoll', Class'SFXCustomAction_Frozen', Class'SFXCustomAction_Meleed', Class'SFXCustomAction_MeleedLeft', Class'SFXCustomAction_MeleedRight', Class'SFXCustomAction_MeleedForward')
+    bDisableMovement = FALSE
+}
