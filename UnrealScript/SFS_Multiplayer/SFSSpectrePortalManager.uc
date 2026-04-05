@@ -149,7 +149,7 @@ public function LoadWeapons(SFSCharacterModelStruct Character, SFXPawn Pawn)
         weaponManager.loadAndGiveWeaponAsync(Character.Weapons[i].WeaponID, Character.Weapons[i].Mod1ID, Character.Weapons[i].Mod2ID);
     }
 }
-private function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Character, SFXPawn Pawn)
+private final function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
     local int i;
     local array<string> pathTokens;

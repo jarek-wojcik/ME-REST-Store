@@ -26,7 +26,7 @@ var Class<SFXWeaponMod> LoadedWeaponMod;
 var SFXGameEffect_MatchConsumableBase LoadedConsumable;
 var string Mod1ID;
 var string Mod2ID;
-var SFXWeapon TargetWeapon;
+var SFXWeapon targetWeapon;
 
 function OnAssetLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {

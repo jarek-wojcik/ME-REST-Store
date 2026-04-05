@@ -84,7 +84,7 @@ function loadAndGiveWeapon(string weaponPath)
     OwnerPawn.SetWeaponImmediately(NewWeapon);
     log(Self.Name, "Successfully gave and equipped weapon: " $ weaponPath, Outer);
 }
-function loadAndGiveWeaponAsync(string weaponPath, string mod1ID, string mod2ID)
+function loadAndGiveWeaponAsync(string weaponPath, string Mod1ID, string Mod2ID)
 {
     if (asyncLoader == None)
     {
@@ -92,7 +92,7 @@ function loadAndGiveWeaponAsync(string weaponPath, string mod1ID, string mod2ID)
         return;
     }
     log(Self.Name, "Async loading weapon: " $ weaponPath, Outer);
-    asyncLoader.LoadWeaponAsync(weaponPath, mod1ID, mod2ID, OnWeaponLoaded);
+    asyncLoader.LoadWeaponAsync(weaponPath, Mod1ID, Mod2ID, OnWeaponLoaded);
 }
 function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
@@ -111,7 +111,12 @@ function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         return;
     }
     NewWeapon.CurrentSpareAmmo = NewWeapon.GetMaxSpareAmmo();
-    NewWeapon.WeaponLevel = NewWeapon.MaxLevel - 1.0;
+    NewWeapon.WeaponLevel = NewWeapon.MaxLevel;
+    //Remove the sniper rifle un-zoomed penalty
+    if (SFXWeapon_SniperRifle_Base(NewWeapon) != None)
+    {
+        SFXWeapon_SniperRifle_Base(NewWeapon).SniperRifleDamagePenalty = 1.0;
+    }
     log(Self.Name, "Successfully gave and equipped weapon (async): " $ load.AssetToLoad $ " at level " $ NewWeapon.WeaponLevel, Outer);
     ModManager = NewWeapon.GetModule(Class'SFXModule_WeaponModManager');
     if (ModManager != None)
@@ -138,18 +143,18 @@ function OnWeaponModLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         log(Self.Name, "Error: Failed to async load weapon mod: " $ load.AssetToLoad, Outer);
         return;
     }
-    if (load.TargetWeapon == None)
+    if (load.targetWeapon == None)
     {
         log(Self.Name, "Error: TargetWeapon is None for mod: " $ load.AssetToLoad, Outer);
         return;
     }
-    ModManager = load.TargetWeapon.GetModule(Class'SFXModule_WeaponModManager');
+    ModManager = load.targetWeapon.GetModule(Class'SFXModule_WeaponModManager');
     if (ModManager == None)
     {
         log(Self.Name, "Warning: No SFXModule_WeaponModManager on weapon for mod: " $ load.AssetToLoad, Outer);
         return;
     }
-    log(Self.Name, "Applying mod: " $ load.AssetToLoad $ " to " $ load.TargetWeapon, Outer);
+    log(Self.Name, "Applying mod: " $ load.AssetToLoad $ " to " $ load.targetWeapon, Outer);
     ModManager.AddMod(load.LoadedWeaponMod, 5);
 }
 
