@@ -1,0 +1,141 @@
+Class SFXGameChoiceGUIData_HeavyWeapons extends SFXGameChoiceGUIData
+    editinlinenew
+    config(UI);
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    lstChoices = ({
+                   m_mapTokenIDToActual = (), 
+                   sChoiceName = "", 
+                   sChoiceTitle = "", 
+                   sChoiceImageTitle = "", 
+                   sChoiceDescription = "", 
+                   sActionText = "", 
+                   WeaponClassRef = 'None', 
+                   WeaponModClassRef = 'None', 
+                   srChoiceName = $234095, 
+                   srChoiceTitle = $0, 
+                   oChoiceImage = None, 
+                   srChoiceImageTitle = $234095, 
+                   srChoiceDescription = $234100, 
+                   nOptionalPaneItemValue = 23, 
+                   nChoiceID = 0, 
+                   srActionText = $0, 
+                   bDefaultSelection = FALSE, 
+                   bDisabled = FALSE, 
+                   bNested = FALSE, 
+                   bOptionalPaneHideCost = FALSE, 
+                   ChoiceColor = None, 
+                   eResource = EInventoryResourceTypes.INV_RESOURCE_CREDITS, 
+                   eDisplayType = EChoiceDisplayType.EChoiceDisplayType_Normal
+                  }, 
+                  {
+                   m_mapTokenIDToActual = (), 
+                   sChoiceName = "", 
+                   sChoiceTitle = "", 
+                   sChoiceImageTitle = "", 
+                   sChoiceDescription = "", 
+                   sActionText = "", 
+                   WeaponClassRef = 'None', 
+                   WeaponModClassRef = 'None', 
+                   srChoiceName = $234096, 
+                   srChoiceTitle = $12346, 
+                   oChoiceImage = None, 
+                   srChoiceImageTitle = $234096, 
+                   srChoiceDescription = $234101, 
+                   nOptionalPaneItemValue = 5678, 
+                   nChoiceID = 0, 
+                   srActionText = $0, 
+                   bDefaultSelection = FALSE, 
+                   bDisabled = FALSE, 
+                   bNested = FALSE, 
+                   bOptionalPaneHideCost = FALSE, 
+                   ChoiceColor = None, 
+                   eResource = EInventoryResourceTypes.INV_RESOURCE_RARE1_EEZO, 
+                   eDisplayType = EChoiceDisplayType.EChoiceDisplayType_Normal
+                  }, 
+                  {
+                   m_mapTokenIDToActual = (), 
+                   sChoiceName = "", 
+                   sChoiceTitle = "", 
+                   sChoiceImageTitle = "", 
+                   sChoiceDescription = "", 
+                   sActionText = "", 
+                   WeaponClassRef = 'None', 
+                   WeaponModClassRef = 'None', 
+                   srChoiceName = $234097, 
+                   srChoiceTitle = $12347, 
+                   oChoiceImage = None, 
+                   srChoiceImageTitle = $234097, 
+                   srChoiceDescription = $234102, 
+                   nOptionalPaneItemValue = 1138, 
+                   nChoiceID = 0, 
+                   srActionText = $0, 
+                   bDefaultSelection = FALSE, 
+                   bDisabled = FALSE, 
+                   bNested = FALSE, 
+                   bOptionalPaneHideCost = FALSE, 
+                   ChoiceColor = None, 
+                   eResource = EInventoryResourceTypes.INV_RESOURCE_RARE2_IRIDIUM, 
+                   eDisplayType = EChoiceDisplayType.EChoiceDisplayType_Normal
+                  }, 
+                  {
+                   m_mapTokenIDToActual = (), 
+                   sChoiceName = "", 
+                   sChoiceTitle = "", 
+                   sChoiceImageTitle = "", 
+                   sChoiceDescription = "", 
+                   sActionText = "", 
+                   WeaponClassRef = 'None', 
+                   WeaponModClassRef = 'None', 
+                   srChoiceName = $234098, 
+                   srChoiceTitle = $12348, 
+                   oChoiceImage = None, 
+                   srChoiceImageTitle = $234098, 
+                   srChoiceDescription = $234103, 
+                   nOptionalPaneItemValue = 1234567890, 
+                   nChoiceID = 0, 
+                   srActionText = $0, 
+                   bDefaultSelection = FALSE, 
+                   bDisabled = FALSE, 
+                   bNested = FALSE, 
+                   bOptionalPaneHideCost = FALSE, 
+                   ChoiceColor = None, 
+                   eResource = EInventoryResourceTypes.INV_RESOURCE_RARE3_PALLADIUM, 
+                   eDisplayType = EChoiceDisplayType.EChoiceDisplayType_Normal
+                  }, 
+                  {
+                   m_mapTokenIDToActual = (), 
+                   sChoiceName = "", 
+                   sChoiceTitle = "", 
+                   sChoiceImageTitle = "", 
+                   sChoiceDescription = "", 
+                   sActionText = "", 
+                   WeaponClassRef = 'None', 
+                   WeaponModClassRef = 'None', 
+                   srChoiceName = $234099, 
+                   srChoiceTitle = $12348, 
+                   oChoiceImage = None, 
+                   srChoiceImageTitle = $234099, 
+                   srChoiceDescription = $234104, 
+                   nOptionalPaneItemValue = 0, 
+                   nChoiceID = 0, 
+                   srActionText = $0, 
+                   bDefaultSelection = FALSE, 
+                   bDisabled = FALSE, 
+                   bNested = FALSE, 
+                   bOptionalPaneHideCost = FALSE, 
+                   ChoiceColor = None, 
+                   eResource = EInventoryResourceTypes.INV_RESOURCE_RARE4_PLATINUM, 
+                   eDisplayType = EChoiceDisplayType.EChoiceDisplayType_Normal
+                  }
+                 )
+    m_srTitle = $234981
+    m_srSubTitle = $234092
+    m_srAText = $234093
+    m_srBText = $234094
+    m_srOptionalPaneTitleText = $263416
+    m_srOptionalPaneItemValuePrefixText = $263417
+    m_ShowOptionalPane = TRUE
+}

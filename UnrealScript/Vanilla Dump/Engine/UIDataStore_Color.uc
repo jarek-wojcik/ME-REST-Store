@@ -1,0 +1,9 @@
+Class UIDataStore_Color extends UIDataStore
+    native
+    transient;
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    Tag = 'Color'
+}

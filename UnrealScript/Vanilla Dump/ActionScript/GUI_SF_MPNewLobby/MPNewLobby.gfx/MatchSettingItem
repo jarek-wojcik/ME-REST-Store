@@ -1,0 +1,173 @@
+class screens.MPNewLobby.MatchSettingItem extends screens.MPNewLobby.PageItem
+{
+   var contents;
+   var SourceData;
+   var arrowLeft;
+   var arrowRight;
+   var Value = -1;
+   var bCanChange = false;
+   function MatchSettingItem()
+   {
+      super();
+   }
+   function Initialize(sTitle, aSourceData, nValueID, canChange)
+   {
+      this.contents.title.text = sTitle;
+      this.SourceData = aSourceData;
+      if(this.Value == -1 || !canChange)
+      {
+         this.Value = this.FindValueIndexByID(nValueID);
+      }
+      this.bCanChange = canChange;
+   }
+   function FindValueIndexByID(nID)
+   {
+      var _loc2_ = 0;
+      while(_loc2_ < this.SourceData.length)
+      {
+         if(this.SourceData[_loc2_].Id == nID)
+         {
+            return _loc2_;
+         }
+         _loc2_ = _loc2_ + 1;
+      }
+      return 0;
+   }
+   function Refresh()
+   {
+      super.Refresh();
+      var _loc5_ = this.SourceData[this.Value].Name;
+      if(_loc5_ != undefined)
+      {
+         this.contents.setting.text = "$" + _loc5_;
+      }
+      else
+      {
+         this.contents.setting.text = "$" + this.SourceData[this.Value].PrettyName;
+      }
+      if(this.SourceData[this.Value].Image.length != "")
+      {
+         this.contents.image.LoadDelay = 1;
+         this.contents.image.Async = true;
+         this.contents.image.FadeIn = true;
+         this.contents.image.ResourceString = this.SourceData[this.Value].Image;
+      }
+      this.arrowLeft._visible = this.bCanChange && (this.Value - 1 >= 0 && this.Value - 1 < this.SourceData.length);
+      this.arrowRight._visible = this.bCanChange && (this.Value + 1 >= 0 && this.Value + 1 < this.SourceData.length);
+      this.contents.locked._visible = this.bCanChange == false || this.SourceData.length == 1;
+      if(!this.IsValueAvailable(this.Value))
+      {
+         this.contents.unavailable.message.text = _root.screen.srUnavailable;
+         this.contents.unavailable._visible = true;
+      }
+      else
+      {
+         this.contents.unavailable._visible = false;
+      }
+      var _loc4_ = this.GetXPBonusTextForValue(this.Value);
+      if(_loc4_ != null && _loc4_.length > 0)
+      {
+         this.contents.bonusOverlay.bonusText.text = _loc4_;
+         this.contents.bonusOverlay._visible = true;
+      }
+      else
+      {
+         this.contents.bonusOverlay._visible = false;
+      }
+      _root.screen.RefreshButtonLegend();
+   }
+   function IsValueAvailable(nValue)
+   {
+      return true;
+   }
+   function GetXPBonusTextForValue(nValue)
+   {
+      var _loc5_ = !_root.screen.m_bConnected && !_root.screen.bIsHostingNewMission;
+      var _loc3_ = this.m_listIndex == _root.screen.SETTING_MAP && Number(this.SourceData[nValue].Id) == 0;
+      var _loc4_ = this.m_listIndex == _root.screen.SETTING_ENEMY && Number(this.SourceData[nValue].Id) == 0;
+      if(_loc3_)
+      {
+         return String(flash.external.ExternalInterface.call("GetRandomMapBonusText"));
+      }
+      if(_loc4_)
+      {
+         return String(flash.external.ExternalInterface.call("GetRandomEnemyBonusText"));
+      }
+      return null;
+   }
+   function onPress()
+   {
+      if(this.bCanChange)
+      {
+         if(this.arrowLeft.hitTest(_root._xmouse,_root._ymouse))
+         {
+            this.Decrement();
+         }
+         else if(this.arrowRight.hitTest(_root._xmouse,_root._ymouse))
+         {
+            this.Increment();
+         }
+         else
+         {
+            _global.SFX.PlayGUIError();
+         }
+      }
+      else
+      {
+         _global.SFX.PlayGUIError();
+      }
+   }
+   function onRelease()
+   {
+   }
+   function Increment()
+   {
+      if(this.bCanChange)
+      {
+         if(this.Value < this.SourceData.length - 1)
+         {
+            this.Value = this.Value + 1;
+            this.Refresh();
+            _global.SFX.PlayGUISound("MPLobbyMatchSettingsChange");
+            this.contents.image._x += 50;
+            com.TweenManager.createTween(2,this.contents.image,0,0,0,0,16,5,"dec");
+            return true;
+         }
+         _global.SFX.PlayGUIError();
+      }
+      else
+      {
+         _global.SFX.PlayGUIError();
+      }
+      return false;
+   }
+   function Decrement()
+   {
+      if(this.bCanChange)
+      {
+         if(this.Value > 0)
+         {
+            this.Value = this.Value - 1;
+            this.Refresh();
+            _global.SFX.PlayGUISound("MPLobbyMatchSettingsChange");
+            this.contents.image._x -= 50;
+            com.TweenManager.createTween(2,this.contents.image,0,0,0,0,16,5,"dec");
+            return true;
+         }
+         _global.SFX.PlayGUIError();
+      }
+      else
+      {
+         _global.SFX.PlayGUIError();
+      }
+      return false;
+   }
+   function GetActiveValue()
+   {
+      return this.Value;
+   }
+   function GetActiveValueID()
+   {
+      return this.SourceData[this.Value].Id;
+   }
+}

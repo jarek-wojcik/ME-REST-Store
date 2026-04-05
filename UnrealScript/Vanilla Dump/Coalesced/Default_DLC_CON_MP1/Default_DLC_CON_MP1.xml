@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CoalesceFile id="Default_DLC_CON_MP1" name="Default_DLC_CON_MP1.bin">
+	<Assets>
+		<Asset source="BioEngine.xml" />
+		<Asset source="BioGame.xml" />
+		<Asset source="BioUI.xml" />
+		<Asset source="BioWeapon.xml" />
+	</Assets>
+</CoalesceFile>

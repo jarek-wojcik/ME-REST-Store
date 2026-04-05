@@ -1,0 +1,34 @@
+Class SFXSeqEvt_HordeWaveStart extends SequenceEvent;
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+    WhoTriggers = EWhoTriggers.WT_Everyone
+    VariableLinks = ({
+                      LinkedVariables = (), 
+                      LinkDesc = "Instigator", 
+                      ExpectedType = Class'SeqVar_Object', 
+                      LinkVar = 'None', 
+                      PropertyName = 'None', 
+                      MinVars = 1, 
+                      MaxVars = 255, 
+                      CachedProperty = None, 
+                      bWriteable = TRUE, 
+                      bModifiesLinkedObject = FALSE, 
+                      bAllowAnyType = FALSE
+                     }, 
+                     {
+                      LinkedVariables = (), 
+                      LinkDesc = "Wave", 
+                      ExpectedType = Class'SeqVar_Int', 
+                      LinkVar = 'None', 
+                      PropertyName = 'None', 
+                      MinVars = 1, 
+                      MaxVars = 255, 
+                      CachedProperty = None, 
+                      bWriteable = FALSE, 
+                      bModifiesLinkedObject = FALSE, 
+                      bAllowAnyType = FALSE
+                     }
+                    )
+}

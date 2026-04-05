@@ -1,0 +1,12 @@
+class screens.MPNewLobby.ArrowButton extends com.bioware.masseffect.controls.buttonClasses.SFXButton
+{
+   var RollOverFrame = "rollover";
+   var PressFrame = "press";
+   var ReleaseFrame = "normal";
+   var ReleaseOutsideFrame = "normal";
+   var RollOutFrame = "normal";aa
+   function ArrowButton()
+   {
+      super();
+   }
+}

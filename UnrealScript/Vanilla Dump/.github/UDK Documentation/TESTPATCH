@@ -1,0 +1,764 @@
+Menu
+Mod Manager
+ 
+ModMaker
+ 
+ME3Tweaks
+ 
+Mods
+ 
+Discord
+TESTPATCH Changes
+This page contains a list of my own documented changes of things that were changed in Mass Effect 1.03 and up through the Patch_001.sfar file located in /BIOGame/Patches/PCConsole/Patch_001.sfar. I call this DLC TESTPATCH as the internal DLC name is DLC_TestPatch. This is not a true DLC as it is loaded and stored in memory at game startup and contains files that supercede all instances of classes with the same name as it is stored in memory at all times.
+
+Due to how these classes are forced in memory, local edits to things like some enemies in files may not work as they will be superceded here. Even though this DLC has a low mount priority, it seems to always be forced in memory and will always override other classes.
+
+The only working edits on these files is direct hex editing or export editing in ME3Explorer. I have never been able to have it work with files that have added content like names, imports or exports. The game simply crashes on startup, TESTPATCH pcc files (or the SFAR) may be different in ways we don't understand.
+
+Below is a list of files in this DLC and what changes I know are in them. Over time I will add them - however, given there are more than 200 files, it is unlikely I will ever finish this list. If you want to help, unpack and then do a PCC data dump with all properties, then clip only the exports (no names or imports). Clip a copy of the original game's implementation (clip only the relevant exports) and then compare them through WinMerge and document the changes. Some changes may be in native code which we will likely never figure out.
+
+Patch_Actor.pcc
+No patch notes for this class have been added yet.
+
+Patch_AICmdBaseGethPrimeShieldDrone.pcc
+Fixes Geth Prime shield drone movement
+
+In the original game, the drone would not move and was pretty much just aim assist fodder.
+Patch_BioCameraBehaviorFlourish.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioCheatManager.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioCheatManagerNonNative.pcc
+Adds the SpawnSeeker console command. You can use this command by targetting a Collector in MP and issuing this command will cause them to use their "Seeker" power, something all Collectors have. Spam it for crazyness.
+
+Patch_BioConversationManager.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioCustomAction.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioDefine.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioHintSystemBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioPawn.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioPlayerController.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSFHandler_Achievement.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSFHandler_BrowserWheel.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSFHandler_MainMenu.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSFHandler_NewCharacter.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSFHandler_Options.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSFHandler_PCAchievement.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSFHandler_PCOptions.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSFResources.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioSimpleDialog.pcc
+No patch notes for this class have been added yet.
+
+Patch_BioWorldInfo.pcc
+No patch notes for this class have been added yet.
+
+Patch_Content_Markers.pcc
+Replaces the class GUI_SF_Markers.Markers
+
+Updates the Content Markers interface file (point of interest)
+Patch_CustAction_BoostDownBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_Effect_MatchConsumableBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_GameEngine.pcc
+No patch notes for this class have been added yet.
+
+Patch_GAWReinforcetMatchConsumable.pcc
+No patch notes for this class have been added yet.
+
+Patch_GmEfctMtchConsAmmoPwrArmPrc.pcc
+No patch notes for this class have been added yet.
+
+Patch_GmEfctMtchConsAmmoPwrDisrupt.pcc
+No patch notes for this class have been added yet.
+
+Patch_GUIMainMenuMsgNetworkImage.pcc
+No patch notes for this class have been added yet.
+
+Patch_GUI_MP_HUD.pcc
+Replaces the class GUI_SF_MP_HUD.MP_HUD
+
+Updates the MP HUD SWF interface file
+Patch_ISFXOnlineComponentGame.pcc
+Native patch
+
+This patch is contains only native code so nothing useful can be read from it.
+Patch_ISFXOnlineComponentLeaderbrd.pcc
+No patch notes for this class have been added yet.
+
+Patch_ISFXOnlineComponentLogin.pcc
+No patch notes for this class have been added yet.
+
+Patch_MatineeActor.pcc
+No patch notes for this class have been added yet.
+
+Patch_ObjectiveRetrievePickupObject.pcc
+No patch notes for this class have been added yet.
+
+Patch_ObjRetrievePickupObjectDLC.pcc
+No patch notes for this class have been added yet.
+
+Patch_ObjtvRtrvDropOffLocationDLC.pcc
+No patch notes for this class have been added yet.
+
+Patch_Pawn.pcc
+No patch notes for this class have been added yet.
+
+Patch_PowCustActionGethPrimeTurret.pcc
+No patch notes for this class have been added yet.
+
+Patch_PowCustActionMPConsumRocket.pcc
+Attempts to fix MP Rocket consumable to not be able to be glitched so it shoots projectiles of other guns as rockets
+
+Forces some server checks in some of the scripts. This patch only partially fixed the issue, though on PC it is very difficult (if not impossible) to perform this glitch.
+Patch_PowCustAction_ConcussiveShot.pcc
+No patch notes for this class have been added yet.
+
+Patch_PowCustomActionMP_Consumable.pcc
+No patch notes for this class have been added yet.
+
+Patch_PowCustomAction_BioticCharge.pcc
+No patch notes for this class have been added yet.
+
+Patch_PowerCustActMPConsumAmmo.pcc
+No patch notes for this class have been added yet.
+
+Patch_PowerCustActMPConsumShield.pcc
+No patch notes for this class have been added yet.
+
+Patch_PowerCustActMP_ConsumRevive.pcc
+No patch notes for this class have been added yet.
+
+Patch_ProjectileBatarianSniper.pcc
+No patch notes for this class have been added yet.
+
+Patch_ProjectilePowCustActionSeek.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMPBioChargeKrogan.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMPFemQuarPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMPKrogPsiveVan.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMPMaleQuarPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_AsariPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_DrellPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_HumanPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_KroganPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_PassiveBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_SalarianPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_TurianPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_VorchaPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_PwrCustActnMP_WhipManPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAccomplishmentManager.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAccomplishmentStorage.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAICmd_Banshee_Aggressive.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAICmd_KillingBlow.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAI_CombatDrone.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAI_Core.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAI_GethPrimeShieldDrone.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAI_ProtectorDrone.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXAmmoContainer.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCheatManagerNonNativeMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustActnN7TpPunchBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustActnN7VanEvadeBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustActnSyncPawnInstBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustActn_SimpleMoveBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustomAction_BansheeDeath.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustomAction_BansheePhase.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustomAction_DeployTurret.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustomAction_KroganRoar.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXCustomAction_Revive.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXDroppedAmmo.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXDroppedGrenade.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXEngagement_Retrieve_DLC.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXEngine.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGame.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameEffectPenDamageBonus.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameEffectPowerComboFire.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameEffectWpnModPenDmgBonus.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameEffectWpnModWeightBns.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameEffect_PowerCombo.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameInfoMP_Lobby.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameModeBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameModeDefault.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameModeDying.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGameModeManager.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGAWReinforcementManager.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGmEffctBataBladeDOTime.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGrenadeContainer.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGRI.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGRIMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGRIMP_Lobby.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUIExt_WeaponMods.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUIInteraction.pcc
+Replaces the class SFXGUIInteraction
+
+Added ability to load SWF movies via loadseekfreeobject()
+Seem to fix bug in Area Map SetAreaMapData(). May be related to citadel DLC map.
+Added unbind key to PC icons (textures). This does not seem to have been fully implemented as the size is 2x2.
+Patch_SFXGUIMovie.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUIMovieMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUIMPLobbyStatusBars.pcc
+Replaces the UI controller class class SFXGUIMPLobbyStatusBars
+
+Added ability to count down to match start when 3/4 players are ready
+Patch_SFXGUIValue_HUDPowerIcon.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUIValue_Marker.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUIValue_MarkerObjective.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUIValue_MarkerPlayer.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_Accomplishments.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_Leaderboard.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MainMenu_RTT.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPAppearance.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPEndOfMatch.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPLobby.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPMatchConsumables.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPMatchResults.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPPauseMenu.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPPromotion.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPReinforcementsReveal.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPSelectKit.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_MPStore.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_PlayerCountdown.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXGUI_WeaponSelection.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXHostMigration.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXHostMigrationMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXInventoryManager.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXLobbyFlow.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXModule_Armour.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXModule_Damage.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXModule_DamagePlayer.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXMPCharacterRecord.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXMPClassRecord.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXNav_LadderNode.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXObjctvRtrveDropOffLoc.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXObjectiveAnnexDefendZone.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXObjective_Disarm_Base.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXObjective_MobileAnnex.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXObjectPool.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineCompAchievementPC.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineCompBlazeNotif.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineComponentBlazeGame.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineComponentBlazeHub.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineComponentBlazeLdrbrd.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineComponentBlazeLogin.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineComponentGameFlow.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineComponentImgMngr.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineComponentOrigin.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineDefine.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineGameEntryFlow.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineGameSettings.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineJobImageRequest.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineJobSaveSettings.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlinePlayerStorage.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineSaveGameMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineStatsWrite.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOnlineSubsystem.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXOperationObjective.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawnPlayerMPSentinelVorcha.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawnPlayerMPSoldierVorcha.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_Atlas.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_Banshee.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_Brute.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_GethPrime.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_GethPrimeShieldDrone.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_GethPrimeTurret.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_GethPyro.pcc
+Patches the Geth Pyro to not be grabbable by the player.
+
+Patch_SFXPawn_GunnerTurret.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_Harvester.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_Krogan_MP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_Player.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_PlayerMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_PlayerMP_Sentinel_N7.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_SentryTurret.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPawn_Swarmer.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPlayerCamera.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPlayerController.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPlayerControllerMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustActnMPDamping.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustomAction.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustomActionAIHacking.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustomActionBase.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustomActionMP_Flamer.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustomActionMP_Reave.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustomActionMP_Slash.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustomAction_Carnage.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerCustomAction_Marksman.pcc
+Attempts to fix a bug in Marksman power cooldown for squadmates
+
+This patch doesn't actually work because the required method to set the cooldown is not present in the SFXPawn class, only SFXPawn_Player. Thus, this patch actually broke stuff instead of fixing anything.
+Patch_SFXPowerCustomAction_Reave.pcc
+Fixes an audio loop glitch that Reave made
+
+Reave used to make a horrible repeating noise.
+Patch_SFXPowerCustomAction_Stasis.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPowerManager.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPreAsyncWorkTicker.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPRI.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPRIMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXProfileSettings.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXProjectile.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXProjectile_BansheePhase.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXProjectile_Explosive.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwnPlayerMPSentBatarian.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwnPlayerMPSldrBatarian.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActAdrenalineRush.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnDefensiveShld.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnFortification.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMPAsaCmmndoPsiv.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMPBataAttack.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMPBioCharge.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMPConcShot.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMPMarksman.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMPShadowStrike.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMPSingularity.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMP_BataPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActnMP_GethPassive.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustActn_Singularity.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXPwrCustomActionIncinerate.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXSavedMove.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXSaveManagerMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXScoreManager.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXSeqActLaunchWpnSelection.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXSeqActOpenWpnSelection.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXSeqAct_ClearParticlePools.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXSeqAct_SetAreaMap.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXSFHandler_HUD.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXSFHandler_PS3Achievement.pcc
+This file is not used on the PC version of Mass Effect 3.
+
+Patch_SFXShield_Base.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXShield_EVA.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXShield_Phantom.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXShield_Player.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXTelemetryHooks.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXTelemetryHooksMP.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWave.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWaveCoordinator.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWaveManager_Horde.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWave_Operation.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWeapon.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWeaponFactory.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWeapon_Shotgun_Quarian.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWeapon_SniperRifle_Turian.pcc
+No patch notes for this class have been added yet.
+
+Patch_SFXWpnSniperRifleTurianGUN01.pcc
+No patch notes for this class have been added yet.
+
+Patch_WaveCoord_HordeOperation.pcc
+No patch notes for this class have been added yet.
+
+Patch_WeaponModMods.pcc
+Replaces the class GUI_SF_WeaponModMods.WeaponModMods
+
+Updates the Weapon Mods interface file (left side of the weapon bench)
+Patch_WeaponModStats.pcc
+Replaces the class GUI_SF_WeaponModStats.WeaponModStats
+
+Updates the Weapon Mods interface file (right side of the weapon bench)
+Patch_WepHeavyFlameGethTurret.pcc
+No patch notes for this class have been added yet.
+
+Patch_WepHeavyFlameSentryTurret.pcc
+No patch notes for this class have been added yet.
+

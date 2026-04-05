@@ -1,0 +1,92 @@
+class screens.MPNewLobby.PageItemList extends com.SFXMovieClip
+{
+   var m_items;
+   var m_selectedIndex = -1;
+   function PageItemList()
+   {
+      super();
+   }
+   function onLoad()
+   {
+      super.onLoad();
+      this.m_items = new Array();
+      this.Initialize();
+   }
+   function Initialize()
+   {
+      var _loc5_ = this;
+      if(this.m_items.length == 0)
+      {
+         var _loc3_ = 0;
+         while(_loc3_ < 10)
+         {
+            var _loc4_ = _loc5_["item" + _loc3_];
+            if(_loc4_ != null)
+            {
+               _loc5_.addItem(_loc4_);
+            }
+            _loc3_ = _loc3_ + 1;
+         }
+      }
+      _root.screen.RefreshPage(this._parent,this._parent.m_symbolName);
+   }
+   function addItem(item)
+   {
+      this.m_items.push(item);
+      item.m_listIndex = this.m_items.length - 1;
+   }
+   function createItem(sSymbolName, sTitle)
+   {
+      var _loc2_ = screens.MPNewLobby.PageItem(this.attachMovie(sSymbolName,"item" + (this.m_items.length + 1),this.getNextHighestDepth()));
+      var _loc3_ = this.m_items[this.m_items.length - 1];
+      _loc2_._x = 0;
+      _loc2_._y = _loc3_._y + _loc3_._height + 4;
+      this.addItem(_loc2_);
+      if(sTitle != null)
+      {
+         _loc2_.contents.title.text = sTitle;
+      }
+      return _loc2_;
+   }
+   function get numItems()
+   {
+      return this.m_items.length;
+   }
+   function set selectedIndex(si)
+   {
+      var _loc3_ = 0;
+      while(_loc3_ < this.m_items.length)
+      {
+         if(_loc3_ == si)
+         {
+            this.m_items[_loc3_].active = true;
+         }
+         else
+         {
+            this.m_items[_loc3_].active = false;
+         }
+         _loc3_ = _loc3_ + 1;
+      }
+      this.m_selectedIndex = si;
+      if(si >= 0)
+      {
+         _root.screen.onListItemSelected(this);
+      }
+   }
+   function get selectedIndex()
+   {
+      return this.m_selectedIndex;
+   }
+   function get selectedItem()
+   {
+      return this.m_items[this.m_selectedIndex];
+   }
+   function getItem(i)
+   {
+      return this.m_items[i];
+   }
+   function IsIndexValid(i)
+   {
+      return i >= 0 && i < this.numItems && this.getItem(i)._visible == true;
+   }
+}

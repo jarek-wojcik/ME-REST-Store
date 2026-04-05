@@ -1,0 +1,9 @@
+Class InterpTrackInstWwiseRTPC extends InterpTrackInst
+    native;
+
+var transient WwiseRTPCForActorHandler m_RTPCHandler;
+
+//class default properties can be edited in the Properties tab for the class's Default__ object.
+defaultproperties
+{
+}

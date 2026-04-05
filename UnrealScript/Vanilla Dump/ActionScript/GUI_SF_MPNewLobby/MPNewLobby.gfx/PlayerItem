@@ -1,0 +1,155 @@
+class screens.MPNewLobby.PlayerItem extends screens.MPNewLobby.PageItem
+{
+   var slot;
+   var leaderHost;
+   var bInteractive;
+   var selection;
+   var isOccupied = false;
+   var isPrivate = true;
+   var isLocalPlayer = false;
+   var isLeader = false;
+   var mNumKickVotes = -1;
+   function PlayerItem()
+   {
+      super();
+   }
+   function onLoad()
+   {
+      super.onLoad();
+      this.SelectOnRollover = false;
+   }
+   function SetOccupied(oPlayerDetails)
+   {
+      var _loc4_ = oPlayerDetails.Gamertag != "" && oPlayerDetails.Rating > 0;
+      if(!this.isOccupied && _loc4_)
+      {
+         this.isOccupied = true;
+         this.slot.gotoAndStop("occupied");
+         this.slot.titleBarHolder.gotoAndPlay("in");
+      }
+      this.slot.titleBarHolder.titleBar.title.text = oPlayerDetails.Gamertag;
+      this.slot.titleBarHolder.titleBar.title.textAutoSize = "shrink";
+      this.slot.titleBarHolder.titleBar.subtitle.text = oPlayerDetails.ClassData;
+      this.slot.titleBarHolder.titleBar.subtitle2.text = oPlayerDetails.KitPrettyName;
+      this.slot.titleBarHolder.titleBar.rating.text = oPlayerDetails.Rating;
+      this.slot.titleBarHolder.titleBar.ready.gotoAndStop(!oPlayerDetails.Ready ? "waiting" : "ready");
+      this.SetKickVotes(oPlayerDetails.NumKickVotesReceived);
+      this.disabled = false;
+      this.isLocalPlayer = oPlayerDetails.IsLocalPlayer;
+      this.isLeader = oPlayerDetails.IsLeader;
+      this.leaderHost._visible = this.isLeader;
+      this.leaderHost.leader.text = _root.screen.srLeader;
+   }
+   function SetEmpty()
+   {
+      this.isOccupied = false;
+      this.leaderHost._visible = false;
+      this.SetPermission(this.isPrivate);
+      this.disabled = true;
+   }
+   function SetPermission(bPrivate)
+   {
+      this.isPrivate = bPrivate;
+      if(this.isOccupied == false)
+      {
+         if(this.isPrivate)
+         {
+            this.slot.gotoAndStop("private");
+            this.slot.slotText.text = _root.screen.srPrivateSlot;
+         }
+         else
+         {
+            this.slot.gotoAndStop("public");
+            this.slot.slotText.text = _root.screen.srPublicSlot;
+         }
+      }
+   }
+   function SetInteractive(b)
+   {
+      this.bInteractive = b;
+      this.selection._visible = this.bInteractive || !this.isOccupied;
+   }
+   function SetSpeakerIcon(bEnabled, fVolume)
+   {
+      if(!bEnabled)
+      {
+         this.slot.titleBarHolder.titleBar.voice.gotoAndStop("inactive");
+      }
+      else if(fVolume < 0.25)
+      {
+         this.slot.titleBarHolder.titleBar.voice.gotoAndStop("level0");
+      }
+      else if(fVolume < 0.5)
+      {
+         this.slot.titleBarHolder.titleBar.voice.gotoAndStop("level1");
+      }
+      else if(fVolume < 0.75)
+      {
+         this.slot.titleBarHolder.titleBar.voice.gotoAndStop("level2");
+      }
+      else
+      {
+         this.slot.titleBarHolder.titleBar.voice.gotoAndStop("level3");
+      }
+   }
+   function onRollOver()
+   {
+      super.onRollOver();
+      if(!this.bInteractive)
+      {
+         this.gotoAndPlay("in");
+         this.selection._visible = true;
+      }
+   }
+   function onRollOut()
+   {
+      super.onRollOut();
+      if(!this.bInteractive)
+      {
+         this.gotoAndPlay("normal");
+         this.selection._visible = !this.isOccupied;
+      }
+   }
+   function onPress()
+   {
+      if(this.bInteractive && this.isOccupied)
+      {
+         super.onPress();
+      }
+   }
+   function onRelease()
+   {
+      if(this.isOccupied)
+      {
+         if(this.slot.titleBarHolder.titleBar.voice.hitTest(_root._xmouse,_root._ymouse))
+         {
+            this.ToggleMute();
+         }
+         else if(this.bInteractive)
+         {
+            super.onRelease();
+         }
+         else
+         {
+            flash.external.ExternalInterface.call("SetPreviouslySelectedItem",screens.MPNewLobby.MPNewLobby.LSS_Squad,this.m_listIndex);
+            _root.screen.ShowSquadScreen();
+         }
+      }
+      else
+      {
+         _root.screen.InviteFriends();
+      }
+   }
+   function ToggleMute()
+   {
+      flash.external.ExternalInterface.call("ToggleMuteForSlot",this.m_listIndex);
+   }
+   function SetKickVotes(newKickVotes)
+   {
+      var _loc2_ = this.slot.titleBarHolder.titleBar.kickIndicator;
+      _loc2_.kickIcon1._visible = newKickVotes >= 1;
+      _loc2_.kickIcon2._visible = newKickVotes >= 2;
+      _loc2_.kickIcon3._visible = newKickVotes >= 3;
+      this.mNumKickVotes = newKickVotes;
+   }
+}

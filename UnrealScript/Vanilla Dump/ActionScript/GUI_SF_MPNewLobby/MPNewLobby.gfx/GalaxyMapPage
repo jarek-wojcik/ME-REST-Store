@@ -1,0 +1,12 @@
+class screens.MPNewLobby.GalaxyMapPage extends screens.MPNewLobby.Page
+{
+   function GalaxyMapPage()
+   {
+      super();
+   }
+   function onLoad()
+   {
+      super.onLoad();
+      _root.screen.RefreshGalaxyAtWarMap();
+   }
+}

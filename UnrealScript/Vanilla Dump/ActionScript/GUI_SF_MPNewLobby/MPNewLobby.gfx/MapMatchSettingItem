@@ -1,0 +1,55 @@
+class screens.MPNewLobby.MapMatchSettingItem extends screens.MPNewLobby.MatchSettingItem
+{
+   var SourceData;
+   var contents;
+   var sBaseTitleText = "";
+   function MapMatchSettingItem()
+   {
+      super();
+   }
+   function Initialize(sTitle, aSourceData, nValueID, canChange)
+   {
+      super.Initialize(sTitle,aSourceData,nValueID,canChange);
+      this.sBaseTitleText = sTitle;
+   }
+   function Refresh()
+   {
+      super.Refresh();
+      if(this.SourceData[this.Value].GalaxyAtWarMapSubtitle == 0)
+      {
+         this.contents.title.text = this.sBaseTitleText;
+      }
+      else
+      {
+         this.contents.title.textAutoSize = "shrink";
+         this.contents.title.text = this.sBaseTitleText + ": $" + this.SourceData[this.Value].GalaxyAtWarMapSubtitle;
+      }
+      _root.screen.RefreshGalaxyAtWarMapPositionMarker();
+   }
+   function IsValueAvailable(nValue)
+   {
+      if(!this.bCanChange)
+      {
+         return true;
+      }
+      return this.SourceData[nValue].EveryoneHasThisMap;
+   }
+   function Increment()
+   {
+      if(super.Increment())
+      {
+         flash.external.ExternalInterface.call("ChangeMapMusic",this.GetActiveValueID());
+         return true;
+      }
+      return false;
+   }
+   function Decrement()
+   {
+      if(super.Decrement())
+      {
+         flash.external.ExternalInterface.call("ChangeMapMusic",this.GetActiveValueID());
+         return true;
+      }
+      return false;
+   }
+}

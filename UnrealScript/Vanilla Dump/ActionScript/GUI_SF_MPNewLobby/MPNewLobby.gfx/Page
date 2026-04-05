@@ -1,0 +1,11 @@
+class screens.MPNewLobby.Page extends com.SFXMovieClip
+{
+   function Page()
+   {
+      super();
+   }
+   function onLoad()
+   {
+      super.onLoad();
+   }
+}
