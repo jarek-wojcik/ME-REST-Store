@@ -9,6 +9,7 @@ enum EAsyncLoadType
     ALT_Power,
     ALT_WeaponMod,
     ALT_Consumable,
+    ALT_PowerClass,
 };
 
 var delegate<OnAssetLoaded> onAssetLoadedCallback;
@@ -27,6 +28,10 @@ var SFXGameEffect_MatchConsumableBase LoadedConsumable;
 var string Mod1ID;
 var string Mod2ID;
 var SFXWeapon targetWeapon;
+var Class<SFXPowerCustomActionBase> LoadedPowerClass;
+var SFSPowerModelStruct PowerModel;
+var int SlotIndex;
+var bool bIsBorrowedPower;
 
 function OnAssetLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {

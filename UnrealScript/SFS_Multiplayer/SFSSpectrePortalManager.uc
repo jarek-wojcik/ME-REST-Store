@@ -5,6 +5,7 @@ var SFSStrikeTeamIntegrationService strikeTeamService;
 var SFSAppearanceManager appearanceManager;
 var SFSPortalAsyncLoader asyncLoader;
 var SFSWeaponManager weaponManager;
+var SFSPowerManager PowerManager;
 
 public event simulated function HandlePostAdd()
 {
@@ -13,6 +14,7 @@ public event simulated function HandlePostAdd()
     appearanceManager = Outer.GetModule(Class'SFSAppearanceManager');
     asyncLoader = Outer.GetModule(Class'SFSPortalAsyncLoader');
     weaponManager = Outer.GetModule(Class'SFSWeaponManager');
+    PowerManager = Outer.GetModule(Class'SFSPowerManager');
     if (asyncLoader != None)
     {
         initializeSpectre();
@@ -59,8 +61,11 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         // Spectre Loading Methods
         loadAppearance(Character, Outer);
         LoadWeapons(Character, Outer);
+        if (PowerManager != None)
+        {
+            PowerManager.LoadPowers(Character, Outer);
+        }
         // Existing weapon mods match target?
-        // Existing powers match target?
         // Existing consumables match target?
     }
 }

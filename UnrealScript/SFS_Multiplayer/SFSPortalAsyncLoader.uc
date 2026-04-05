@@ -41,6 +41,18 @@ public function LoadModAsync(string AssetPath, SFXWeapon targetWeapon, delegate<
     AsyncLoads.AddItem(AsyncLoad);
     StartCheckTimer();
 }
+public function LoadPowerClassAsync(string AssetPath, SFSPowerModelStruct PowerModel, int SlotIndex, bool bIsBorrowedPower, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
+{
+    local SFSGenericAsyncLoad AsyncLoad;
+    
+    AsyncLoad = CreateAsyncLoad(AssetPath, 7, Callback);
+    AsyncLoad.PowerModel = PowerModel;
+    AsyncLoad.SlotIndex = SlotIndex;
+    AsyncLoad.bIsBorrowedPower = bIsBorrowedPower;
+    PollLoadStatus(AsyncLoad);
+    AsyncLoads.AddItem(AsyncLoad);
+    StartCheckTimer();
+}
 private final function SFSGenericAsyncLoad CreateAsyncLoad(string AssetPath, EAsyncLoadType LoadType, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
     local SFSGenericAsyncLoad AsyncLoad;
@@ -121,6 +133,9 @@ private final function PollLoadStatus(out SFSGenericAsyncLoad AsyncLoad)
             break;
         case EAsyncLoadType.ALT_Consumable:
             AsyncLoad.LoadedConsumable = SFXGameEffect_MatchConsumableBase(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXGameEffect_MatchConsumableBase', AsyncLoad.LoadStatus));
+            break;
+        case EAsyncLoadType.ALT_PowerClass:
+            AsyncLoad.LoadedPowerClass = Class<SFXPowerCustomActionBase>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
         default:
     }
