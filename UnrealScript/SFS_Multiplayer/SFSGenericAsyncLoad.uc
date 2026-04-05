@@ -11,7 +11,7 @@ enum EAsyncLoadType
     ALT_Consumable,
 };
 
-var delegate<OnAssetLoaded> loadCallback;
+var delegate<OnAssetLoaded> onAssetLoadedCallback;
 var string AssetToLoad;
 var EAsyncLoadType LoadType;
 var EAsyncLoadStatus LoadStatus;
@@ -20,7 +20,7 @@ var bool isLoaded;
 var SFXPawn_PlayerMP LoadedPlayerMP;
 var SFXPawn LoadedPawn;
 var SFXPawn_Henchman LoadedHenchman;
-var SFXWeapon LoadedWeapon;
+var Class<SFXWeapon> LoadedWeapon;
 var SFXPowerCustomAction LoadedPower;
 var SFXWeaponMod LoadedWeaponMod;
 var SFXGameEffect_MatchConsumableBase LoadedConsumable;

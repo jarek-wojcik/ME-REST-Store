@@ -3,6 +3,7 @@ Class SFSSpectreIntegrationService extends SFSManager within SFXPawn;
 var string SFS_REST_URL;
 var string ACTIVE_CHARACTER_MAPPING;
 var string FLAT_PARAM;
+var string SIMPLE_JSON_PARAM;
 var delegate<OnCharacterRetrieved> PendingCallback;
 
 function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
@@ -17,7 +18,7 @@ public function RetrieveActiveCharacter(delegate<OnCharacterRetrieved> Callback)
     Job = Class'SFXOnlineJobHTTPRequest'.static.CreateHTTPRequestJob();
     Job.mRequest.SetBaseURL(SFS_REST_URL);
     Job.mRequest.AddSubURL(ACTIVE_CHARACTER_MAPPING);
-    Job.mRequest.AddParameter(FLAT_PARAM, "true");
+    Job.mRequest.AddParameter(SIMPLE_JSON_PARAM, "true");
     Job.__OnJobComplete__Delegate = OnHTTPResponse;
     Class'SFXOnlineSubsystem'.static.GetOnlineSubsystem().GetComponentJobQueue().AddJob(Job);
 }
@@ -27,7 +28,8 @@ private final function OnHTTPResponse(SFXOnlineHTTPRequest request)
     local bool bSuccess;
     
     log(Self.Name, "Active character response: " $ request.mResultBody, Outer);
-    bSuccess = Class'SFSCharacterModel'.static.FromFlat(request.mResultBody, Model);
+    //bSuccess = Class'SFSCharacterModel'.static.FromFlat(request.mResultBody, Model);
+    bSuccess = Class'SFSCharacterJsonParser'.static.FromSimpleJson(request.mResultBody, Model);
     if (!bSuccess)
     {
         log(Self.Name, "Malformed flat response", Outer);
@@ -40,5 +42,6 @@ defaultproperties
 {
     SFS_REST_URL = "http://localhost:6060/"
     FLAT_PARAM = "flat"
+    SIMPLE_JSON_PARAM = "simpleJson"
     ACTIVE_CHARACTER_MAPPING = "activeCharacter"
 }

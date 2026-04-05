@@ -134,7 +134,7 @@ func qualifiedWeaponID(id string) string {
 		return ""
 	}
 	if def := model.WeaponByID(id); def != nil {
-		return def.RootPath + "." + id
+		return def.RootPath + ".SFXWeapon_" + id
 	}
 	return id
 }
@@ -173,12 +173,11 @@ func pawnTypeForCharacter(characterID string) string {
 func qualifySpectre(s *model.Spectre) {
 	s.CharacterID = qualifiedCharacterID(s.CharacterID)
 	s.AppearanceCharacterID = qualifiedCharacterID(s.AppearanceCharacterID)
-	s.WeaponID = qualifiedWeaponID(s.WeaponID)
-	s.WeaponMod1ID = qualifiedModID(s.WeaponMod1ID)
-	s.WeaponMod2ID = qualifiedModID(s.WeaponMod2ID)
-	s.Weapon2ID = qualifiedWeaponID(s.Weapon2ID)
-	s.Weapon2Mod1ID = qualifiedModID(s.Weapon2Mod1ID)
-	s.Weapon2Mod2ID = qualifiedModID(s.Weapon2Mod2ID)
+	for i := range s.Weapons {
+		s.Weapons[i].WeaponID = qualifiedWeaponID(s.Weapons[i].WeaponID)
+		s.Weapons[i].Mod1ID = qualifiedModID(s.Weapons[i].Mod1ID)
+		s.Weapons[i].Mod2ID = qualifiedModID(s.Weapons[i].Mod2ID)
+	}
 	for i := range s.Powers {
 		if def := model.PowerByID(s.Powers[i].PowerID); def != nil {
 			s.Powers[i].PowerID = def.RootPath + "." + s.Powers[i].PowerID
@@ -192,10 +191,20 @@ func qualifySpectre(s *model.Spectre) {
 }
 
 // spectreToFlat serialises a Spectre as a single pipe-delimited line.
-// Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower|armorConsumableId|weaponConsumableId|ammoConsumableId|gearConsumableId|pawnType
+// Format: id|name|characterId|appearanceCharId|w0Id|w0Mod1|w0Mod2|w1Id|w1Mod1|w1Mod2|w2Id|w2Mod1|w2Mod2|w3Id|w3Mod1|w3Mod2|w4Id|w4Mod1|w4Mod2|power0|power1|power2|power3|power4|borrowedPower|armorConsumableId|weaponConsumableId|ammoConsumableId|gearConsumableId|pawnType
 // Weapon/mod/power ID fields are qualified as "RootPath.ID".
 // Power fields use the sub-format: rootPath.powerId:rank:evo0:evo1:evo2  (empty string when slot absent)
+// Weapon slots are always emitted as 5 groups of 3 fields (padded with empty strings).
 func spectreToFlat(s *model.Spectre) string {
+	weaponFields := make([]string, 15) // 5 slots × 3 fields
+	for i := range s.Weapons {
+		if i >= 5 {
+			break
+		}
+		weaponFields[i*3+0] = qualifiedWeaponID(s.Weapons[i].WeaponID)
+		weaponFields[i*3+1] = qualifiedModID(s.Weapons[i].Mod1ID)
+		weaponFields[i*3+2] = qualifiedModID(s.Weapons[i].Mod2ID)
+	}
 	powers := make([]string, 5)
 	for i := range powers {
 		if i < len(s.Powers) {
@@ -206,40 +215,23 @@ func spectreToFlat(s *model.Spectre) string {
 	if s.BorrowedPower != nil {
 		borrowed = flatPower(*s.BorrowedPower)
 	}
-	return strings.Join([]string{
+	fields := []string{
 		s.ID, s.Name, qualifiedCharacterID(s.CharacterID), qualifiedCharacterID(s.AppearanceCharacterID),
-		qualifiedWeaponID(s.WeaponID), qualifiedModID(s.WeaponMod1ID), qualifiedModID(s.WeaponMod2ID),
-		qualifiedWeaponID(s.Weapon2ID), qualifiedModID(s.Weapon2Mod1ID), qualifiedModID(s.Weapon2Mod2ID),
-		powers[0], powers[1], powers[2], powers[3], powers[4],
+	}
+	fields = append(fields, weaponFields...)
+	fields = append(fields, powers[0], powers[1], powers[2], powers[3], powers[4])
+	fields = append(fields,
 		borrowed,
 		s.ArmorConsumableID, s.WeaponConsumableID, s.AmmoConsumableID, s.GearConsumableID,
 		pawnTypeForCharacter(s.CharacterID),
-	}, "|")
+	)
+	return strings.Join(fields, "|")
 }
 
 // teamSpectreToFlat serialises a strike-team Spectre as a single pipe-delimited line.
-// Format: id|name|characterId|appearanceCharId|weaponId|weaponMod1Id|weaponMod2Id|weapon2Id|weapon2Mod1Id|weapon2Mod2Id|power0|power1|power2|power3|power4|borrowedPower|armorConsumableId|weaponConsumableId|ammoConsumableId|gearConsumableId|pawnType
-// Weapon/mod/power ID fields are qualified as "RootPath.ID".
+// Same format as spectreToFlat.
 func teamSpectreToFlat(s model.Spectre) string {
-	powers := make([]string, 5)
-	for i := range powers {
-		if i < len(s.Powers) {
-			powers[i] = flatPower(s.Powers[i])
-		}
-	}
-	borrowed := ""
-	if s.BorrowedPower != nil {
-		borrowed = flatPower(*s.BorrowedPower)
-	}
-	return strings.Join([]string{
-		s.ID, s.Name, qualifiedCharacterID(s.CharacterID), qualifiedCharacterID(s.AppearanceCharacterID),
-		qualifiedWeaponID(s.WeaponID), qualifiedModID(s.WeaponMod1ID), qualifiedModID(s.WeaponMod2ID),
-		qualifiedWeaponID(s.Weapon2ID), qualifiedModID(s.Weapon2Mod1ID), qualifiedModID(s.Weapon2Mod2ID),
-		powers[0], powers[1], powers[2], powers[3], powers[4],
-		borrowed,
-		s.ArmorConsumableID, s.WeaponConsumableID, s.AmmoConsumableID, s.GearConsumableID,
-		pawnTypeForCharacter(s.CharacterID),
-	}, "|")
+	return spectreToFlat(&s)
 }
 
 // strikeTeamToFlat serialises a StrikeTeamResponse as newline-separated lines.

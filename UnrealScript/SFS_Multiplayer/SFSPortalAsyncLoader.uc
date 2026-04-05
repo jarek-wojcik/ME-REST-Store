@@ -3,7 +3,6 @@ Class SFSPortalAsyncLoader extends SFSManager within SFXPawn;
 var array<SFSGenericAsyncLoad> AsyncLoads;
 var float CheckDelay;
 var int maxRetries;
-var bool bDebugLogging;
 
 public event simulated function HandlePostAdd()
 {
@@ -25,12 +24,16 @@ private final function SFSGenericAsyncLoad CreateAsyncLoad(string AssetPath, EAs
 {
     local SFSGenericAsyncLoad AsyncLoad;
     
+    log(Self.Name, "Creating SFSGenericAsyncLoad for asset: " $ AssetPath, Outer);
     AsyncLoad = new (Self) Class'SFSGenericAsyncLoad';
     AsyncLoad.AssetToLoad = AssetPath;
     AsyncLoad.LoadType = LoadType;
-    AsyncLoad.OnAssetLoaded = Callback;
+    log(Self.Name, "Before Assigning Callback: " $ AssetPath, Outer);
+    AsyncLoad.onAssetLoadedCallback = Callback;
+    log(Self.Name, "After Assigning Callback: " $ AssetPath, Outer);
     AsyncLoad.retries = 0;
     AsyncLoad.isLoaded = FALSE;
+    log(Self.Name, "Created SFSGenericAsyncLoad for asset: " $ AssetPath, Outer);
     return AsyncLoad;
 }
 private final function StartCheckTimer()
@@ -45,6 +48,7 @@ public function CheckAsyncLoads()
     local SFSGenericAsyncLoad AsyncLoad;
     local int i;
     
+    log(Self.Name, "CheckAsyncLoads()", Outer);
     if (AsyncLoads.Length == 0)
     {
         Outer.ClearTimer('CheckAsyncLoads', Self);
@@ -57,7 +61,7 @@ public function CheckAsyncLoads()
         if (AsyncLoad.isLoaded)
         {
             log(Self.Name, "Asset loaded: " $ AsyncLoad.AssetToLoad, Outer);
-            AsyncLoad.OnAssetLoaded(AsyncLoad, Outer);
+            AsyncLoad.onAssetLoadedCallback(AsyncLoad, Outer);
             AsyncLoads.Remove(i, 1);
             continue;
         }
@@ -76,6 +80,7 @@ private final function PollLoadStatus(out SFSGenericAsyncLoad AsyncLoad)
     switch (AsyncLoad.LoadType)
     {
         case EAsyncLoadType.ALT_PlayerMP:
+            log(Self.Name, "Polling for ALT_PlayerMP", Outer);
             AsyncLoad.LoadedPlayerMP = SFXPawn_PlayerMP(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXPawn_PlayerMP', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_Pawn:
@@ -85,7 +90,7 @@ private final function PollLoadStatus(out SFSGenericAsyncLoad AsyncLoad)
             AsyncLoad.LoadedHenchman = SFXPawn_Henchman(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXPawn_Henchman', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_Weapon:
-            AsyncLoad.LoadedWeapon = SFXWeapon(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXWeapon', AsyncLoad.LoadStatus));
+            AsyncLoad.LoadedWeapon = Class<SFXWeapon>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_Power:
             AsyncLoad.LoadedPower = SFXPowerCustomAction(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXPowerCustomAction', AsyncLoad.LoadStatus));
@@ -106,5 +111,4 @@ defaultproperties
 {
     CheckDelay = 1.0
     maxRetries = 10
-    bDebugLogging = FALSE
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"sfswebserver/model"
 
@@ -38,12 +39,7 @@ func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre, f
 		Spectre:             s,
 		CharDef:             def,
 		AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
-		WeaponDef:           model.WeaponByID(s.WeaponID),
-		WeaponMod1Def:       model.WeaponModByID(s.WeaponMod1ID),
-		WeaponMod2Def:       model.WeaponModByID(s.WeaponMod2ID),
-		Weapon2Def:          model.WeaponByID(s.Weapon2ID),
-		Weapon2Mod1Def:      model.WeaponModByID(s.Weapon2Mod1ID),
-		Weapon2Mod2Def:      model.WeaponModByID(s.Weapon2Mod2ID),
+		WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
 		ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
 		WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
 		AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
@@ -326,49 +322,38 @@ func (c *SpectreController) Register() {
 		}
 	})
 
-	// POST /api/spectres/{id}/weapon/none
-	http.HandleFunc("POST /api/spectres/{id}/weapon/none", func(w http.ResponseWriter, r *http.Request) {
-		s, err := updateSpectreWeapon(c.db, r.PathValue("id"), "")
-		if err != nil {
-			respondText(w, 500, "update failed\n")
-			return
-		}
-		c.renderCard(w, s, false)
-	})
-
-	// POST /api/spectres/{id}/weapon/{weaponId}
-	http.HandleFunc("POST /api/spectres/{id}/weapon/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
+	// POST /api/spectres/{id}/weapon/add/{weaponId}
+	// Appends a new weapon slot (max 5 total).
+	http.HandleFunc("POST /api/spectres/{id}/weapon/add/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
 		weaponID := r.PathValue("weaponId")
 		if model.WeaponByID(weaponID) == nil {
 			respondText(w, 400, "unknown weapon\n")
 			return
 		}
-		s, err := updateSpectreWeapon(c.db, r.PathValue("id"), weaponID)
+		s, err := addSpectreWeapon(c.db, r.PathValue("id"), weaponID)
 		if err != nil {
-			respondText(w, 500, "update failed\n")
+			respondText(w, 400, err.Error()+"\n")
 			return
 		}
 		c.renderCard(w, s, false)
 	})
 
-	// POST /api/spectres/{id}/weapon2/none
-	http.HandleFunc("POST /api/spectres/{id}/weapon2/none", func(w http.ResponseWriter, r *http.Request) {
-		s, err := updateSpectreWeapon2(c.db, r.PathValue("id"), "")
-		if err != nil {
-			respondText(w, 500, "update failed\n")
+	// POST /api/spectres/{id}/weapon/{idx}/{weaponId}
+	// Sets the weapon at an existing slot index. Use weaponId "none" to clear.
+	http.HandleFunc("POST /api/spectres/{id}/weapon/{idx}/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
+		idx, err := strconv.Atoi(r.PathValue("idx"))
+		if err != nil || idx < 0 {
+			respondText(w, 400, "invalid weapon index\n")
 			return
 		}
-		c.renderCard(w, s, false)
-	})
-
-	// POST /api/spectres/{id}/weapon2/{weaponId}
-	http.HandleFunc("POST /api/spectres/{id}/weapon2/{weaponId}", func(w http.ResponseWriter, r *http.Request) {
 		weaponID := r.PathValue("weaponId")
-		if model.WeaponByID(weaponID) == nil {
+		if weaponID == "none" {
+			weaponID = ""
+		} else if model.WeaponByID(weaponID) == nil {
 			respondText(w, 400, "unknown weapon\n")
 			return
 		}
-		s, err := updateSpectreWeapon2(c.db, r.PathValue("id"), weaponID)
+		s, err := setSpectreWeapon(c.db, r.PathValue("id"), idx, weaponID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
@@ -376,9 +361,31 @@ func (c *SpectreController) Register() {
 		c.renderCard(w, s, false)
 	})
 
-	// POST /api/spectres/{id}/mod/{slot}/{modId}
-	http.HandleFunc("POST /api/spectres/{id}/mod/{slot}/{modId}", func(w http.ResponseWriter, r *http.Request) {
+	// DELETE /api/spectres/{id}/weapon/{idx}
+	// Removes the weapon slot at the given index entirely.
+	http.HandleFunc("DELETE /api/spectres/{id}/weapon/{idx}", func(w http.ResponseWriter, r *http.Request) {
+		idx, err := strconv.Atoi(r.PathValue("idx"))
+		if err != nil || idx < 0 {
+			respondText(w, 400, "invalid weapon index\n")
+			return
+		}
+		s, err := removeSpectreWeapon(c.db, r.PathValue("id"), idx)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/weapon/{idx}/mod/{slot}/{modId}
+	// Sets mod slot 1 or 2 for the weapon at the given index.
+	http.HandleFunc("POST /api/spectres/{id}/weapon/{idx}/mod/{slot}/{modId}", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
+		wIdx, err := strconv.Atoi(r.PathValue("idx"))
+		if err != nil || wIdx < 0 {
+			respondText(w, 400, "invalid weapon index\n")
+			return
+		}
 		slotStr := r.PathValue("slot")
 		modID := r.PathValue("modId")
 		var slot int
@@ -398,33 +405,7 @@ func (c *SpectreController) Register() {
 		if modID == "none" {
 			modID = ""
 		}
-		s, err := updateSpectreWeaponMod(c.db, spectreID, slot, modID)
-		if err != nil {
-			respondText(w, 500, "update failed\n")
-			return
-		}
-		c.renderCard(w, s, false)
-	})
-
-	// POST /api/spectres/{id}/mod2/{slot}/{modId} — mod slots for second weapon
-	http.HandleFunc("POST /api/spectres/{id}/mod2/{slot}/{modId}", func(w http.ResponseWriter, r *http.Request) {
-		spectreID := r.PathValue("id")
-		slotStr := r.PathValue("slot")
-		modID := r.PathValue("modId")
-		var slot int
-		switch slotStr {
-		case "1":
-			slot = 1
-		case "2":
-			slot = 2
-		default:
-			respondText(w, 400, "invalid slot\n")
-			return
-		}
-		if modID == "none" {
-			modID = ""
-		}
-		s, err := updateSpectreWeapon2Mod(c.db, spectreID, slot, modID)
+		s, err := setSpectreWeaponMod(c.db, spectreID, wIdx, slot, modID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return

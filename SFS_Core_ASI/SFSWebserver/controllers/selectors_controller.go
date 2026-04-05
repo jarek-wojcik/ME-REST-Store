@@ -3,6 +3,7 @@ package controllers
 import (
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"sfswebserver/model"
 
@@ -51,8 +52,9 @@ func (c *SelectorsController) Register() {
 		})
 	})
 
-	// GET /api/weapons/selector?entityId={id}&kind={spectre|spectre-weapon2}
-	// Returns the weapon selector grid partial for use in the modal.
+	// GET /api/weapons/selector?entityId={id}&kind={spectre-add|spectre-weapon}&weaponIdx={n}
+	// kind=spectre-add   → opens picker to append a new weapon slot
+	// kind=spectre-weapon → opens picker to replace weapon at slot weaponIdx
 	http.HandleFunc("GET /api/weapons/selector", func(w http.ResponseWriter, r *http.Request) {
 		entityID := r.URL.Query().Get("entityId")
 		kind := r.URL.Query().Get("kind")
@@ -62,12 +64,20 @@ func (c *SelectorsController) Register() {
 		}
 		var weaponPostURLBase, targetID string
 		switch kind {
-		case "spectre-weapon2":
-			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon2"
+		case "spectre-add":
+			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon/add"
 			targetID = "spectre-card-" + entityID
-		default: // "spectre"
-			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon"
+		case "spectre-weapon":
+			idxStr := r.URL.Query().Get("weaponIdx")
+			if _, err := strconv.Atoi(idxStr); err != nil {
+				respondText(w, 400, "missing or invalid weaponIdx\n")
+				return
+			}
+			weaponPostURLBase = "/api/spectres/" + entityID + "/weapon/" + idxStr
 			targetID = "spectre-card-" + entityID
+		default:
+			respondText(w, 400, "unknown kind\n")
+			return
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = c.tmpl.ExecuteTemplate(w, "weapon_selector", map[string]any{
@@ -77,34 +87,36 @@ func (c *SelectorsController) Register() {
 		})
 	})
 
-	// GET /api/weapon-mods/selector?entityId={id}&kind={bot|spectre|bot-weapon2|spectre-weapon2}&slot={1|2}
-	// Returns the weapon mod selector grid partial for use in the modal.
+	// GET /api/weapon-mods/selector?entityId={id}&kind=spectre-weapon&weaponIdx={n}&slot={1|2}
 	// Only mods compatible with the entity's currently equipped weapon are shown;
 	// universal mods (WeaponTypeAny) are always included.
 	http.HandleFunc("GET /api/weapon-mods/selector", func(w http.ResponseWriter, r *http.Request) {
 		entityID := r.URL.Query().Get("entityId")
 		slot := r.URL.Query().Get("slot")
 		kind := r.URL.Query().Get("kind")
+		idxStr := r.URL.Query().Get("weaponIdx")
 		if entityID == "" || (slot != "1" && slot != "2") {
 			respondText(w, 400, "missing or invalid entityId/slot\n")
 			return
 		}
+		wIdx, err := strconv.Atoi(idxStr)
+		if err != nil || wIdx < 0 {
+			respondText(w, 400, "missing or invalid weaponIdx\n")
+			return
+		}
 		var weaponID string
-		switch kind {
-		case "spectre-weapon2":
-			if sv, err := getSpectre(c.db, entityID); err == nil {
-				weaponID = sv.Weapon2ID
-			} else {
+		if kind == "spectre-weapon" {
+			sv, err := getSpectre(c.db, entityID)
+			if err != nil {
 				respondText(w, 404, "entity not found\n")
 				return
 			}
-		default: // "spectre"
-			if sv, err := getSpectre(c.db, entityID); err == nil {
-				weaponID = sv.WeaponID
-			} else {
-				respondText(w, 404, "entity not found\n")
-				return
+			if wIdx < len(sv.Weapons) {
+				weaponID = sv.Weapons[wIdx].WeaponID
 			}
+		} else {
+			respondText(w, 400, "unknown kind\n")
+			return
 		}
 		weaponDef := model.WeaponByID(weaponID)
 		var filtered []model.WeaponModDef
@@ -115,15 +127,8 @@ func (c *SelectorsController) Register() {
 				filtered = append(filtered, mod)
 			}
 		}
-		var modPostURLBase, targetID string
-		switch kind {
-		case "spectre-weapon2":
-			modPostURLBase = "/api/spectres/" + entityID + "/mod2/" + slot
-			targetID = "spectre-card-" + entityID
-		default: // "spectre"
-			modPostURLBase = "/api/spectres/" + entityID + "/mod/" + slot
-			targetID = "spectre-card-" + entityID
-		}
+		modPostURLBase := "/api/spectres/" + entityID + "/weapon/" + idxStr + "/mod/" + slot
+		targetID := "spectre-card-" + entityID
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = c.tmpl.ExecuteTemplate(w, "weapon_mod_selector", map[string]any{
 			"ModPostURLBase": modPostURLBase,

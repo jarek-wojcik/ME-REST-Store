@@ -7,9 +7,8 @@ struct SFSCharacterModelStruct
     var string CharacterID;
     var string AppearanceCharID;
     var string AppearancePawnType;
-    var SFSWeaponModelStruct Weapon1;
-    var bool bHasWeapon2;
-    var SFSWeaponModelStruct Weapon2;
+    var SFSWeaponModelStruct Weapons[5];
+    var int WeaponCount;
     var SFSPowerModelStruct Powers[5];
     var int PowerCount;
     var bool bHasBorrowedPower;
@@ -21,9 +20,12 @@ static function bool FromFlat(string FlatResponse, out SFSCharacterModelStruct M
 {
     local array<string> Tokens;
     local int i;
+    local int WeaponBase;
+    local int PowerBase;
     
     Class'SFSArrayUtility'.static.SplitStringIntoParts(FlatResponse, "|", Tokens);
-    if (Tokens.Length < 10)
+    // Minimum: id|name|charId|appearCharId + 15 weapon fields + 5 powers = 24
+    if (Tokens.Length < 24)
     {
         return FALSE;
     }
@@ -31,10 +33,20 @@ static function bool FromFlat(string FlatResponse, out SFSCharacterModelStruct M
     Model.Name = Tokens[1];
     Model.CharacterID = Tokens[2];
     Model.AppearanceCharID = Tokens[3];
-    Class'SFSWeaponModel'.static.FromTokens(Tokens[4], Tokens[5], Tokens[6], Model.Weapon1);
-    Model.bHasWeapon2 = Class'SFSWeaponModel'.static.FromTokens(Tokens[7], Tokens[8], Tokens[9], Model.Weapon2);
+    // Weapon slots: indices 4-18 (5 slots x 3 fields each)
+    Model.WeaponCount = 0;
+    WeaponBase = 4;
+    for (i = 0; i < 5; i++)
+    {
+        if (Class'SFSWeaponModel'.static.FromTokens(Tokens[WeaponBase + i * 3], Tokens[WeaponBase + i * 3 + 1], Tokens[WeaponBase + i * 3 + 2], Model.Weapons[Model.WeaponCount]))
+        {
+            Model.WeaponCount++;
+        }
+    }
+    // Power slots: indices 19-23
     Model.PowerCount = 0;
-    for (i = 10; i <= 14; i++)
+    PowerBase = 19;
+    for (i = PowerBase; i <= PowerBase + 4; i++)
     {
         if (i < Tokens.Length && Tokens[i] != "")
         {
@@ -44,10 +56,12 @@ static function bool FromFlat(string FlatResponse, out SFSCharacterModelStruct M
             }
         }
     }
-    Model.bHasBorrowedPower = Tokens.Length > 15 && Tokens[15] != "" && Class'SFSPowerModel'.static.FromToken(Tokens[15], Model.BorrowedPower);
-    if (Tokens.Length > 19)
+    // Borrowed power: index 24
+    Model.bHasBorrowedPower = Tokens.Length > 24 && Tokens[24] != "" && Class'SFSPowerModel'.static.FromToken(Tokens[24], Model.BorrowedPower);
+    // Consumables: indices 25-28
+    if (Tokens.Length > 28)
     {
-        Class'SFSInventoryModel'.static.FromTokens(Tokens[16], Tokens[17], Tokens[18], Tokens[19], Model.Inventory);
+        Class'SFSInventoryModel'.static.FromTokens(Tokens[25], Tokens[26], Tokens[27], Tokens[28], Model.Inventory);
     }
     return TRUE;
 }

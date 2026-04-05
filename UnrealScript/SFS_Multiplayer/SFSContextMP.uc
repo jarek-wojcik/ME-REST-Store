@@ -5,7 +5,8 @@ defaultproperties
 {
     StateListenerClasses = ()
     ConsoleCommandClasses = (Class'SFSGivePowerInterceptorCommandMP', Class'SFSShowBotChoiceUICommand', Class'SFSSpectrePortalRefreshConsoleCommand')
-    ManagerClasses = (Class'SFSBotManager', 
+    ManagerClasses = (Class'SFSPortalAsyncLoader', 
+                      Class'SFSBotManager', 
                       Class'SFSBotDirectorManager', 
                       Class'SFSMatchManager', 
                       Class'SFSAppearanceManager', 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strconv"
 	"time"
 
 	"sfswebserver/model"
@@ -27,20 +28,13 @@ type CardURLs struct {
 	DeleteTarget                string // hx-target for the delete button, e.g. "#spectres-panel" or "#bot-panel"
 	DeleteConfirm               string // hx-confirm message shown before deletion
 	CharSelectorURL             string // GET: opens character selector modal
-	WeaponSelectorURL           string // GET: opens weapon selector modal
-	Mod1SelectorURL             string // GET: opens weapon mod 1 selector modal
-	Mod2SelectorURL             string // GET: opens weapon mod 2 selector modal
 	PowerBaseURL                string // prefix for power rank/evo routes
 	HasBorrowedPower            bool   // true when a borrowed power is already set
 	AddPowerURL                 string // GET: opens the borrow-power character picker
 	ClearBorrowedPowerURL       string // DELETE: removes the borrowed power slot
 	AppearanceSelectorURL       string // GET: opens character selector for appearance-only change
 	RenameURL                   string // POST: renames the entity; form field "name"
-	Weapon2SelectorURL          string // GET: opens weapon selector for second weapon slot
-	Weapon2Mod1SelectorURL      string // GET: opens weapon mod selector for second weapon mod 1
-	Weapon2Mod2SelectorURL      string // GET: opens weapon mod selector for second weapon mod 2
-	WeaponClearURL              string // POST: clears weapon
-	Weapon2ClearURL             string // POST: clears second weapon
+	AddWeaponURL                string // GET: opens weapon selector for a new (appended) weapon slot
 	ArmorConsumableClearURL     string // POST: clears armor consumable
 	WeaponConsumableClearURL    string // POST: clears weapon consumable
 	AmmoConsumableClearURL      string // POST: clears ammo consumable
@@ -67,6 +61,21 @@ type PowerSlotView struct {
 	ChangePowerURL  string          // GET: opens power-change flow for this slot
 }
 
+// WeaponSlotView pairs a persisted WeaponSlot with resolved catalog defs and
+// the pre-computed API URLs for that specific slot index.
+type WeaponSlotView struct {
+	model.WeaponSlot
+	SlotIdx           int                 // 0–4
+	WeaponDef         *model.WeaponDef    // nil when slot is empty
+	Mod1Def           *model.WeaponModDef // nil when mod 1 is empty
+	Mod2Def           *model.WeaponModDef // nil when mod 2 is empty
+	WeaponSelectorURL string              // GET: opens weapon selector for this slot
+	Mod1SelectorURL   string              // GET: opens mod 1 selector for this slot
+	Mod2SelectorURL   string              // GET: opens mod 2 selector for this slot
+	WeaponClearURL    string              // POST: clears the weapon in this slot (keeps slot)
+	RemoveURL         string              // DELETE: removes this slot entirely
+}
+
 // SpectreView pairs a persisted Spectre with resolved catalog definitions.
 // It is structurally compatible with the "character_card" template because all
 // bot-specific routing was replaced by the embedded CardURLs fields.
@@ -74,12 +83,7 @@ type SpectreView struct {
 	model.Spectre
 	CharDef             *model.CharacterDef
 	AppearanceCharDef   *model.CharacterDef // visual override portrait; nil means use CharDef image
-	WeaponDef           *model.WeaponDef
-	WeaponMod1Def       *model.WeaponModDef
-	WeaponMod2Def       *model.WeaponModDef
-	Weapon2Def          *model.WeaponDef     // second weapon slot
-	Weapon2Mod1Def      *model.WeaponModDef  // mod slot 1 for second weapon
-	Weapon2Mod2Def      *model.WeaponModDef  // mod slot 2 for second weapon
+	WeaponViews         []WeaponSlotView
 	ArmorConsumableDef  *model.ConsumableDef // equipped armor consumable; nil when slot is empty
 	WeaponConsumableDef *model.ConsumableDef // equipped weapon consumable; nil when slot is empty
 	AmmoConsumableDef   *model.ConsumableDef // equipped ammo consumable; nil when slot is empty
@@ -97,19 +101,12 @@ func spectreURLs(spectreID string) CardURLs {
 		DeleteTarget:                "#spectres-panel",
 		DeleteConfirm:               "Remove this spectre?",
 		CharSelectorURL:             "/api/characters/selector?entityId=" + spectreID + "&kind=spectre",
-		WeaponSelectorURL:           "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre",
-		Mod1SelectorURL:             "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=1",
-		Mod2SelectorURL:             "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=2",
 		PowerBaseURL:                base + "/power",
 		AddPowerURL:                 base + "/borrowed-power/selector",
 		ClearBorrowedPowerURL:       base + "/borrowed-power",
 		AppearanceSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
 		RenameURL:                   base + "/rename",
-		Weapon2SelectorURL:          "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon2",
-		Weapon2Mod1SelectorURL:      "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=1",
-		Weapon2Mod2SelectorURL:      "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=2",
-		WeaponClearURL:              base + "/weapon/none",
-		Weapon2ClearURL:             base + "/weapon2/none",
+		AddWeaponURL:                "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-add",
 		ArmorConsumableClearURL:     base + "/consumable/armor/none",
 		WeaponConsumableClearURL:    base + "/consumable/weapon/none",
 		AmmoConsumableClearURL:      base + "/consumable/ammo/none",
@@ -135,19 +132,12 @@ func teamSpectreURLs(spectreID string) CardURLs {
 		DeleteTarget:                "#bot-panel",
 		DeleteConfirm:               "Remove this spectre from the team?",
 		CharSelectorURL:             "/api/characters/selector?entityId=" + spectreID + "&kind=spectre",
-		WeaponSelectorURL:           "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre",
-		Mod1SelectorURL:             "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=1",
-		Mod2SelectorURL:             "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre&slot=2",
 		PowerBaseURL:                base + "/power",
 		AddPowerURL:                 base + "/borrowed-power/selector",
 		ClearBorrowedPowerURL:       base + "/borrowed-power",
 		AppearanceSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
 		RenameURL:                   base + "/rename",
-		Weapon2SelectorURL:          "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon2",
-		Weapon2Mod1SelectorURL:      "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=1",
-		Weapon2Mod2SelectorURL:      "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon2&slot=2",
-		WeaponClearURL:              base + "/weapon/none",
-		Weapon2ClearURL:             base + "/weapon2/none",
+		AddWeaponURL:                "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-add",
 		ArmorConsumableClearURL:     base + "/consumable/armor/none",
 		WeaponConsumableClearURL:    base + "/consumable/weapon/none",
 		AmmoConsumableClearURL:      base + "/consumable/ammo/none",
@@ -259,6 +249,7 @@ func listSpectres(db *bolt.DB) ([]model.Spectre, error) {
 			if err := json.Unmarshal(v, &s); err != nil {
 				return err
 			}
+			s.MigrateWeapons()
 			spectres = append(spectres, s)
 			return nil
 		})
@@ -280,6 +271,7 @@ func listSpectresForTeam(db *bolt.DB, teamID string) ([]model.Spectre, error) {
 			if err := json.Unmarshal(v, &s); err != nil {
 				return err
 			}
+			s.MigrateWeapons()
 			if s.TeamID == teamID {
 				spectres = append(spectres, s)
 			}
@@ -304,7 +296,11 @@ func getSpectre(db *bolt.DB, spectreID string) (model.Spectre, error) {
 		if v == nil {
 			return fmt.Errorf("spectre not found")
 		}
-		return json.Unmarshal(v, &s)
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.MigrateWeapons()
+		return nil
 	})
 	return s, err
 }
@@ -460,8 +456,9 @@ func updateSpectreCharacter(db *bolt.DB, spectreID, charID string) (model.Spectr
 	return s, err
 }
 
-// updateSpectreWeapon changes the equipped weapon.
-func updateSpectreWeapon(db *bolt.DB, spectreID, weaponID string) (model.Spectre, error) {
+// addSpectreWeapon appends a new weapon slot (max 5). Returns an error if the
+// weapon limit is already reached.
+func addSpectreWeapon(db *bolt.DB, spectreID, weaponID string) (model.Spectre, error) {
 	var s model.Spectre
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(spectresBucket))
@@ -472,11 +469,11 @@ func updateSpectreWeapon(db *bolt.DB, spectreID, weaponID string) (model.Spectre
 		if err := json.Unmarshal(v, &s); err != nil {
 			return err
 		}
-		s.WeaponID = weaponID
-		if weaponID == "" {
-			s.WeaponMod1ID = ""
-			s.WeaponMod2ID = ""
+		s.MigrateWeapons()
+		if len(s.Weapons) >= 5 {
+			return fmt.Errorf("weapon limit reached (max 5)")
 		}
+		s.Weapons = append(s.Weapons, model.WeaponSlot{WeaponID: weaponID})
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err
@@ -486,8 +483,9 @@ func updateSpectreWeapon(db *bolt.DB, spectreID, weaponID string) (model.Spectre
 	return s, err
 }
 
-// updateSpectreWeaponMod changes a weapon mod slot (1 or 2).
-func updateSpectreWeaponMod(db *bolt.DB, spectreID string, slot int, modID string) (model.Spectre, error) {
+// setSpectreWeapon sets the weapon at an existing slot index. Clears mods when
+// weaponID is empty.
+func setSpectreWeapon(db *bolt.DB, spectreID string, idx int, weaponID string) (model.Spectre, error) {
 	var s model.Spectre
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(spectresBucket))
@@ -498,11 +496,57 @@ func updateSpectreWeaponMod(db *bolt.DB, spectreID string, slot int, modID strin
 		if err := json.Unmarshal(v, &s); err != nil {
 			return err
 		}
-		switch slot {
+		s.MigrateWeapons()
+		if idx < 0 || idx >= len(s.Weapons) {
+			return fmt.Errorf("invalid weapon index")
+		}
+		
+		// Check if weapon category changed - if so, clear mods
+		oldWeaponID := s.Weapons[idx].WeaponID
+		oldWeapon := model.WeaponByID(oldWeaponID)
+		newWeapon := model.WeaponByID(weaponID)
+		
+		s.Weapons[idx].WeaponID = weaponID
+		
+		// Clear mods if: weapon is being cleared (weaponID == "")
+		// OR if weapon category changed (e.g., pistol -> assault rifle)
+		if weaponID == "" || (oldWeapon != nil && newWeapon != nil && oldWeapon.Category != newWeapon.Category) {
+			s.Weapons[idx].Mod1ID = ""
+			s.Weapons[idx].Mod2ID = ""
+		}
+		
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// setSpectreWeaponMod sets mod slot 1 or 2 for a weapon at the given index.
+func setSpectreWeaponMod(db *bolt.DB, spectreID string, weaponIdx, modSlot int, modID string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.MigrateWeapons()
+		if weaponIdx < 0 || weaponIdx >= len(s.Weapons) {
+			return fmt.Errorf("invalid weapon index")
+		}
+		switch modSlot {
 		case 1:
-			s.WeaponMod1ID = modID
+			s.Weapons[weaponIdx].Mod1ID = modID
 		case 2:
-			s.WeaponMod2ID = modID
+			s.Weapons[weaponIdx].Mod2ID = modID
+		default:
+			return fmt.Errorf("invalid mod slot: must be 1 or 2")
 		}
 		data, err := json.Marshal(s)
 		if err != nil {
@@ -513,8 +557,8 @@ func updateSpectreWeaponMod(db *bolt.DB, spectreID string, slot int, modID strin
 	return s, err
 }
 
-// updateSpectreWeapon2 changes the second equipped weapon.
-func updateSpectreWeapon2(db *bolt.DB, spectreID, weaponID string) (model.Spectre, error) {
+// removeSpectreWeapon removes the weapon slot at the given index.
+func removeSpectreWeapon(db *bolt.DB, spectreID string, idx int) (model.Spectre, error) {
 	var s model.Spectre
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(spectresBucket))
@@ -525,43 +569,16 @@ func updateSpectreWeapon2(db *bolt.DB, spectreID, weaponID string) (model.Spectr
 		if err := json.Unmarshal(v, &s); err != nil {
 			return err
 		}
-		s.Weapon2ID = weaponID
-		if weaponID == "" {
-			s.Weapon2Mod1ID = ""
-			s.Weapon2Mod2ID = ""
+		s.MigrateWeapons()
+		if idx < 0 || idx >= len(s.Weapons) {
+			return fmt.Errorf("invalid weapon index")
 		}
+		s.Weapons = append(s.Weapons[:idx], s.Weapons[idx+1:]...)
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err
 		}
 		return b.Put([]byte(spectreID), data)
-	})
-	return s, err
-}
-
-// updateSpectreWeapon2Mod changes a mod slot (1 or 2) for the second weapon.
-func updateSpectreWeapon2Mod(db *bolt.DB, spectreID string, slot int, modID string) (model.Spectre, error) {
-	var s model.Spectre
-	err := db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(spectresBucket))
-		v := b.Get([]byte(spectreID))
-		if v == nil {
-			return fmt.Errorf("spectre not found")
-		}
-		if err := json.Unmarshal(v, &s); err != nil {
-			return err
-		}
-		switch slot {
-		case 1:
-			s.Weapon2Mod1ID = modID
-		case 2:
-			s.Weapon2Mod2ID = modID
-		}
-		data, err := json.Marshal(s)
-		if err != nil {
-			return err
-		}
-		return b.Put([]byte(s.ID), data)
 	})
 	return s, err
 }
@@ -928,6 +945,29 @@ func spectrePowerViews(s model.Spectre, urls CardURLs) []PowerSlotView {
 	return append(normal, borrowedView)
 }
 
+// weaponSlotViews builds a WeaponSlotView for each weapon slot, resolving
+// catalog defs and pre-computing per-slot API URLs.
+func weaponSlotViews(spectreID string, weapons []model.WeaponSlot) []WeaponSlotView {
+	base := "/api/spectres/" + spectreID
+	views := make([]WeaponSlotView, len(weapons))
+	for i, ws := range weapons {
+		idxStr := strconv.Itoa(i)
+		views[i] = WeaponSlotView{
+			WeaponSlot:        ws,
+			SlotIdx:           i,
+			WeaponDef:         model.WeaponByID(ws.WeaponID),
+			Mod1Def:           model.WeaponModByID(ws.Mod1ID),
+			Mod2Def:           model.WeaponModByID(ws.Mod2ID),
+			WeaponSelectorURL: "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr,
+			Mod1SelectorURL:   "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr + "&slot=1",
+			Mod2SelectorURL:   "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr + "&slot=2",
+			WeaponClearURL:    base + "/weapon/" + idxStr + "/none",
+			RemoveURL:         base + "/weapon/" + idxStr,
+		}
+	}
+	return views
+}
+
 // spectreViews resolves catalog definitions for each spectre.
 func spectreViews(spectres []model.Spectre) []SpectreView {
 	views := make([]SpectreView, 0, len(spectres))
@@ -943,12 +983,7 @@ func spectreViews(spectres []model.Spectre) []SpectreView {
 			Spectre:             s,
 			CharDef:             def,
 			AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
-			WeaponDef:           model.WeaponByID(s.WeaponID),
-			WeaponMod1Def:       model.WeaponModByID(s.WeaponMod1ID),
-			WeaponMod2Def:       model.WeaponModByID(s.WeaponMod2ID),
-			Weapon2Def:          model.WeaponByID(s.Weapon2ID),
-			Weapon2Mod1Def:      model.WeaponModByID(s.Weapon2Mod1ID),
-			Weapon2Mod2Def:      model.WeaponModByID(s.Weapon2Mod2ID),
+			WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
 			ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
 			WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
 			AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
@@ -975,12 +1010,7 @@ func teamSpectreViews(spectres []model.Spectre) []SpectreView {
 			Spectre:             s,
 			CharDef:             def,
 			AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
-			WeaponDef:           model.WeaponByID(s.WeaponID),
-			WeaponMod1Def:       model.WeaponModByID(s.WeaponMod1ID),
-			WeaponMod2Def:       model.WeaponModByID(s.WeaponMod2ID),
-			Weapon2Def:          model.WeaponByID(s.Weapon2ID),
-			Weapon2Mod1Def:      model.WeaponModByID(s.Weapon2Mod1ID),
-			Weapon2Mod2Def:      model.WeaponModByID(s.Weapon2Mod2ID),
+			WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
 			ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
 			WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
 			AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
