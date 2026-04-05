@@ -20,6 +20,27 @@ public function LoadAsync(string AssetPath, EAsyncLoadType LoadType, delegate<SF
     AsyncLoads.AddItem(AsyncLoad);
     StartCheckTimer();
 }
+public function LoadWeaponAsync(string AssetPath, string Mod1ID, string Mod2ID, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
+{
+    local SFSGenericAsyncLoad AsyncLoad;
+    
+    AsyncLoad = CreateAsyncLoad(AssetPath, EAsyncLoadType.ALT_Weapon, Callback);
+    AsyncLoad.Mod1ID = Mod1ID;
+    AsyncLoad.Mod2ID = Mod2ID;
+    PollLoadStatus(AsyncLoad);
+    AsyncLoads.AddItem(AsyncLoad);
+    StartCheckTimer();
+}
+public function LoadModAsync(string AssetPath, SFXWeapon TargetWeapon, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
+{
+    local SFSGenericAsyncLoad AsyncLoad;
+    
+    AsyncLoad = CreateAsyncLoad(AssetPath, EAsyncLoadType.ALT_WeaponMod, Callback);
+    AsyncLoad.TargetWeapon = TargetWeapon;
+    PollLoadStatus(AsyncLoad);
+    AsyncLoads.AddItem(AsyncLoad);
+    StartCheckTimer();
+}
 private final function SFSGenericAsyncLoad CreateAsyncLoad(string AssetPath, EAsyncLoadType LoadType, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
     local SFSGenericAsyncLoad AsyncLoad;
@@ -96,7 +117,7 @@ private final function PollLoadStatus(out SFSGenericAsyncLoad AsyncLoad)
             AsyncLoad.LoadedPower = SFXPowerCustomAction(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXPowerCustomAction', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_WeaponMod:
-            AsyncLoad.LoadedWeaponMod = SFXWeaponMod(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXWeaponMod', AsyncLoad.LoadStatus));
+            AsyncLoad.LoadedWeaponMod = Class<SFXWeaponMod>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_Consumable:
             AsyncLoad.LoadedConsumable = SFXGameEffect_MatchConsumableBase(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXGameEffect_MatchConsumableBase', AsyncLoad.LoadStatus));

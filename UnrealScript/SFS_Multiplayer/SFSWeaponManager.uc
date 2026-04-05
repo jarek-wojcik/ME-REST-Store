@@ -84,7 +84,7 @@ function loadAndGiveWeapon(string weaponPath)
     OwnerPawn.SetWeaponImmediately(NewWeapon);
     log(Self.Name, "Successfully gave and equipped weapon: " $ weaponPath, Outer);
 }
-function loadAndGiveWeaponAsync(string weaponPath)
+function loadAndGiveWeaponAsync(string weaponPath, string mod1ID, string mod2ID)
 {
     if (asyncLoader == None)
     {
@@ -92,11 +92,12 @@ function loadAndGiveWeaponAsync(string weaponPath)
         return;
     }
     log(Self.Name, "Async loading weapon: " $ weaponPath, Outer);
-    asyncLoader.LoadAsync(weaponPath, 3, OnWeaponLoaded);
+    asyncLoader.LoadWeaponAsync(weaponPath, mod1ID, mod2ID, OnWeaponLoaded);
 }
 function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
     local SFXWeapon NewWeapon;
+    local SFXModule_WeaponModManager ModManager;
     
     if (load.LoadedWeapon == None)
     {
@@ -110,7 +111,46 @@ function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         return;
     }
     NewWeapon.CurrentSpareAmmo = NewWeapon.GetMaxSpareAmmo();
-    log(Self.Name, "Successfully gave and equipped weapon (async): " $ load.AssetToLoad, Outer);
+    NewWeapon.WeaponLevel = NewWeapon.MaxLevel - 1.0;
+    log(Self.Name, "Successfully gave and equipped weapon (async): " $ load.AssetToLoad $ " at level " $ NewWeapon.WeaponLevel, Outer);
+    ModManager = NewWeapon.GetModule(Class'SFXModule_WeaponModManager');
+    if (ModManager != None)
+    {
+        ModManager.RemoveAllMods();
+    }
+    if (load.Mod1ID != "")
+    {
+        log(Self.Name, "Queuing async load for mod1: " $ load.Mod1ID $ " on " $ load.AssetToLoad, Outer);
+        asyncLoader.LoadModAsync(load.Mod1ID, NewWeapon, OnWeaponModLoaded);
+    }
+    if (load.Mod2ID != "")
+    {
+        log(Self.Name, "Queuing async load for mod2: " $ load.Mod2ID $ " on " $ load.AssetToLoad, Outer);
+        asyncLoader.LoadModAsync(load.Mod2ID, NewWeapon, OnWeaponModLoaded);
+    }
+}
+function OnWeaponModLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
+{
+    local SFXModule_WeaponModManager ModManager;
+    
+    if (load.LoadedWeaponMod == None)
+    {
+        log(Self.Name, "Error: Failed to async load weapon mod: " $ load.AssetToLoad, Outer);
+        return;
+    }
+    if (load.TargetWeapon == None)
+    {
+        log(Self.Name, "Error: TargetWeapon is None for mod: " $ load.AssetToLoad, Outer);
+        return;
+    }
+    ModManager = load.TargetWeapon.GetModule(Class'SFXModule_WeaponModManager');
+    if (ModManager == None)
+    {
+        log(Self.Name, "Warning: No SFXModule_WeaponModManager on weapon for mod: " $ load.AssetToLoad, Outer);
+        return;
+    }
+    log(Self.Name, "Applying mod: " $ load.AssetToLoad $ " to " $ load.TargetWeapon, Outer);
+    ModManager.AddMod(load.LoadedWeaponMod, 5);
 }
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

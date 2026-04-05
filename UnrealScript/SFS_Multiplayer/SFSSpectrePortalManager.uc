@@ -114,6 +114,8 @@ public function LoadWeapons(SFSCharacterModelStruct Character, SFXPawn Pawn)
         log(Self.Name, "Error: weaponManager or asyncLoader is None, cannot load weapons", Outer);
         return;
     }
+    RemoveWeaponsNotInCharacter(Character, Pawn);
+    // Load any Character weapons the pawn doesn't already have
     for (i = 0; i < Character.WeaponCount; i++)
     {
         if (Character.Weapons[i].WeaponID == "")
@@ -139,11 +141,48 @@ public function LoadWeapons(SFSCharacterModelStruct Character, SFXPawn Pawn)
         }
         if (bAlreadyHasWeapon)
         {
-            log(Self.Name, "Pawn already has weapon, skipping: " $ WeaponClassName, Outer);
-            continue;
+            log(Self.Name, "Pawn already has weapon, removing before reload: " $ WeaponClassName, Outer);
+            Pawn.InvManager.RemoveFromInventory(existingWeapon);
+            existingWeapon.Destroy();
         }
         log(Self.Name, "Requesting async load for weapon: " $ Character.Weapons[i].WeaponID, Outer);
-        weaponManager.loadAndGiveWeaponAsync(Character.Weapons[i].WeaponID);
+        weaponManager.loadAndGiveWeaponAsync(Character.Weapons[i].WeaponID, Character.Weapons[i].Mod1ID, Character.Weapons[i].Mod2ID);
+    }
+}
+private function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Character, SFXPawn Pawn)
+{
+    local int i;
+    local array<string> pathTokens;
+    local SFXWeapon existingWeapon;
+    local bool bWeaponInCharacter;
+    local array<SFXWeapon> weaponsToRemove;
+    
+    foreach Pawn.InvManager.InventoryActors(Class'SFXWeapon', existingWeapon)
+    {
+        bWeaponInCharacter = FALSE;
+        for (i = 0; i < Character.WeaponCount; i++)
+        {
+            if (Character.Weapons[i].WeaponID == "")
+            {
+                continue;
+            }
+            Class'SFSArrayUtility'.static.SplitStringIntoParts(Character.Weapons[i].WeaponID, ".", pathTokens);
+            if (pathTokens.Length > 0 && string(existingWeapon.Class.Name) == pathTokens[pathTokens.Length - 1])
+            {
+                bWeaponInCharacter = TRUE;
+                break;
+            }
+        }
+        if (!bWeaponInCharacter)
+        {
+            log(Self.Name, "Weapon not in character, queuing for removal: " $ existingWeapon.Class.Name, Outer);
+            weaponsToRemove.AddItem(existingWeapon);
+        }
+    }
+    for (i = 0; i < weaponsToRemove.Length; i++)
+    {
+        Pawn.InvManager.RemoveFromInventory(weaponsToRemove[i]);
+        weaponsToRemove[i].Destroy();
     }
 }
 

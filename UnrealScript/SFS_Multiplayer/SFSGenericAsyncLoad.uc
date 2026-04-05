@@ -22,8 +22,11 @@ var SFXPawn LoadedPawn;
 var SFXPawn_Henchman LoadedHenchman;
 var Class<SFXWeapon> LoadedWeapon;
 var SFXPowerCustomAction LoadedPower;
-var SFXWeaponMod LoadedWeaponMod;
+var Class<SFXWeaponMod> LoadedWeaponMod;
 var SFXGameEffect_MatchConsumableBase LoadedConsumable;
+var string Mod1ID;
+var string Mod2ID;
+var SFXWeapon TargetWeapon;
 
 function OnAssetLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
