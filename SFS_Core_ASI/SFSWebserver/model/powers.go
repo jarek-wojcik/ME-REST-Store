@@ -200,7 +200,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Discharge", Name: "Neural Shock", Picture: "Discharge.webp",
+		ID: "SFXPowerCustomActionMP_Discharge", Name: "Nova", Picture: "Discharge.webp",
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Transfer the energy of your biotic barrier to charge and spark this deadly blast.\n\nBarrier strength determines blast intensity."}, // Rank 1
@@ -1001,7 +1001,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_PalmBlaster", Name: "Nova", Picture: "PalmBlaster.webp",
+		ID: "SFXPowerCustomActionMP_PalmBlaster", Name: "Palm Blaster", Picture: "PalmBlaster.webp",
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Focus the energy of your barrier to fire a high-powered beam at a target from afar.\n\nFiring the beam consumes 40% of max barrier."}, // Rank 1
