@@ -377,11 +377,24 @@ type PowerWithSource struct {
 	SourceCharName string
 }
 
+// passiveSortKey returns a sort tier for a power:
+//   0 = normal power  (sorts first, alphabetically)
+//   1 = MPPassive     (second-to-last group)
+//   2 = MPMeleePassive (last group)
+func passiveSortKey(p *PowerDef) int {
+	switch p.Picture {
+	case "MPPassive.webp":
+		return 1
+	case "MPMeleePassive.webp":
+		return 2
+	}
+	return 0
+}
+
 // AllPowersWithSource returns every unique power across the catalog, each
-// paired with the first character that has it.  Deduplication is by PowerID,
-// so variant powers that share a display name but differ by ID
-// (e.g. BioticCharge vs BioticCharge_Krogan) appear as separate entries.
-// Results are sorted alphabetically by power name.
+// paired with the first character that has it.  Deduplication is by PowerID.
+// Results are sorted alphabetically by name, with all MPPassive powers after
+// normal powers and all MPMeleePassive powers last.
 func AllPowersWithSource() []PowerWithSource {
 	seen := make(map[string]bool, len(PowerCatalog))
 	result := make([]PowerWithSource, 0, len(PowerCatalog))
@@ -403,6 +416,10 @@ func AllPowersWithSource() []PowerWithSource {
 		}
 	}
 	sort.Slice(result, func(i, j int) bool {
+		ki, kj := passiveSortKey(result[i].Power), passiveSortKey(result[j].Power)
+		if ki != kj {
+			return ki < kj
+		}
 		return result[i].Power.Name < result[j].Power.Name
 	})
 	return result
