@@ -380,21 +380,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Barrier_Shared", Name: "Barrier", Picture: "Barrier.webp",
-		RootPath: "SFXGameContentDLC_CON_MP1",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Reinforce armor with this biotic field. Detonate the field to lift and dangle nearby targets.\n\nReduce all forms of damage taken.\nSlows power use by -50%."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed after detonation by 25%."},                                                                                                             // Rank 2
-			{Rank: 3, Description: "Increase the damage, force, and radius of the detonation by 20%."},                                                                                             // Rank 3
-			{Rank: 4, Description: "Increase the damage, force, and radius of the detonation by 30%."},                                                                                             // Rank 4 - Evolution A
-			{Rank: 5, Description: "Decrease damage taken by 5%."},                                                                                                                                 // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase shield regeneration rate by 15% while Barrier is active."},                                                                                            // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase damage and force by 30% while Barrier is active."},                                                                                                    // Rank 5 - Evolution B
-			{Rank: 8, Description: "Reduce power speed penalty by 30%."},                                                                                                                           // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase damage protection by 10%."},                                                                                                                           // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_Barrier_KroganVanguard", Name: "Barrier (Krogan Vanguard)", Picture: "Barrier.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
@@ -1151,21 +1136,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Supercharge_Shared", Name: "Geth Turbocharge", Picture: "Supercharge.webp",
-		RootPath: "SFXGameContentDLC_CON_MP1",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Advanced diagnostics redirect power into offensive systems, boosting combat capabilities.\n\nFaster movement.\nSee through smoke and objects.\nMore weapon, power, and melee damage.\nGreater weapon accuracy.\nShields reduced by -50%."}, // Rank 1
-			{Rank: 2, Description: "Increase movement speed by 5%."},                                                            // Rank 2
-			{Rank: 3, Description: "Increase damage bonus by 2%."},                                                              // Rank 3
-			{Rank: 4, Description: "Increase recharge speed of all powers by 20% while active."},                                // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase weapon accuracy bonus by 15%."},                                                    // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase damage of all powers by 15% while active."},                                        // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase rate of fire of all weapons by 15% while active."},                                 // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase movement speed bonus by 10%.\nIncrease the range of your enhanced vision by 60%."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase damage bonus by 10%."},                                                             // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_SupplyTurret", Name: "Supply Drone", Picture: "SupplyTurret.webp",
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
@@ -1256,21 +1226,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BatarianArmor_Shared", Name: "Batarian Armor", Picture: "BatarianArmor.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Reinforce armor with razor-sharp blades to damage enemies that melee.\n\nLess damage taken.\nMore melee damage dealt.\nSlows power use by -50%."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                            // Rank 2
-			{Rank: 3, Description: "Increase melee damage bonus by 10%."},                        // Rank 3
-			{Rank: 4, Description: "Increase damage protection by 5%."},                          // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase melee damage bonus by 15%."},                        // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase shield recharge rate by 15%."},                      // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase damage returned to targets that melee you by 24%."}, // Rank 5 - Evolution B
-			{Rank: 8, Description: "Reduce power speed penalty by 30%."},                         // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase damage protection by an additional 10%."},           // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_BatarianAttack", Name: "Batarian Kick", Picture: "BatarianAttack.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
@@ -1288,21 +1243,6 @@ var PowerCatalog = []PowerDef{
 	{
 		ID: "SFXPowerCustomActionMP_BatarianNet", Name: "Batarian Net", Picture: "BatarianNet.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Entangle opponents in an electrified net, dealing massive damage to armored targets and incapacitating unarmored targets as they break free.\n\nTargets build up resistances to the grappling effects of the net."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                           // Rank 2
-			{Rank: 3, Description: "Increase damage by 30%.\nIncrease duration by 30%."},                                        // Rank 3
-			{Rank: 4, Description: "Increase damage by 40%."},                                                                   // Rank 4 - Evolution A
-			{Rank: 5, Description: "Incapacitate targets 1% longer."},                                                           // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase damage by 40%.\nSlow armored targets by 30% for 10 seconds."},                      // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase recharge speed by 45%."},                                                           // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage to shields and barriers by 50%."},                                           // Rank 6 - Evolution A
-			{Rank: 9, Description: "Improve the electrified net to deal 150 points of damage across 6 meters every 1 seconds."}, // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomActionMP_BatarianNet_Shared", Name: "Batarian Net", Picture: "BatarianNet.webp",
-		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Entangle opponents in an electrified net, dealing massive damage to armored targets and incapacitating unarmored targets as they break free.\n\nTargets build up resistances to the grappling effects of the net."}, // Rank 1
 			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                           // Rank 2
@@ -1362,21 +1302,6 @@ var PowerCatalog = []PowerDef{
 	},
 	{
 		ID: "SFXPowerCustomActionMP_Bloodlust", Name: "Bloodlust", Picture: "Bloodlust.webp",
-		RootPath: "SFXGameContentDLC_CON_MP2",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "The vorcha flies into a frenzy, increasing movement speed, health regeneration, and melee damage. Each kill intensifies these effects and can stack up to three times.\n\nAdditional stacks last for 15 seconds.\nSlows power use by -60%.\nLasts until deactivated."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                                           // Rank 2
-			{Rank: 3, Description: "Increase health regeneration by 30%."},                                      // Rank 3
-			{Rank: 4, Description: "Increase melee damage of each stack by 10%."},                               // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase health regeneration of each stack by 50%"},                         // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase power damage bonus of each stack by 5%."},                          // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase weapon damage bonus of each stack by 5%."},                         // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase movement speed bonus by 5%.\nIncrease melee damage bonus by 10%."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase health regeneration of each stack by an additional 1%."},           // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomActionMP_Bloodlust_Shared", Name: "Bloodlust", Picture: "Bloodlust.webp",
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "The vorcha flies into a frenzy, increasing movement speed, health regeneration, and melee damage. Each kill intensifies these effects and can stack up to three times.\n\nAdditional stacks last for 15 seconds.\nSlows power use by -60%.\nLasts until deactivated."}, // Rank 1
@@ -1481,21 +1406,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Damping_Shared", Name: "Damping", Picture: "Damping.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Reveal weaknesses in defenses, increasing all damage done to the target and slowing its movement speed.\n\nProvide the entire squad with a tactical readout. Only one scan can be active on a target."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 50%."},                                                                                          // Rank 2
-			{Rank: 3, Description: "Increase duration by 30%."},                                                                                                // Rank 3
-			{Rank: 4, Description: "Increase all weapon damage done to the target by 7%."},                                                                     // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase all power damage done to the target by 7%."},                                                                      // Rank 4 - Evolution B
-			{Rank: 6, Description: "This evolution is bugged and doesn't work."},                                                                               // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase the target's movement speed penalty by 15%."},                                                                     // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase all damage done to the target by 10%."},                                                                           // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase scan duration by 1%.\nMomentarily reveal enemies within 20 meters of the target with an initial scanning pulse."}, // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomAction_DarkSingularity", Name: "Dark Singularity", Picture: "DarkSingularity.webp",
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
@@ -1571,21 +1481,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Flamer_Shared", Name: "Flamer", Picture: "Flamer.webp",
-		RootPath: "SFXGameContentDLC_CON_MP2",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Fire a powerful short-range flame attack. The flames will persist for a max duration and can be canceled early for a faster recharge.\n\nHighly effective against armor.\n\nSubject to a self-stacking glitch; damage can reach 3 times the presented value with continuous fire. Applies fire DoT."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                 // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},                         // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},                         // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase range by 50%."},                          // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase damage by 40%."},                         // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase duration by 60%."},                       // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage to armor by 50%."},                // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase damage to shields and barriers by 50%."}, // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_GethSentryTurret", Name: "Geth Turret", Picture: "GethTurret.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
@@ -1646,21 +1541,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HomingGrenade_Shared", Name: "Homing Grenade", Picture: "HomingGrenade.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Launch this seeking grenade to track down a target, causing a massive explosion on impact."},                   // Rank 1
-			{Rank: 2, Description: "Increase grenade capacity by 1."},                                                                              // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},                                                                                      // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},                                                                                      // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase impact radius by 30%."},                                                                               // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase grenade capacity by 1."},                                                                              // Rank 5 - Evolution A
-			{Rank: 7, Description: "Add a fire effect to targets, dealing 50% additional damage over 5 seconds.\n\nApplies fire DoT."},             // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage to armor by 60%.\nDecrease weapon damage mitigation of armored targets by 50% for 8 seconds."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Split a grenade in half to seek two targets that do 60% damage each."},                                         // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_BioticCharge_Krogan", Name: "Biotic Charge (Krogan)", Picture: "KroganBioticCharge.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
@@ -1678,21 +1558,6 @@ var PowerCatalog = []PowerDef{
 	{
 		ID: "SFXPowerCustomActionMP_Lash", Name: "Lash", Picture: "Lash.webp",
 		RootPath: "SFXGameContentDLC_CON_MP2",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Latch this biotic field onto enemies to jerk them toward you, doing massive damage in the process."},                    // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                                                       // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},                                                                                               // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},                                                                                               // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase force and damage of biotic detonations by 50%."},                                                               // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase recharge speed by 35%."},                                                                                       // Rank 5 - Evolution A
-			{Rank: 7, Description: "Do an additional 1% damage over 10 seconds."},                                                                           // Rank 5 - Evolution B
-			{Rank: 8, Description: "Give the power a 35% chance of not causing a cooldown.\nIncrease the time that lifted targets can be detonated by 1%."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Penetrate through shields and barriers, lifting any target without armor but with reduced force."},                      // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomActionMP_Lash_Shared", Name: "Lash", Picture: "Lash.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Latch this biotic field onto enemies to jerk them toward you, doing massive damage in the process."},                    // Rank 1
 			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                                                       // Rank 2
@@ -1740,21 +1605,6 @@ var PowerCatalog = []PowerDef{
 	{
 		ID: "SFXPowerCustomActionMP_DarkChannel2", Name: "Dark Channel", Picture: "DarkChannel.webp",
 		RootPath: "SFXGameContentDLC_CON_MP3",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Plague an opponent with a persistent, damaging biotic field.\n\nEffect transfers to a second target if the first is killed.\nEffect's length depends on Dark Channel's duration.\nOnly one field may be active at a time."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},               // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},                       // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},                       // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase power duration by 40%."},               // Rank 4 - Evolution B
-			{Rank: 6, Description: "Slow target's movement speed by -30%."},         // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase recharge speed by 35%."},               // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage by 50%."},                       // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase damage to armor and barriers by 75%."}, // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomActionMP_DarkChannel2_Shared", Name: "Dark Channel", Picture: "DarkChannel.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Plague an opponent with a persistent, damaging biotic field.\n\nEffect transfers to a second target if the first is killed.\nEffect's length depends on Dark Channel's duration.\nOnly one field may be active at a time."}, // Rank 1
 			{Rank: 2, Description: "Increase recharge speed by 25%."},               // Rank 2
@@ -1951,38 +1801,8 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_GethMeleePassive_Shared", Name: "Fitness", Picture: "MPMeleePassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP1",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, durability, and shield regeneration."},                                                // Rank 1
-			{Rank: 2, Description: "Increase health and shield bonuses by 10%."},                                                                                        // Rank 2
-			{Rank: 3, Description: "Increase melee damage bonus by 20%."},                                                                                               // Rank 3
-			{Rank: 4, Description: "Increase melee damage bonus by 30%."},                                                                                               // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase health and shield bonuses by 15%."},                                                                                        // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase melee damage by 75% for 30 seconds after an enemy is killed by a heavy melee."},                                            // Rank 5 - Evolution A
-			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."},                                                                                            // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase melee damage bonus by 30%.\nIncrease power damage bonus by 30% for 20 seconds after an enemy is killed by a heavy melee."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase health and shield bonuses by 25%."},                                                                                        // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_BatarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
-			{Rank: 2, Description: "Increase health and shield bonuses by 15%."},                                                                                       // Rank 2
-			{Rank: 3, Description: "Increase melee damage bonus by 20%."},                                                                                              // Rank 3
-			{Rank: 4, Description: "Increase melee damage bonus by 30%."},                                                                                              // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase health and shield bonuses by 20%."},                                                                                       // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase melee damage by 75% for 30 seconds after an enemy is killed by a heavy melee."},                                           // Rank 5 - Evolution A
-			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."},                                                                                           // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase melee damage bonus by 30%.\nIncrease weapon damage bonus by 25% for 20 seconds after an enemy is killed by heavy melee."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase health and shield bonuses by 30%."},                                                                                       // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomActionMP_BatarianMeleePassive_Shared", Name: "Fitness", Picture: "MPMeleePassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
 			{Rank: 2, Description: "Increase health and shield bonuses by 15%."},                                                                                       // Rank 2
@@ -2057,37 +1877,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MaleQuarianMeleePassive_Shared", Name: "Fitness", Picture: "MPMeleePassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
-			{Rank: 2, Description: "Increase health and shield bonuses by 15%."},                                                                                       // Rank 2
-			{Rank: 3, Description: "Increase melee damage bonus by 20%."},                                                                                              // Rank 3
-			{Rank: 4, Description: "Increase melee damage bonus by 30%."},                                                                                              // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase health and shield bonuses by 20%."},                                                                                       // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase melee damage by 75% for 30 seconds after an enemy is killed by a heavy melee."},                                           // Rank 5 - Evolution A
-			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."},                                                                                           // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase melee damage bonus by 30%.\nIncrease weapon damage bonus by 30% for 20 seconds after an enemy is killed by heavy melee."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase health and shield bonuses by 25%."},                                                                                       // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_VorchaMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP2",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
-			{Rank: 2, Description: "Increase health and shield bonuses by 15%."},                                                                                       // Rank 2
-			{Rank: 3, Description: "Increase melee damage bonus by 20%."},                                                                                              // Rank 3
-			{Rank: 4, Description: "Increase melee damage bonus by 30%."},                                                                                              // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase health and shield bonuses by 20%."},                                                                                       // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase melee damage by 75% for 30 seconds after an enemy is killed by a heavy melee."},                                           // Rank 5 - Evolution A
-			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."},                                                                                           // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase melee damage bonus by 30%.\nIncrease weapon damage bonus by 30% for 20 seconds after an enemy is killed by heavy melee."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase health and shield bonuses by 25%."},                                                                                       // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomActionMP_VorchaMeleePassive_Shared", Name: "Fitness", Picture: "MPMeleePassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -2318,38 +2108,8 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_GethPassive_Shared", Name: "Geth Hardware", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP1",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Advanced combat platform fine-tunes powers and weapons, especially geth weapons.\n\nMore power damage.\nMore weapon damage.\nMore geth weapon damage.\nMore strength."}, // Rank 1
-			{Rank: 2, Description: "Increase weapon damage bonus by 2%."},                                                           // Rank 2
-			{Rank: 3, Description: "Increase power damage and force bonuses by 10%."},                                               // Rank 3
-			{Rank: 4, Description: "Increase weapon damage bonus by 7%."},                                                           // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."}, // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase power damage and force bonuses by 15%."},                                               // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase headshot damage bonus by 20%."},                                                        // Rank 5 - Evolution B
-			{Rank: 8, Description: "Reduce the weight of assault rifles and sniper rifles by 25%."},                                 // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase weapon damage bonus by 10%.\nIncrease geth weapon damage bonus by 5%."},                // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_BatarianPassive", Name: "Batarian Enforcer", Picture: "MPPassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "The destruction of their home system has made the batarians even more ruthless in their struggle for survival.\n\nMore power damage.\nMore weapon damage.\nGreater thermal clip capacity.\nMore strength."}, // Rank 1
-			{Rank: 2, Description: "Increase power damage and force bonuses by 5%."},                                                // Rank 2
-			{Rank: 3, Description: "Increase weapon damage bonus by 5%."},                                                           // Rank 3
-			{Rank: 4, Description: "Increase weapon damage bonus by 7%.\nIncrease spare ammunition by 5%."},                         // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 25 points."}, // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase power damage and force bonuses by 15%."},                                               // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase headshot damage bonus by 20%."},                                                        // Rank 5 - Evolution B
-			{Rank: 8, Description: "Reduce the weight of sniper rifles and shotguns by 25%."},                                       // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase weapon damage by 10%.\nIncrease spare ammunition by 10%."},                             // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomActionMP_BatarianPassive_Shared", Name: "Batarian Enforcer", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "The destruction of their home system has made the batarians even more ruthless in their struggle for survival.\n\nMore power damage.\nMore weapon damage.\nGreater thermal clip capacity.\nMore strength."}, // Rank 1
 			{Rank: 2, Description: "Increase power damage and force bonuses by 5%."},                                                // Rank 2
@@ -2424,37 +2184,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MaleQuarianPassive_Shared", Name: "Quarian Machinist", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Built on a lifetime spent defending the flotilla from the geth, combat skills reach new heights.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
-			{Rank: 2, Description: "Increase weapon damage bonus by 2%."},                                                           // Rank 2
-			{Rank: 3, Description: "Increase power damage and force bonuses by 10%."},                                               // Rank 3
-			{Rank: 4, Description: "Increase weapon damage bonus by 7%."},                                                           // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."}, // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase power damage and force bonuses by 15%."},                                               // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase headshot damage bonus by 20%."},                                                        // Rank 5 - Evolution B
-			{Rank: 8, Description: "Decrease weight of all weapons by 20%."},                                                        // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase weapon damage bonus by 12%."},                                                          // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_VorchaPassive", Name: "Vorcha Survivor", Picture: "MPPassive.webp",
-		RootPath: "SFXGameContentDLC_CON_MP2",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "A vorcha's adaptable nature gives them advantages in combat.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
-			{Rank: 2, Description: "Increase weapon damage bonus by 5%."},                                                                                     // Rank 2
-			{Rank: 3, Description: "Increase power damage and force bonuses by 5%."},                                                                          // Rank 3
-			{Rank: 4, Description: "Increase weapon damage bonus by 7%."},                                                                                     // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase power damage and force bonuses by 10%.\nIncrease weight capacity bonus by 20 points."},                           // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase power damage and force bonuses by 15%."},                                                                         // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase headshot damage bonus by 20%."},                                                                                  // Rank 5 - Evolution B
-			{Rank: 8, Description: "Reduce the weight of shotguns and assault rifles by 25%."},                                                                // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase weapon damage bonus by 10%."},                                                                                    // Rank 6 - Evolution B
-		},
-	},
-	{
-		ID: "SFXPowerCustomActionMP_VorchaPassive_Shared", Name: "Vorcha Survivor", Picture: "MPPassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "A vorcha's adaptable nature gives them advantages in combat.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
