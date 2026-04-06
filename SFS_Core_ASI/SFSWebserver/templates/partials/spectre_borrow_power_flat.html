@@ -1,0 +1,88 @@
+{{define "spectre_borrow_power_flat"}}
+<div class="flex flex-col h-full"
+     x-data="{ search: '' }">
+
+    <!-- Header -->
+    <div class="flex-shrink-0 mb-3">
+        <div class="flex items-center justify-between mb-1">
+            <div>
+                <h2 class="text-base font-semibold text-gray-100 tracking-wide">{{.Heading}}</h2>
+                <p class="text-[11px] text-gray-500 mt-0.5">
+                    Select one power to add to your Operative's loadout.
+                    An Operative can only borrow one power — selecting again will replace it.
+                </p>
+            </div>
+            <button class="flex-shrink-0 p-1.5 rounded hover:bg-[#1e3a5f] text-gray-500
+                           hover:text-gray-200 transition-colors"
+                    @click="modalOpen=false"
+                    title="Close">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Search / filter -->
+        <div class="relative mt-2">
+            <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
+            </svg>
+            <input type="text"
+                   x-model="search"
+                   x-ref="searchInput"
+                   x-init="$nextTick(() => $refs.searchInput.focus())"
+                   placeholder="Filter powers…"
+                   autocomplete="off"
+                   class="w-full pl-8 pr-3 py-1.5 text-sm rounded border border-[#1e3a5f] bg-[#0d1829]
+                          text-gray-200 placeholder-gray-600
+                          focus:outline-none focus:border-[#00aaff]/60 transition-colors"/>
+        </div>
+
+        <div class="h-px bg-[#1e3a5f] mt-3"></div>
+    </div>
+
+    <!-- Power list -->
+    <div class="flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 pr-1">
+        {{range .Powers}}
+        {{if .Power}}
+        <button class="group flex items-center gap-4 px-4 py-3 rounded-lg
+                       border border-[#1e3a5f] bg-[#080c18]
+                       hover:border-[#00aaff]/60 hover:bg-[#0d1829]
+                       transition-all duration-150 cursor-pointer focus:outline-none w-full text-left"
+                data-name="{{.Power.Name}}"
+                x-show="search === '' || $el.dataset.name.toLowerCase().includes(search.toLowerCase())"
+                hx-post="{{$.PostURLBase}}/{{.SourceCharID}}/{{.Power.ID}}"
+                hx-target="#{{$.TargetCardID}}"
+                hx-swap="outerHTML"
+                @click="modalOpen=false"
+                title="{{.Power.Name}}">
+
+            <!-- Power icon (rank-1 tile: 64×64 at offset 0,0) -->
+            <div class="w-16 h-16 flex-shrink-0 rounded-sm bg-[#0a0e1a]
+                        border border-[#1e3a5f] group-hover:border-[#00aaff]/40 transition-colors"
+                 style="background-image:url('{{.Power.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;">
+            </div>
+
+            <!-- Power name + source character -->
+            <div class="flex-1 min-w-0">
+                <span class="block text-sm font-medium text-gray-300
+                             group-hover:text-[#00aaff] transition-colors">
+                    {{.Power.Name}}
+                </span>
+                <span class="block text-[10px] text-gray-600 mt-0.5">{{.SourceCharName}}</span>
+            </div>
+
+            <!-- Arrow indicator -->
+            <svg class="w-4 h-4 text-gray-600 group-hover:text-[#00aaff] flex-shrink-0 transition-colors"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+            </svg>
+        </button>
+        {{end}}
+        {{end}}
+    </div>
+
+</div>
+{{end}}

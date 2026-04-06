@@ -1,5 +1,7 @@
 package model
 
+import "sort"
+
 // ---------------------------------------------------------------------------
 // Supporting types
 // ---------------------------------------------------------------------------
@@ -361,4 +363,47 @@ var characterIndex = func() map[string]*CharacterDef {
 // CharacterByID returns the CharacterDef for the given ID, or nil if not found.
 func CharacterByID(id string) *CharacterDef {
 	return characterIndex[id]
+}
+
+// ---------------------------------------------------------------------------
+// Power-with-source helpers
+// ---------------------------------------------------------------------------
+
+// PowerWithSource pairs a PowerDef with identifying information about the
+// first CharacterDef that has it in its PowerIDs array.
+type PowerWithSource struct {
+	Power          *PowerDef
+	SourceCharID   string
+	SourceCharName string
+}
+
+// AllPowersWithSource returns every unique power across the catalog, each
+// paired with the first character that has it.  Deduplication is by PowerID,
+// so variant powers that share a display name but differ by ID
+// (e.g. BioticCharge vs BioticCharge_Krogan) appear as separate entries.
+// Results are sorted alphabetically by power name.
+func AllPowersWithSource() []PowerWithSource {
+	seen := make(map[string]bool, len(PowerCatalog))
+	result := make([]PowerWithSource, 0, len(PowerCatalog))
+	for _, char := range CharacterCatalog {
+		for _, pid := range char.PowerIDs {
+			if pid == "" || seen[pid] {
+				continue
+			}
+			pd := PowerByID(pid)
+			if pd == nil {
+				continue
+			}
+			seen[pid] = true
+			result = append(result, PowerWithSource{
+				Power:          pd,
+				SourceCharID:   char.ID,
+				SourceCharName: char.Name,
+			})
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Power.Name < result[j].Power.Name
+	})
+	return result
 }

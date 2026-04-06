@@ -488,14 +488,15 @@ func (c *SpectreController) Register() {
 	})
 
 	// GET /api/spectres/{id}/borrowed-power/selector
-	// Returns the borrow-power character picker partial (step 1 of the flow).
+	// Returns the flat power-picker partial (skips character selection).
 	http.HandleFunc("GET /api/spectres/{id}/borrowed-power/selector", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_ = c.tmpl.ExecuteTemplate(w, "spectre_borrow_char", map[string]any{
-			"Heading":         "Borrow a Power",
-			"FromCharURLBase": "/api/spectres/" + spectreID + "/borrowed-power",
-			"Groups":          model.GroupedCharacters(),
+		_ = c.tmpl.ExecuteTemplate(w, "spectre_borrow_power_flat", map[string]any{
+			"Heading":      "Borrow a Power",
+			"Powers":       model.AllPowersWithSource(),
+			"PostURLBase":  "/api/spectres/" + spectreID + "/borrowed-power/add",
+			"TargetCardID": "spectre-card-" + spectreID,
 		})
 	})
 
@@ -598,15 +599,16 @@ func (c *SpectreController) Register() {
 	})
 
 	// GET /api/spectres/{id}/power/{slot}/change/selector
-	// Opens the character picker for changing one normal power slot.
+	// Opens the flat power-picker for changing one normal power slot.
 	http.HandleFunc("GET /api/spectres/{id}/power/{slot}/change/selector", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
 		slot := r.PathValue("slot")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_ = c.tmpl.ExecuteTemplate(w, "spectre_borrow_char", map[string]any{
-			"Heading":         "Change Power",
-			"FromCharURLBase": "/api/spectres/" + spectreID + "/power/" + slot + "/change",
-			"Groups":          model.GroupedCharacters(),
+		_ = c.tmpl.ExecuteTemplate(w, "spectre_borrow_power_flat", map[string]any{
+			"Heading":      "Change Power",
+			"Powers":       model.AllPowersWithSource(),
+			"PostURLBase":  "/api/spectres/" + spectreID + "/power/" + slot + "/change/set",
+			"TargetCardID": "spectre-card-" + spectreID,
 		})
 	})
 
