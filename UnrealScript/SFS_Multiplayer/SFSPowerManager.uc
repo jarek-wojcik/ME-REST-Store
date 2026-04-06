@@ -3,7 +3,6 @@ Class SFSPowerManager extends SFSManager within SFXPawn;
 var SFSPortalAsyncLoader asyncLoader;
 var BioPlayerController PC;
 var BioPlayerInput BPI;
-var int PendingLoadCount;
 var bool bAppliedBorrowedPower;
 
 public event simulated function HandlePostAdd()
@@ -28,7 +27,6 @@ public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
     local int i;
     
-    PendingLoadCount = 0;
     bAppliedBorrowedPower = FALSE;
     if (asyncLoader == None)
     {
@@ -42,14 +40,14 @@ public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
         {
             continue;
         }
-        PendingLoadCount++;
-        asyncLoader.LoadPowerClassAsync(Character.Powers[i].PowerID, Character.Powers[i], i, FALSE, OnPowerLoaded);
+        //asyncLoader.LoadPowerClassAsync(Character.Powers[i].PowerID, Character.Powers[i], i, FALSE, OnPowerLoaded);
+        asyncLoader.LoadPowerClassBlocking(Character.Powers[i].PowerID, Character.Powers[i], i, FALSE, OnPowerLoaded);
         log(Self.Name, "Queued power: " $ Character.Powers[i].PowerID $ " at slot " $ i, Outer);
     }
     if (Character.bHasBorrowedPower && Character.BorrowedPower.PowerID != "")
     {
-        PendingLoadCount++;
-        asyncLoader.LoadPowerClassAsync(Character.BorrowedPower.PowerID, Character.BorrowedPower, 3, TRUE, OnBorrowedPowerLoaded);
+        //asyncLoader.LoadPowerClassAsync(Character.BorrowedPower.PowerID, Character.BorrowedPower, 3, TRUE, OnBorrowedPowerLoaded);
+        asyncLoader.LoadPowerClassBlocking(Character.BorrowedPower.PowerID, Character.BorrowedPower, 3, TRUE, OnBorrowedPowerLoaded);
         log(Self.Name, "Queued borrowed power: " $ Character.BorrowedPower.PowerID, Outer);
     }
 }
@@ -59,25 +57,24 @@ function OnPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     local Class<SFXPowerCustomActionBase> ExistingClass;
     local SFXPowerCustomActionBase Power;
     
-    if (load.LoadedPowerClass == None)
-    {
-        log(Self.Name, "OnPowerLoaded: Failed to load: " $ load.AssetToLoad, Outer);
-        DecrementAndCheckDone();
-        return;
-    }
+    // Validation of inputs.
     Player = SFXPawn_PlayerMP(Owner);
     if (Player == None)
     {
         log(Self.Name, "OnPowerLoaded: Not a PlayerMP pawn", Outer);
-        DecrementAndCheckDone();
+        return;
+    }
+    if (load.LoadedPowerClass == None)
+    {
+        log(Self.Name, "OnPowerLoaded: Failed to load: " $ load.AssetToLoad, Outer);
         return;
     }
     if (load.SlotIndex >= Player.PlayerClass.SquadScreenPowerOrder.Length)
     {
         log(Self.Name, "OnPowerLoaded: Slot " $ load.SlotIndex $ " out of bounds (len=" $ Player.PlayerClass.SquadScreenPowerOrder.Length $ ")", Outer);
-        DecrementAndCheckDone();
         return;
     }
+    // End of Validation.
     ExistingClass = Player.PlayerClass.SquadScreenPowerOrder[load.SlotIndex];
     log(Self.Name, "OnPowerLoaded: Slot " $ load.SlotIndex $ " existing=" $ ExistingClass $ " new=" $ load.LoadedPowerClass, Outer);
     if (ExistingClass != load.LoadedPowerClass)
@@ -109,43 +106,32 @@ function OnPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     {
         log(Self.Name, "OnPowerLoaded: No power instance found at slot " $ load.SlotIndex, Outer);
     }
-    DecrementAndCheckDone();
+    RemapInputs();
 }
 function OnBorrowedPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
     local SFXPawn_PlayerMP Player;
     local SFXPowerCustomActionBase FourthPower;
-    local SFXPowerCustomActionBase FifthPower;
     
+    Player = SFXPawn_PlayerMP(Owner);
+    // Input Validation
+    if (Player == None)
+    {
+        log(Self.Name, "OnBorrowedPowerLoaded: Not a PlayerMP pawn", Outer);
+        return;
+    }
     if (load.LoadedPowerClass == None)
     {
         log(Self.Name, "OnBorrowedPowerLoaded: Failed to load: " $ load.AssetToLoad, Outer);
-        DecrementAndCheckDone();
         return;
     }
-    Player = SFXPawn_PlayerMP(Owner);
-    if (Player == None || PC == None)
-    {
-        log(Self.Name, "OnBorrowedPowerLoaded: Not a PlayerMP pawn or no PC", Outer);
-        DecrementAndCheckDone();
-        return;
-    }
-    // Class is in memory; call GivePower to properly instantiate it in the bonus slot.
-    log(Self.Name, "OnBorrowedPowerLoaded: Calling GivePower for " $ load.AssetToLoad, Outer);
-    BioCheatManager(PC.CheatManager).GivePower("self", load.AssetToLoad);
-    FourthPower = Owner.PowerManager.Powers[10];
-    FifthPower = Owner.PowerManager.Powers[11];
-    if (FifthPower != None)
-    {
-        log(Self.Name, "OnBorrowedPowerLoaded: Evicting overflow power " $ FourthPower, Outer);
-        Owner.PowerManager.RemovePower(FourthPower.Class);
-        Player.SquadScreenPowerOrder.RemoveItem(FourthPower.Class);
-        FourthPower = FifthPower;
-    }
+    // We already have the Class<SFXPowerCustomActionBase> from the async load ? use it directly.
+    log(Self.Name, "OnBorrowedPowerLoaded: Adding " $ load.LoadedPowerClass $ " to PowerManager", Outer);
+    Owner.PowerManager.AddPower(load.LoadedPowerClass);
+    FourthPower = Owner.PowerManager.GetPowerByClass(load.LoadedPowerClass);
     if (FourthPower == None)
     {
-        log(Self.Name, "OnBorrowedPowerLoaded: FourthPower is None after GivePower", Outer);
-        DecrementAndCheckDone();
+        log(Self.Name, "OnBorrowedPowerLoaded: FourthPower is None after AddPower", Outer);
         return;
     }
     log(Self.Name, "OnBorrowedPowerLoaded: Placing " $ FourthPower $ " at slot 3", Outer);
@@ -157,7 +143,7 @@ function OnBorrowedPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     SFXPawn_PlayerMP(Owner).ApplyWeaponEncumbrance();
     bAppliedBorrowedPower = TRUE;
     log(Self.Name, "OnBorrowedPowerLoaded: Done", Outer);
-    DecrementAndCheckDone();
+    RemapInputs();
 }
 private final function SFXPowerCustomActionBase InstantiatePower(Class<SFXPowerCustomActionBase> powerClass, int SlotIndex)
 {
@@ -221,16 +207,6 @@ private final function SetPowerRankAndEvolutions(SFXPowerCustomActionBase Power,
     Power.RecalculateAllPowerInfo(TRUE);
     SFXPawn_PlayerMP(Outer).ApplyWeaponEncumbrance();
     log(Self.Name, "SetPowerRankAndEvolutions: " $ Power $ " Rank=" $ Model.Rank, Outer);
-}
-private final function DecrementAndCheckDone()
-{
-    PendingLoadCount--;
-    log(Self.Name, "DecrementAndCheckDone: " $ PendingLoadCount $ " remaining", Outer);
-    if (PendingLoadCount <= 0)
-    {
-        PendingLoadCount = 0;
-        RemapInputs();
-    }
 }
 private final function RemapInputs()
 {

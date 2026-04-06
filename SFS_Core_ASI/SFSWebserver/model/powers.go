@@ -1241,21 +1241,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AnnihilationSphere_Shared", Name: "Annihilation Field", Picture: "AnnihilationSphere.webp",
-		RootPath: "SFXGameContentDLC_CON_MP4",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Spin this fiery effect around you to burn nearby enemies. When active, the field can be recast to blast a short-range area and to detonate combos."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                                              // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},                                                                                      // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},                                                                                      // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase impact radius by 30%."},                                                                               // Rank 4 - Evolution B
-			{Rank: 6, Description: "Targets caught in the field take 15% additional damage from all sources."},                                     // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase movement speed by 20% while active."},                                                                 // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage by 65%."},                                                                                      // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase duration by 1%.\nDrain 1% of the damage done to enemy shields/barriers to restore your own shields."}, // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_BatarianArmor", Name: "Batarian Armor", Picture: "BatarianArmor.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{

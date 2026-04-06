@@ -155,7 +155,7 @@ func flatPower(p model.PowerSlot) string {
 	if def := model.PowerByID(p.PowerID); def != nil {
 		powerID = def.RootPath + "." + p.PowerID
 	}
-	return fmt.Sprintf("%s:%d:%s:%s:%s", powerID, p.Rank, p.Evolution[0], p.Evolution[1], p.Evolution[2])
+	return fmt.Sprintf("%s:%d:%s:%s:%s:%s", powerID, p.Rank, p.Evolution[0], p.Evolution[1], p.Evolution[2], p.KitID)
 }
 
 // pawnTypeForCharacter resolves the PawnType for a given character ID.

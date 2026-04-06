@@ -14,10 +14,15 @@ type Weapon struct {
 // PowerSlot is one of up to 5 power slots on a Bot.
 // Rank is 0–6 (how many ranks are unlocked).
 // Evolution holds the A/B choice for upgrade ranks 4, 5, and 6.
+// KitID is the fully-qualified UE3 archetype path for the character kit that
+// owns this power (e.g. "BioChar_DLC_MP5_MPPlayers.Archetypes.Fembot.Fembot_Infiltrator").
+// Stored so the ME3 client can prime the correct seek-free package before
+// loading the power class.
 type PowerSlot struct {
 	PowerID   string    `json:"powerId"`
 	Rank      int       `json:"rank"`      // 0–6
 	Evolution [3]string `json:"evolution"` // index 0=rank4, 1=rank5, 2=rank6; each "A" or "B"
+	KitID     string    `json:"kitId,omitempty"`
 }
 
 // ---------------------------------------------------------------------------
@@ -50,6 +55,21 @@ func (c CharacterDef) GetPawnType() PawnType {
 // PictureURL returns the URL path for the character's portrait image.
 func (c CharacterDef) PictureURL() string {
 	return "/static/assets/characters/" + c.PictureFile
+}
+
+// KitQualifiedPath returns the fully-qualified UE3 archetype path for this
+// character's kit: "RootPath.ArchetypeID" (falling back to ID when ArchetypeID
+// is empty). When RootPath is also empty the bare ID is returned — these are
+// characters like Jack/Liara whose ID is already fully-qualified.
+func (c CharacterDef) KitQualifiedPath() string {
+	if c.RootPath == "" {
+		return c.ID
+	}
+	archetypeID := c.ArchetypeID
+	if archetypeID == "" {
+		archetypeID = c.ID
+	}
+	return c.RootPath + "." + archetypeID
 }
 
 // ---------------------------------------------------------------------------
@@ -129,7 +149,7 @@ var CharacterCatalog = []CharacterDef{
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_AsariCloak", "SFXPowerCustomActionMP_DarkChannel2_Shared", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_AsariPassive_Infiltrator", "SFXPowerCustomActionMP_AsariMeleePassive"},
 		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Infiltrator_Asari"},
 	{ID: "SentinelAsari", Name: "Asari Valkyrie", SubClass: "Sentinel", PictureFile: "MP_AsariSEN.webp",
-		PowerIDs: [5]string{"SFXPowerCustomActionMP_TechArmor", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_AnnihilationSphere_Shared", "SFXPowerCustomActionMP_AsariPassive_Sentinel", "SFXPowerCustomActionMP_AsariMeleePassive"},
+		PowerIDs: [5]string{"SFXPowerCustomActionMP_TechArmor", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_AnnihilationSphere", "SFXPowerCustomActionMP_AsariPassive_Sentinel", "SFXPowerCustomActionMP_AsariMeleePassive"},
 		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Sentinel_Asari"},
 	{ID: "VanguardAsari", Name: "Asari Vanguard", SubClass: "Vanguard", PictureFile: "MP_Asari0.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BioticCharge", "SFXPowerCustomActionMP_Stasis", "SFXPowerCustomActionMP_LiftGrenade", "SFXPowerCustomActionMP_AsariPassive", "SFXPowerCustomActionMP_AsariMeleePassive"},

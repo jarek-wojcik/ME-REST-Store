@@ -525,16 +525,17 @@ func (c *SpectreController) Register() {
 		})
 	})
 
-	// POST /api/spectres/{id}/borrowed-power/add/{powerID}
+	// POST /api/spectres/{id}/borrowed-power/add/{charId}/{powerID}
 	// Persists the chosen borrowed power and returns the refreshed spectre card.
-	http.HandleFunc("POST /api/spectres/{id}/borrowed-power/add/{powerID}", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("POST /api/spectres/{id}/borrowed-power/add/{charId}/{powerID}", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
+		charID := r.PathValue("charId")
 		powerID := r.PathValue("powerID")
 		if model.PowerByID(powerID) == nil {
 			respondText(w, 400, "unknown power\n")
 			return
 		}
-		s, err := addSpectreBorrowedPower(c.db, spectreID, powerID)
+		s, err := addSpectreBorrowedPower(c.db, spectreID, powerID, charID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
@@ -636,10 +637,11 @@ func (c *SpectreController) Register() {
 		})
 	})
 
-	// POST /api/spectres/{id}/power/{slot}/change/set/{powerID}
+	// POST /api/spectres/{id}/power/{slot}/change/set/{charId}/{powerID}
 	// Replaces the power in the given slot and returns the refreshed spectre card.
-	http.HandleFunc("POST /api/spectres/{id}/power/{slot}/change/set/{powerID}", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("POST /api/spectres/{id}/power/{slot}/change/set/{charId}/{powerID}", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
+		charID := r.PathValue("charId")
 		powerID := r.PathValue("powerID")
 		var slotIdx int
 		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
@@ -650,7 +652,7 @@ func (c *SpectreController) Register() {
 			respondText(w, 400, "unknown power\n")
 			return
 		}
-		s, err := updateSpectrePowerID(c.db, spectreID, slotIdx, powerID)
+		s, err := updateSpectrePowerID(c.db, spectreID, slotIdx, powerID, charID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return

@@ -96,6 +96,7 @@ static function bool ExtractPower(string JsonText, int Index, out SFSPowerModelS
     Power.Evo0 = ExtractJsonField(JsonText, Prefix $ ".evolution[0]");
     Power.Evo1 = ExtractJsonField(JsonText, Prefix $ ".evolution[1]");
     Power.Evo2 = ExtractJsonField(JsonText, Prefix $ ".evolution[2]");
+    Power.KitID = ExtractJsonField(JsonText, Prefix $ ".kitId");
     return TRUE;
 }
 static function bool ExtractBorrowedPower(string JsonText, out SFSPowerModelStruct Power)
@@ -112,6 +113,7 @@ static function bool ExtractBorrowedPower(string JsonText, out SFSPowerModelStru
     Power.Evo0 = ExtractJsonField(JsonText, "borrowedPower.evolution[0]");
     Power.Evo1 = ExtractJsonField(JsonText, "borrowedPower.evolution[1]");
     Power.Evo2 = ExtractJsonField(JsonText, "borrowedPower.evolution[2]");
+    Power.KitID = ExtractJsonField(JsonText, "borrowedPower.kitId");
     return TRUE;
 }
 static function bool ExtractWeapon(string JsonText, int Index, out SFSWeaponModelStruct Weapon)

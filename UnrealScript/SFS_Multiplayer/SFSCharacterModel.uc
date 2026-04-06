@@ -14,6 +14,16 @@ struct SFSCharacterModelStruct
     var bool bHasBorrowedPower;
     var SFSPowerModelStruct BorrowedPower;
     var SFSInventoryModelStruct Inventory;
+    
+    structdefaultproperties
+    {
+        Powers[0] = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}
+        Powers[1] = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}
+        Powers[2] = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}
+        Powers[3] = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}
+        Powers[4] = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}
+        BorrowedPower = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}
+    }
 };
 
 static function bool FromFlat(string FlatResponse, out SFSCharacterModelStruct Model)

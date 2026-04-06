@@ -206,10 +206,13 @@ func defaultPowersForChar(charID string) []model.PowerSlot {
 	if char == nil {
 		return []model.PowerSlot{}
 	}
+	kitID := char.KitQualifiedPath()
 	var slots []model.PowerSlot
 	for _, pid := range char.PowerIDs {
 		if pid != "" {
-			slots = append(slots, model.DefaultPower(pid))
+			slot := model.DefaultPower(pid)
+			slot.KitID = kitID
+			slots = append(slots, slot)
 		}
 	}
 	if slots == nil {
@@ -500,21 +503,21 @@ func setSpectreWeapon(db *bolt.DB, spectreID string, idx int, weaponID string) (
 		if idx < 0 || idx >= len(s.Weapons) {
 			return fmt.Errorf("invalid weapon index")
 		}
-		
+
 		// Check if weapon category changed - if so, clear mods
 		oldWeaponID := s.Weapons[idx].WeaponID
 		oldWeapon := model.WeaponByID(oldWeaponID)
 		newWeapon := model.WeaponByID(weaponID)
-		
+
 		s.Weapons[idx].WeaponID = weaponID
-		
+
 		// Clear mods if: weapon is being cleared (weaponID == "")
 		// OR if weapon category changed (e.g., pistol -> assault rifle)
 		if weaponID == "" || (oldWeapon != nil && newWeapon != nil && oldWeapon.Category != newWeapon.Category) {
 			s.Weapons[idx].Mod1ID = ""
 			s.Weapons[idx].Mod2ID = ""
 		}
-		
+
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err
@@ -715,7 +718,9 @@ func updateSpectrePowerRankAndEvo(db *bolt.DB, spectreID string, slotIdx, rank, 
 
 // updateSpectrePowerID replaces the PowerID of a normal power slot and resets
 // its rank and evolution to defaults. Used by the per-slot "Change" flow.
-func updateSpectrePowerID(db *bolt.DB, spectreID string, slotIdx int, powerID string) (model.Spectre, error) {
+// charID is the source character the power was selected from; it is used to
+// populate KitID so the ME3 client can prime the correct DLC package.
+func updateSpectrePowerID(db *bolt.DB, spectreID string, slotIdx int, powerID, charID string) (model.Spectre, error) {
 	var s model.Spectre
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(spectresBucket))
@@ -729,7 +734,11 @@ func updateSpectrePowerID(db *bolt.DB, spectreID string, slotIdx int, powerID st
 		if slotIdx < 0 || slotIdx >= len(s.Powers) {
 			return fmt.Errorf("invalid slot index")
 		}
-		s.Powers[slotIdx] = model.DefaultPower(powerID)
+		slot := model.DefaultPower(powerID)
+		if char := model.CharacterByID(charID); char != nil {
+			slot.KitID = char.KitQualifiedPath()
+		}
+		s.Powers[slotIdx] = slot
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err
@@ -740,7 +749,9 @@ func updateSpectrePowerID(db *bolt.DB, spectreID string, slotIdx int, powerID st
 }
 
 // addSpectreBorrowedPower sets (or replaces) the borrowed power slot.
-func addSpectreBorrowedPower(db *bolt.DB, spectreID, powerID string) (model.Spectre, error) {
+// charID is the source character the power was selected from; it is used to
+// populate KitID so the ME3 client can prime the correct DLC package.
+func addSpectreBorrowedPower(db *bolt.DB, spectreID, powerID, charID string) (model.Spectre, error) {
 	var s model.Spectre
 	err := db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(spectresBucket))
@@ -752,6 +763,9 @@ func addSpectreBorrowedPower(db *bolt.DB, spectreID, powerID string) (model.Spec
 			return err
 		}
 		slot := model.DefaultPower(powerID)
+		if char := model.CharacterByID(charID); char != nil {
+			slot.KitID = char.KitQualifiedPath()
+		}
 		s.BorrowedPower = &slot
 		data, err := json.Marshal(s)
 		if err != nil {

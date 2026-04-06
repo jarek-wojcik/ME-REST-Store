@@ -119,6 +119,7 @@ public function LoadPower(PowerSaveInfo PowerSave, int originalIndex, out Class<
     log(Self.Name, "LoadPowers----", Outer);
     if (SFXPawn_Player(Outer) != None)
     {
+        log(Self.Name, "DEBUGGING POWER ASSET NAMES: " $ PowerSave.PowerClassName, Outer);
         powerClass = Class<SFXPowerCustomActionBase>(Class'SFXEngine'.static.LoadSeekFreeObjectBlocking(string(PowerSave.PowerClassName), Class'Class'));
         log(Self.Name, "PowerClass " $ powerClass, Outer);
         Power = AddPower(powerClass, originalIndex);

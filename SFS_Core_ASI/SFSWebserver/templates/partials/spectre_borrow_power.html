@@ -59,7 +59,7 @@
                        border border-[#1e3a5f] bg-[#080c18]
                        hover:border-[#00aaff]/60 hover:bg-[#0d1829]
                        transition-all duration-150 cursor-pointer focus:outline-none w-full text-left"
-                hx-post="{{$.PostURLBase}}/{{.ID}}"
+                hx-post="{{$.PostURLBase}}/{{$.CharDef.ID}}/{{.ID}}"
                 hx-target="#{{$.TargetCardID}}"
                 hx-swap="outerHTML"
                 @click="modalOpen=false"

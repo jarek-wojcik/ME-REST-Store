@@ -17,12 +17,8 @@ public event simulated function HandlePostAdd()
     PowerManager = Outer.GetModule(Class'SFSPowerManager');
     if (asyncLoader != None)
     {
-        initializeSpectre();
+        spectreService.RetrieveActiveCharacter(OnCharacterRetrieved);
     }
-}
-public function initializeSpectre()
-{
-    spectreService.RetrieveActiveCharacter(OnCharacterRetrieved);
 }
 function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
 {
@@ -61,10 +57,7 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         // Spectre Loading Methods
         loadAppearance(Character, Outer);
         LoadWeapons(Character, Outer);
-        if (PowerManager != None)
-        {
-            PowerManager.LoadPowers(Character, Outer);
-        }
+        PowerManager.LoadPowers(Character, Outer);
         // Existing weapon mods match target?
         // Existing consumables match target?
     }

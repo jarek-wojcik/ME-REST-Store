@@ -6,7 +6,6 @@ enum EAsyncLoadType
     ALT_Pawn,
     ALT_Henchman,
     ALT_Weapon,
-    ALT_Power,
     ALT_WeaponMod,
     ALT_Consumable,
     ALT_PowerClass,
@@ -22,13 +21,12 @@ var SFXPawn_PlayerMP LoadedPlayerMP;
 var SFXPawn LoadedPawn;
 var SFXPawn_Henchman LoadedHenchman;
 var Class<SFXWeapon> LoadedWeapon;
-var SFXPowerCustomAction LoadedPower;
+var Class<SFXPowerCustomActionBase> LoadedPowerClass;
 var Class<SFXWeaponMod> LoadedWeaponMod;
-var SFXGameEffect_MatchConsumableBase LoadedConsumable;
+var Class<SFXGameEffect_MatchConsumableBase> LoadedConsumable;
 var string Mod1ID;
 var string Mod2ID;
 var SFXWeapon targetWeapon;
-var Class<SFXPowerCustomActionBase> LoadedPowerClass;
 var SFSPowerModelStruct PowerModel;
 var int SlotIndex;
 var bool bIsBorrowedPower;

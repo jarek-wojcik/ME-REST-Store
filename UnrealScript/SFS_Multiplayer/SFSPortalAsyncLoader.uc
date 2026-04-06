@@ -4,13 +4,6 @@ var array<SFSGenericAsyncLoad> AsyncLoads;
 var float CheckDelay;
 var int maxRetries;
 
-public event simulated function HandlePostAdd()
-{
-    log(Self.Name, "Added SFSPortalAsyncLoader to " $ Outer, Outer);
-}
-public function HandleEvent(SFSEvent E)
-{
-}
 public function LoadAsync(string AssetPath, EAsyncLoadType LoadType, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
     local SFSGenericAsyncLoad AsyncLoad;
@@ -45,7 +38,7 @@ public function LoadPowerClassAsync(string AssetPath, SFSPowerModelStruct PowerM
 {
     local SFSGenericAsyncLoad AsyncLoad;
     
-    AsyncLoad = CreateAsyncLoad(AssetPath, 7, Callback);
+    AsyncLoad = CreateAsyncLoad(AssetPath, 6, Callback);
     AsyncLoad.PowerModel = PowerModel;
     AsyncLoad.SlotIndex = SlotIndex;
     AsyncLoad.bIsBorrowedPower = bIsBorrowedPower;
@@ -53,20 +46,46 @@ public function LoadPowerClassAsync(string AssetPath, SFSPowerModelStruct PowerM
     AsyncLoads.AddItem(AsyncLoad);
     StartCheckTimer();
 }
+public function LoadPowerClassBlocking(string AssetPath, SFSPowerModelStruct PowerModel, int SlotIndex, bool bIsBorrowedPower, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
+{
+    local SFSGenericAsyncLoad AsyncLoad;
+    
+    // Prime the DLC seek-free package by loading the source character's kit
+    // archetype first. This forces the package stream so that the power class
+    // (which lives in the same DLC package) can be found by LoadSeekFreeObjectBlocking.
+    if (PowerModel.KitID != "")
+    {
+        log(Self.Name, "LoadPowerClassBlocking: Priming DLC via kit: " $ PowerModel.KitID, Outer);
+        Class'SFXEngine'.static.LoadSeekFreeObjectBlocking(PowerModel.KitID, Class'SFXPawn_PlayerMP');
+        log(Self.Name, "LoadPowerClassBlocking: DLC primed for kit: " $ PowerModel.KitID, Outer);
+    }
+    log(Self.Name, "LoadPowerClassBlocking: " $ AssetPath, Outer);
+    AsyncLoad = CreateAsyncLoad(AssetPath, 6, Callback);
+    AsyncLoad.PowerModel = PowerModel;
+    AsyncLoad.SlotIndex = SlotIndex;
+    AsyncLoad.bIsBorrowedPower = bIsBorrowedPower;
+    AsyncLoad.LoadedPowerClass = Class<SFXPowerCustomActionBase>(Class'SFXEngine'.static.LoadSeekFreeObjectBlocking(AssetPath, Class'Class'));
+    if (AsyncLoad.LoadedPowerClass != None)
+    {
+        log(Self.Name, "LoadPowerClassBlocking: Loaded " $ AsyncLoad.LoadedPowerClass, Outer);
+        Callback(AsyncLoad, Outer);
+    }
+    else
+    {
+        log(Self.Name, "LoadPowerClassBlocking: Failed to load " $ AssetPath, Outer);
+    }
+}
 private final function SFSGenericAsyncLoad CreateAsyncLoad(string AssetPath, EAsyncLoadType LoadType, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
     local SFSGenericAsyncLoad AsyncLoad;
     
-    log(Self.Name, "Creating SFSGenericAsyncLoad for asset: " $ AssetPath, Outer);
     AsyncLoad = new (Self) Class'SFSGenericAsyncLoad';
     AsyncLoad.AssetToLoad = AssetPath;
     AsyncLoad.LoadType = LoadType;
-    log(Self.Name, "Before Assigning Callback: " $ AssetPath, Outer);
     AsyncLoad.onAssetLoadedCallback = Callback;
-    log(Self.Name, "After Assigning Callback: " $ AssetPath, Outer);
     AsyncLoad.retries = 0;
     AsyncLoad.isLoaded = FALSE;
-    log(Self.Name, "Created SFSGenericAsyncLoad for asset: " $ AssetPath, Outer);
+    log(Self.Name, "Created SFSGenericAsyncLoad for asset: " $ AssetPath $ " with asyncLoadType: " $ LoadType, Outer);
     return AsyncLoad;
 }
 private final function StartCheckTimer()
@@ -113,7 +132,6 @@ private final function PollLoadStatus(out SFSGenericAsyncLoad AsyncLoad)
     switch (AsyncLoad.LoadType)
     {
         case EAsyncLoadType.ALT_PlayerMP:
-            log(Self.Name, "Polling for ALT_PlayerMP", Outer);
             AsyncLoad.LoadedPlayerMP = SFXPawn_PlayerMP(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXPawn_PlayerMP', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_Pawn:
@@ -125,16 +143,14 @@ private final function PollLoadStatus(out SFSGenericAsyncLoad AsyncLoad)
         case EAsyncLoadType.ALT_Weapon:
             AsyncLoad.LoadedWeapon = Class<SFXWeapon>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
-        case EAsyncLoadType.ALT_Power:
-            AsyncLoad.LoadedPower = SFXPowerCustomAction(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXPowerCustomAction', AsyncLoad.LoadStatus));
-            break;
         case EAsyncLoadType.ALT_WeaponMod:
             AsyncLoad.LoadedWeaponMod = Class<SFXWeaponMod>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_Consumable:
-            AsyncLoad.LoadedConsumable = SFXGameEffect_MatchConsumableBase(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'SFXGameEffect_MatchConsumableBase', AsyncLoad.LoadStatus));
+            AsyncLoad.LoadedConsumable = Class<SFXGameEffect_MatchConsumableBase>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_PowerClass:
+            log(Self.Name, "DEBUGGING POWER ASSET NAMES: " $ AsyncLoad.AssetToLoad, Outer);
             AsyncLoad.LoadedPowerClass = Class<SFXPowerCustomActionBase>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
         default:

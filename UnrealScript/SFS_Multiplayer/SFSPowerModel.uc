@@ -7,6 +7,7 @@ struct SFSPowerModelStruct
     var string Evo0;
     var string Evo1;
     var string Evo2;
+    var string KitID;
 };
 
 static function bool FromToken(string Token, out SFSPowerModelStruct Power)
@@ -41,6 +42,10 @@ static function bool FromToken(string Token, out SFSPowerModelStruct Power)
     if (Parts.Length > 4)
     {
         Power.Evo2 = Parts[4];
+    }
+    if (Parts.Length > 5)
+    {
+        Power.KitID = Parts[5];
     }
     return TRUE;
 }
