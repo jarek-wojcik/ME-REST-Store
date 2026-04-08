@@ -15,6 +15,7 @@ defaultproperties
                       Class'SFSPowerTransferManager', 
                       Class'SFSWeaponManager', 
                       Class'SFSPowerManager', 
+                      Class'SFSConsumableManager', 
                       Class'SFSRESTStoreManager', 
                       Class'SFSStrikeTeamIntegrationService', 
                       Class'SFSSpectreIntegrationService', 

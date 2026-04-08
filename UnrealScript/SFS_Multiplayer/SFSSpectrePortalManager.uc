@@ -6,6 +6,7 @@ var SFSAppearanceManager appearanceManager;
 var SFSPortalAsyncLoader asyncLoader;
 var SFSWeaponManager weaponManager;
 var SFSPowerManager PowerManager;
+var SFSConsumableManager ConsumableManager;
 
 public event simulated function HandlePostAdd()
 {
@@ -15,6 +16,7 @@ public event simulated function HandlePostAdd()
     asyncLoader = Outer.GetModule(Class'SFSPortalAsyncLoader');
     weaponManager = Outer.GetModule(Class'SFSWeaponManager');
     PowerManager = Outer.GetModule(Class'SFSPowerManager');
+    ConsumableManager = Outer.GetModule(Class'SFSConsumableManager');
     if (asyncLoader != None)
     {
         spectreService.RetrieveActiveCharacter(OnCharacterRetrieved);
@@ -58,8 +60,7 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         loadAppearance(Character, Outer);
         LoadWeapons(Character, Outer);
         PowerManager.LoadPowers(Character, Outer);
-        // Existing weapon mods match target?
-        // Existing consumables match target?
+        LoadConsumables(Character, Outer);
     }
 }
 public function onAppearanceLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
@@ -98,6 +99,9 @@ public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
     {
         log(Self.Name, "Could not parse Character.AppearanceCharID. Won't apply custom appearance", Outer);
     }
+}
+public function LoadConsumables(SFSCharacterModelStruct Character, SFXPawn Pawn)
+{
 }
 public function LoadWeapons(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
@@ -173,7 +177,7 @@ private final function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Chara
         }
         if (!bWeaponInCharacter)
         {
-            if (string(existingWeapon.Class.Name) == "SFXWeapon_Heavy_ConsumableRocketLauncher")
+            if (string(existingWeapon.Class.Name) == "sfxweapon_heavy_consumablerocketlauncher")
             {
                 continue;
             }
