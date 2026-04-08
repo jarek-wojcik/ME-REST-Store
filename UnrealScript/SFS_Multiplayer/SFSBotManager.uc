@@ -608,13 +608,11 @@ public function ModifyBasicVariables(SFXPawn AIPawn, SFXAI_Core AI, BotTemplate 
             }
         }
     }
-    // Apply the bot use module which makes it follow on use
-    botUseModule = new (AIPawn) Class'SFSBotUseModule';
-    AIPawn.Modules.AddItem(botUseModule);
-    botUseModule.ModuleOwner = AIPawn;
-    botUseModule.HandlePostAdd();
-    //botUseModule.HandlePostBeginPlay();
-    printArrayContents(Self.Name, Outer, AIPawn.Modules, "botModules");
+    // Apply the bot use module which makes it exchange weapons
+    //botUseModule = new (AIPawn) Class'SFSBotUseModule';
+    //AIPawn.Modules.AddItem(botUseModule);
+    //botUseModule.ModuleOwner = AIPawn;
+    //botUseModule.HandlePostAdd();
 }
 public function ModifyImpactSounds(SFXPawn_Player AIPawn)
 {

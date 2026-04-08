@@ -102,6 +102,12 @@ public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
 }
 public function LoadConsumables(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
+    if (ConsumableManager == None)
+    {
+        log(Self.Name, "Error: ConsumableManager is None, cannot load consumables", Outer);
+        return;
+    }
+    ConsumableManager.ApplyConsumables(Character, Pawn);
 }
 public function LoadWeapons(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {

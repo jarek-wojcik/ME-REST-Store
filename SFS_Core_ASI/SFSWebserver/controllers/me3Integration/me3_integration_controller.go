@@ -111,6 +111,19 @@ func (c *Me3IntegrationController) activeStrikeTeam() (*StrikeTeamResponse, erro
 	return result, err
 }
 
+// qualifiedConsumablePath returns the fully-qualified UE3 game effect class path for a
+// consumable ID, or an empty string when the consumable has no path (Core items)
+// or the ID is not found in the catalog.
+func qualifiedConsumablePath(id string) string {
+	if id == "" {
+		return ""
+	}
+	if def := model.ConsumableByID(id); def != nil {
+		return def.Path
+	}
+	return ""
+}
+
 // qualifiedCharacterID returns "RootPath.ArchetypeID" for a character, or the bare id
 // when the character is not found or its RootPath is empty (e.g. Jack/Liara whose ID
 // already encodes the full path). ArchetypeID falls back to ID when not set.
@@ -188,6 +201,10 @@ func qualifySpectre(s *model.Spectre) {
 			s.BorrowedPower.PowerID = def.RootPath + "." + s.BorrowedPower.PowerID
 		}
 	}
+	s.ArmorConsumableID = qualifiedConsumablePath(s.ArmorConsumableID)
+	s.WeaponConsumableID = qualifiedConsumablePath(s.WeaponConsumableID)
+	s.AmmoConsumableID = qualifiedConsumablePath(s.AmmoConsumableID)
+	s.GearConsumableID = qualifiedConsumablePath(s.GearConsumableID)
 }
 
 // spectreToFlat serialises a Spectre as a single pipe-delimited line.
@@ -222,7 +239,7 @@ func spectreToFlat(s *model.Spectre) string {
 	fields = append(fields, powers[0], powers[1], powers[2], powers[3], powers[4])
 	fields = append(fields,
 		borrowed,
-		s.ArmorConsumableID, s.WeaponConsumableID, s.AmmoConsumableID, s.GearConsumableID,
+		qualifiedConsumablePath(s.ArmorConsumableID), qualifiedConsumablePath(s.WeaponConsumableID), qualifiedConsumablePath(s.AmmoConsumableID), qualifiedConsumablePath(s.GearConsumableID),
 		pawnTypeForCharacter(s.CharacterID),
 	)
 	return strings.Join(fields, "|")
