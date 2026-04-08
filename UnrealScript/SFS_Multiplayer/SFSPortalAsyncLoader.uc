@@ -28,7 +28,7 @@ public function LoadModAsync(string AssetPath, SFXWeapon targetWeapon, delegate<
 {
     local SFSGenericAsyncLoad AsyncLoad;
     
-    AsyncLoad = CreateAsyncLoad(AssetPath, 5, Callback);
+    AsyncLoad = CreateAsyncLoad(AssetPath, 4, Callback);
     AsyncLoad.targetWeapon = targetWeapon;
     PollLoadStatus(AsyncLoad);
     AsyncLoads.AddItem(AsyncLoad);

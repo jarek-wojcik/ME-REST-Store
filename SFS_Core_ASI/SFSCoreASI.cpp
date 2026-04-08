@@ -170,6 +170,7 @@ void __fastcall HookedPE(UObject* pObject, void* edx, UFunction* pFunction, void
             logger->flush();
         }
         g_overlay.Hide();
+        g_overlayShown.store(false); // Reset so the toggle reappears next lobby.
 
         ABioPlayerController* PC = g_cachedPC.load();
         if (PC) {

@@ -173,6 +173,10 @@ private final function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Chara
         }
         if (!bWeaponInCharacter)
         {
+            if (string(existingWeapon.Class.Name) == "SFXWeapon_Heavy_ConsumableRocketLauncher")
+            {
+                continue;
+            }
             log(Self.Name, "Weapon not in character, queuing for removal: " $ existingWeapon.Class.Name, Outer);
             weaponsToRemove.AddItem(existingWeapon);
         }

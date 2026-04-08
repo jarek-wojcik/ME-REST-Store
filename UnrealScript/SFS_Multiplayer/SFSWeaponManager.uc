@@ -133,6 +133,7 @@ function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         log(Self.Name, "Queuing async load for mod2: " $ load.Mod2ID $ " on " $ load.AssetToLoad, Outer);
         asyncLoader.LoadModAsync(load.Mod2ID, NewWeapon, OnWeaponModLoaded);
     }
+    Owner.SetWeaponImmediately(NewWeapon);
 }
 function OnWeaponModLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
