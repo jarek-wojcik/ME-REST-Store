@@ -66,16 +66,35 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
 public function onAppearanceLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
     local SFXPawn appearancePawn;
+    local Vector appearanceCharLocation;
     
-    log(Self.Name, "Spawning: " $ load.LoadedPlayerMP.Class $ " - " $ load.LoadedPlayerMP, Outer);
-    appearancePawn = Outer.Spawn(load.LoadedPlayerMP.Class, , , , , load.LoadedPlayerMP, TRUE);
+    appearanceCharLocation = Owner.location;
+    appearanceCharLocation.Z *= 100.0;
+    switch (load.LoadType)
+    {
+        case EAsyncLoadType.ALT_PlayerMP:
+            log(Self.Name, "Spawning: " $ load.LoadedPlayerMP.Class $ " - " $ load.LoadedPlayerMP, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedPlayerMP.Class, , , appearanceCharLocation, , load.LoadedPlayerMP, TRUE);
+            break;
+        case EAsyncLoadType.ALT_Pawn:
+            log(Self.Name, "Spawning: " $ load.LoadedPawn.Class $ " - " $ load.LoadedPawn, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedPawn.Class, , , appearanceCharLocation, , load.LoadedPawn, TRUE);
+            break;
+        case EAsyncLoadType.ALT_Henchman:
+            log(Self.Name, "Spawning: " $ load.LoadedHenchman.Class $ " - " $ load.LoadedHenchman, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedHenchman.Class, , , appearanceCharLocation, , load.LoadedHenchman, TRUE);
+            break;
+        default:
+    }
     appearanceManager.CopyAppearanceSelf(appearancePawn, "-1", FALSE);
+    appearancePawn.Destroy();
 }
 public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
     local array<string> archetypeTokens;
     local string appearanceArchetype;
     local string PawnArchetype;
+    local EAsyncLoadType LoadType;
     
     //If there's no appareance ID then there's no need to load the appearance class;
     if (Character.AppearanceCharID == "")
@@ -91,8 +110,21 @@ public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
         log(Self.Name, "PawnArchetype: " $ PawnArchetype, Outer);
         if (PawnArchetype != appearanceArchetype)
         {
-            log(Self.Name, "Attempting to load appearance: " $ Character.AppearanceCharID, Outer);
-            asyncLoader.LoadAsync(Character.AppearanceCharID, 0, onAppearanceLoaded);
+            switch (Character.AppearancePawnType)
+            {
+                case "PlayerMP":
+                    LoadType = EAsyncLoadType.ALT_PlayerMP;
+                    break;
+                case "Henchman":
+                    LoadType = EAsyncLoadType.ALT_Henchman;
+                    break;
+                case "Pawn":
+                    LoadType = EAsyncLoadType.ALT_Pawn;
+                    break;
+                default:
+            }
+            log(Self.Name, "Attempting to load appearance: " $ Character.AppearanceCharID $ " with load type " $ LoadType, Outer);
+            asyncLoader.LoadAsync(Character.AppearanceCharID, LoadType, onAppearanceLoaded);
         }
     }
     else

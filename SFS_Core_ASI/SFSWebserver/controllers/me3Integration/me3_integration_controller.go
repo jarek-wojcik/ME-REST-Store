@@ -179,6 +179,15 @@ func pawnTypeForCharacter(characterID string) string {
 	return string(model.PawnTypePlayerMP)
 }
 
+// appearancePawnType returns the PawnType for the appearance character,
+// falling back to the base character when no appearance override is set.
+func appearancePawnType(s *model.Spectre) string {
+	if s.AppearanceCharacterID != "" {
+		return pawnTypeForCharacter(s.AppearanceCharacterID)
+	}
+	return pawnTypeForCharacter(s.CharacterID)
+}
+
 // qualifySpectre expands all bare IDs on s to their fully-qualified
 // "RootPath.ID" forms so that JSON and simpleJson responses contain the same
 // qualified values as the flat response.
@@ -241,7 +250,7 @@ func spectreToFlat(s *model.Spectre) string {
 	fields = append(fields,
 		borrowed,
 		qualifiedConsumablePath(s.ArmorConsumableID), qualifiedConsumablePath(s.WeaponConsumableID), qualifiedConsumablePath(s.AmmoConsumableID), qualifiedConsumablePath(s.GearConsumableID),
-		pawnTypeForCharacter(s.CharacterID),
+		appearancePawnType(s),
 	)
 	return strings.Join(fields, "|")
 }
@@ -355,7 +364,7 @@ func (c *Me3IntegrationController) Register() {
 			respondFlat(w, spectreToFlat(spectre))
 			return
 		}
-		spectre.AppearancePawnType = model.PawnType(pawnTypeForCharacter(spectre.CharacterID))
+		spectre.AppearancePawnType = model.PawnType(appearancePawnType(spectre))
 		qualifySpectre(spectre)
 		if r.URL.Query().Get("simpleJson") == "true" {
 			respondSimpleJSON(w, http.StatusOK, spectre)
@@ -383,7 +392,7 @@ func (c *Me3IntegrationController) Register() {
 			return
 		}
 		for i := range team.Spectres {
-			team.Spectres[i].AppearancePawnType = model.PawnType(pawnTypeForCharacter(team.Spectres[i].CharacterID))
+			team.Spectres[i].AppearancePawnType = model.PawnType(appearancePawnType(&team.Spectres[i]))
 			qualifySpectre(&team.Spectres[i])
 		}
 		if r.URL.Query().Get("simpleJson") == "true" {
