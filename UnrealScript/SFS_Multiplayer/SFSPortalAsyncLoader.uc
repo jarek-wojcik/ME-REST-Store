@@ -13,13 +13,14 @@ public function LoadAsync(string AssetPath, EAsyncLoadType LoadType, delegate<SF
     AsyncLoads.AddItem(AsyncLoad);
     StartCheckTimer();
 }
-public function LoadWeaponAsync(string AssetPath, string Mod1ID, string Mod2ID, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
+public function LoadWeaponAsync(string AssetPath, string Mod1ID, string Mod2ID, string WeaponFireMode, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
     local SFSGenericAsyncLoad AsyncLoad;
     
     AsyncLoad = CreateAsyncLoad(AssetPath, 3, Callback);
     AsyncLoad.Mod1ID = Mod1ID;
     AsyncLoad.Mod2ID = Mod2ID;
+    AsyncLoad.WeaponFireMode = WeaponFireMode;
     PollLoadStatus(AsyncLoad);
     AsyncLoads.AddItem(AsyncLoad);
     StartCheckTimer();

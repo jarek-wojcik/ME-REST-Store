@@ -120,6 +120,9 @@ static function bool ExtractWeapon(string JsonText, int Index, out SFSWeaponMode
 {
     local string Prefix;
     local string WeaponID;
+    local string Mod1ID;
+    local string Mod2ID;
+    local string FireMode;
     
     Prefix = "weapons[" $ Index $ "]";
     WeaponID = ExtractJsonField(JsonText, Prefix $ ".weaponId");
@@ -127,7 +130,10 @@ static function bool ExtractWeapon(string JsonText, int Index, out SFSWeaponMode
     {
         return FALSE;
     }
-    return Class'SFSWeaponModel'.static.FromTokens(WeaponID, ExtractJsonField(JsonText, Prefix $ ".mod1Id"), ExtractJsonField(JsonText, Prefix $ ".mod2Id"), Weapon);
+    Mod1ID = ExtractJsonField(JsonText, Prefix $ ".mod1Id");
+    Mod2ID = ExtractJsonField(JsonText, Prefix $ ".mod2Id");
+    FireMode = ExtractJsonField(JsonText, Prefix $ ".fireMode");
+    return Class'SFSWeaponModel'.static.FromTokens(WeaponID, Mod1ID, Mod2ID, FireMode, Weapon);
 }
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

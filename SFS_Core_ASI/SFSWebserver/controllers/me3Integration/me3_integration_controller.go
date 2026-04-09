@@ -208,19 +208,20 @@ func qualifySpectre(s *model.Spectre) {
 }
 
 // spectreToFlat serialises a Spectre as a single pipe-delimited line.
-// Format: id|name|characterId|appearanceCharId|w0Id|w0Mod1|w0Mod2|w1Id|w1Mod1|w1Mod2|w2Id|w2Mod1|w2Mod2|w3Id|w3Mod1|w3Mod2|w4Id|w4Mod1|w4Mod2|power0|power1|power2|power3|power4|borrowedPower|armorConsumableId|weaponConsumableId|ammoConsumableId|gearConsumableId|pawnType
+// Format: id|name|characterId|appearanceCharId|w0Id|w0Mod1|w0Mod2|w0FireMode|w1Id|w1Mod1|w1Mod2|w1FireMode|w2Id|w2Mod1|w2Mod2|w2FireMode|w3Id|w3Mod1|w3Mod2|w3FireMode|w4Id|w4Mod1|w4Mod2|w4FireMode|power0|power1|power2|power3|power4|borrowedPower|armorConsumableId|weaponConsumableId|ammoConsumableId|gearConsumableId|pawnType
 // Weapon/mod/power ID fields are qualified as "RootPath.ID".
 // Power fields use the sub-format: rootPath.powerId:rank:evo0:evo1:evo2  (empty string when slot absent)
-// Weapon slots are always emitted as 5 groups of 3 fields (padded with empty strings).
+// Weapon slots are always emitted as 5 groups of 4 fields (padded with empty strings).
 func spectreToFlat(s *model.Spectre) string {
-	weaponFields := make([]string, 15) // 5 slots × 3 fields
+	weaponFields := make([]string, 20) // 5 slots × 4 fields
 	for i := range s.Weapons {
 		if i >= 5 {
 			break
 		}
-		weaponFields[i*3+0] = qualifiedWeaponID(s.Weapons[i].WeaponID)
-		weaponFields[i*3+1] = qualifiedModID(s.Weapons[i].Mod1ID)
-		weaponFields[i*3+2] = qualifiedModID(s.Weapons[i].Mod2ID)
+		weaponFields[i*4+0] = qualifiedWeaponID(s.Weapons[i].WeaponID)
+		weaponFields[i*4+1] = qualifiedModID(s.Weapons[i].Mod1ID)
+		weaponFields[i*4+2] = qualifiedModID(s.Weapons[i].Mod2ID)
+		weaponFields[i*4+3] = string(s.Weapons[i].FireMode)
 	}
 	powers := make([]string, 5)
 	for i := range powers {

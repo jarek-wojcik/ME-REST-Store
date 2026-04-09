@@ -17,6 +17,11 @@ struct SFSCharacterModelStruct
     
     structdefaultproperties
     {
+        Weapons[0] = {WeaponID = "", Mod1ID = "", Mod2ID = ""}
+        Weapons[1] = {WeaponID = "", Mod1ID = "", Mod2ID = ""}
+        Weapons[2] = {WeaponID = "", Mod1ID = "", Mod2ID = ""}
+        Weapons[3] = {WeaponID = "", Mod1ID = "", Mod2ID = ""}
+        Weapons[4] = {WeaponID = "", Mod1ID = "", Mod2ID = ""}
         Powers[0] = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}
         Powers[1] = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}
         Powers[2] = {PowerID = "", Rank = 0, Evo0 = "", Evo1 = "", Evo2 = ""}

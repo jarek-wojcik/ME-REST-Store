@@ -84,7 +84,7 @@ function loadAndGiveWeapon(string weaponPath)
     OwnerPawn.SetWeaponImmediately(NewWeapon);
     log(Self.Name, "Successfully gave and equipped weapon: " $ weaponPath, Outer);
 }
-function loadAndGiveWeaponAsync(string weaponPath, string Mod1ID, string Mod2ID)
+function loadAndGiveWeaponAsync(string weaponPath, string Mod1ID, string Mod2ID, string WeaponFireMode)
 {
     if (asyncLoader == None)
     {
@@ -92,7 +92,7 @@ function loadAndGiveWeaponAsync(string weaponPath, string Mod1ID, string Mod2ID)
         return;
     }
     log(Self.Name, "Async loading weapon: " $ weaponPath, Outer);
-    asyncLoader.LoadWeaponAsync(weaponPath, Mod1ID, Mod2ID, OnWeaponLoaded);
+    asyncLoader.LoadWeaponAsync(weaponPath, Mod1ID, Mod2ID, WeaponFireMode, OnWeaponLoaded);
 }
 function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
@@ -103,6 +103,14 @@ function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     {
         log(Self.Name, "Error: Failed to async load weapon: " $ load.AssetToLoad, Outer);
         return;
+    }
+    if (Class<SFXHeavyWeapon>(load.LoadedWeapon) == None)
+    {
+        changeFireMode(load.LoadedWeapon, load.WeaponFireMode);
+    }
+    else
+    {
+        adjustHeavyWeapon(Class<SFXHeavyWeapon>(load.LoadedWeapon));
     }
     NewWeapon = SFXWeapon(Owner.CreateInventory(load.LoadedWeapon));
     if (NewWeapon == None)
@@ -157,6 +165,64 @@ function OnWeaponModLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     }
     log(Self.Name, "Applying mod: " $ load.AssetToLoad $ " to " $ load.targetWeapon, Outer);
     ModManager.AddMod(load.LoadedWeaponMod, 5);
+}
+function adjustHeavyWeapon(Class<SFXHeavyWeapon> HeavyWeaponClass)
+{
+    //Heavy weapons were not balanced for multiplayer so adjusting them a little bit.
+    HeavyWeaponClass.default.Damage.X *= 1.5;
+    HeavyWeaponClass.default.Damage.Y *= 1.5;
+    HeavyWeaponClass.default.MaxSpareAmmo.X *= 2.0;
+    HeavyWeaponClass.default.MaxSpareAmmo.Y *= 2.0;
+    HeavyWeaponClass.default.MaxSpareAmmo.Value *= 2.0;
+}
+function changeFireMode(Class<SFXWeapon> WeaponClass, string FireMode)
+{
+    local FireModes eFireMode;
+    
+    //Changes the Fire Mode of the equipped weapon. Tweaks RoF, RpB and Damage depending on the change to the RoF.
+    switch (FireMode)
+    {
+        case "Semi":
+            eFireMode = FireModes.FireMode_SemiAuto;
+            break;
+        case "FullAuto":
+            eFireMode = FireModes.FireMode_FullAuto;
+            break;
+        case "Burst":
+            eFireMode = FireModes.FireMode_Burst;
+            break;
+        default:
+            eFireMode = FireModes.FireMode_None;
+            break;
+    }
+    if (eFireMode == FireModes.FireMode_None || int(WeaponClass.default.DefaultFireMode) == int(eFireMode))
+    {
+        return;
+    }
+    else
+    {
+        WeaponClass.default.DefaultFireMode = eFireMode;
+    }
+    log(Self.Name, "Applying FireMode: " $ eFireMode $ " to " $ WeaponClass, Outer);
+    switch (eFireMode)
+    {
+        case FireModes.FireMode_Burst:
+            WeaponClass.default.RoundsPerBurst = 3.0;
+            WeaponClass.default.RateOfFire.X *= 2.75;
+            WeaponClass.default.RateOfFire.Y *= 2.75;
+            break;
+        case FireModes.FireMode_FullAuto:
+            WeaponClass.default.RateOfFire.X *= 1.25;
+            WeaponClass.default.RateOfFire.Y *= 1.25;
+            WeaponClass.default.Damage.X *= 0.800000012;
+            WeaponClass.default.Damage.Y *= 0.800000012;
+            break;
+        case FireModes.FireMode_SemiAuto:
+            WeaponClass.default.Damage.X *= 1.25;
+            WeaponClass.default.Damage.Y *= 1.25;
+            break;
+        default:
+    }
 }
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

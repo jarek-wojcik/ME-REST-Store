@@ -100,6 +100,17 @@ func (c *SpectreController) Register() {
 		c.renderList(w)
 	})
 
+	// POST /api/spectres/{id}/duplicate
+	// Creates a full copy of the spectre as a new standalone operative.
+	// Returns the updated spectre list.
+	http.HandleFunc("POST /api/spectres/{id}/duplicate", func(w http.ResponseWriter, r *http.Request) {
+		if _, err := duplicateSpectre(c.db, r.PathValue("id")); err != nil {
+			respondText(w, 500, "duplicate failed\n")
+			return
+		}
+		c.renderList(w)
+	})
+
 	// DELETE /api/spectres/{id}[?from=team]
 	// Removes a spectre. If ?from=team is set, returns the updated bot panel;
 	// otherwise (including spectre-tab deletes) returns the updated spectre list.
@@ -370,6 +381,34 @@ func (c *SpectreController) Register() {
 			return
 		}
 		s, err := removeSpectreWeapon(c.db, r.PathValue("id"), idx)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/weapon/{idx}/firemode/{mode}
+	// Sets the fire mode (Semi, Burst, FullAuto) for the weapon at the given slot index.
+	http.HandleFunc("POST /api/spectres/{id}/weapon/{idx}/firemode/{mode}", func(w http.ResponseWriter, r *http.Request) {
+		idx, err := strconv.Atoi(r.PathValue("idx"))
+		if err != nil || idx < 0 {
+			respondText(w, 400, "invalid weapon index\n")
+			return
+		}
+		var mode model.FireMode
+		switch r.PathValue("mode") {
+		case "Semi":
+			mode = model.FireModeSemi
+		case "Burst":
+			mode = model.FireModeBurst
+		case "FullAuto":
+			mode = model.FireModeFullAuto
+		default:
+			respondText(w, 400, "mode must be Semi, Burst, or FullAuto\n")
+			return
+		}
+		s, err := setSpectreWeaponFireMode(c.db, r.PathValue("id"), idx, mode)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return

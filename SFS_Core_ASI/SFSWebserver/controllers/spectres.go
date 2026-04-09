@@ -65,15 +65,18 @@ type PowerSlotView struct {
 // the pre-computed API URLs for that specific slot index.
 type WeaponSlotView struct {
 	model.WeaponSlot
-	SlotIdx           int                 // 0–4
-	WeaponDef         *model.WeaponDef    // nil when slot is empty
-	Mod1Def           *model.WeaponModDef // nil when mod 1 is empty
-	Mod2Def           *model.WeaponModDef // nil when mod 2 is empty
-	WeaponSelectorURL string              // GET: opens weapon selector for this slot
-	Mod1SelectorURL   string              // GET: opens mod 1 selector for this slot
-	Mod2SelectorURL   string              // GET: opens mod 2 selector for this slot
-	WeaponClearURL    string              // POST: clears the weapon in this slot (keeps slot)
-	RemoveURL         string              // DELETE: removes this slot entirely
+	SlotIdx             int                 // 0–4
+	WeaponDef           *model.WeaponDef    // nil when slot is empty
+	Mod1Def             *model.WeaponModDef // nil when mod 1 is empty
+	Mod2Def             *model.WeaponModDef // nil when mod 2 is empty
+	WeaponSelectorURL   string              // GET: opens weapon selector for this slot
+	Mod1SelectorURL     string              // GET: opens mod 1 selector for this slot
+	Mod2SelectorURL     string              // GET: opens mod 2 selector for this slot
+	WeaponClearURL      string              // POST: clears the weapon in this slot (keeps slot)
+	RemoveURL           string              // DELETE: removes this slot entirely
+	FireModeSemiURL     string              // POST: sets fire mode to Semi
+	FireModeBurstURL    string              // POST: sets fire mode to Burst
+	FireModeFullAutoURL string              // POST: sets fire mode to FullAuto
 }
 
 // SpectreView pairs a persisted Spectre with resolved catalog definitions.
@@ -326,6 +329,61 @@ func createSpectre(db *bolt.DB, name string) (model.Spectre, error) {
 		return b.Put([]byte(s.ID), data)
 	})
 	return s, err
+}
+
+// duplicateSpectre creates a full copy of an existing spectre (new ID, same
+// loadout) as a standalone operative. The copy's name gets " (Copy)" appended.
+func duplicateSpectre(db *bolt.DB, spectreID string) (model.Spectre, error) {
+	var src model.Spectre
+	if err := db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		if b == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &src); err != nil {
+			return err
+		}
+		src.MigrateWeapons()
+		return nil
+	}); err != nil {
+		return model.Spectre{}, err
+	}
+
+	// Build the copy: new ID, standalone (no team), not active, new name.
+	cp := src
+	cp.ID = newID()
+	cp.Name = src.Name + " (Copy)"
+	cp.Active = false
+	cp.TeamID = ""
+	cp.SortOrder = 0
+
+	// Deep-copy slices so the original is not aliased.
+	if src.Weapons != nil {
+		cp.Weapons = make([]model.WeaponSlot, len(src.Weapons))
+		copy(cp.Weapons, src.Weapons)
+	}
+	if src.Powers != nil {
+		cp.Powers = make([]model.PowerSlot, len(src.Powers))
+		copy(cp.Powers, src.Powers)
+	}
+	if src.BorrowedPower != nil {
+		bp := *src.BorrowedPower
+		cp.BorrowedPower = &bp
+	}
+
+	data, err := json.Marshal(cp)
+	if err != nil {
+		return model.Spectre{}, err
+	}
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		return b.Put([]byte(cp.ID), data)
+	})
+	return cp, err
 }
 
 // createTeamSpectre persists a new spectre as a member of the given team.
@@ -582,6 +640,32 @@ func removeSpectreWeapon(db *bolt.DB, spectreID string, idx int) (model.Spectre,
 			return err
 		}
 		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// setSpectreWeaponFireMode sets the fire mode for the weapon at the given slot index.
+func setSpectreWeaponFireMode(db *bolt.DB, spectreID string, idx int, mode model.FireMode) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.MigrateWeapons()
+		if idx < 0 || idx >= len(s.Weapons) {
+			return fmt.Errorf("invalid weapon index")
+		}
+		s.Weapons[idx].FireMode = mode
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(s.ID), data)
 	})
 	return s, err
 }
@@ -966,17 +1050,21 @@ func weaponSlotViews(spectreID string, weapons []model.WeaponSlot) []WeaponSlotV
 	views := make([]WeaponSlotView, len(weapons))
 	for i, ws := range weapons {
 		idxStr := strconv.Itoa(i)
+		fmBase := base + "/weapon/" + idxStr + "/firemode/"
 		views[i] = WeaponSlotView{
-			WeaponSlot:        ws,
-			SlotIdx:           i,
-			WeaponDef:         model.WeaponByID(ws.WeaponID),
-			Mod1Def:           model.WeaponModByID(ws.Mod1ID),
-			Mod2Def:           model.WeaponModByID(ws.Mod2ID),
-			WeaponSelectorURL: "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr,
-			Mod1SelectorURL:   "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr + "&slot=1",
-			Mod2SelectorURL:   "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr + "&slot=2",
-			WeaponClearURL:    base + "/weapon/" + idxStr + "/none",
-			RemoveURL:         base + "/weapon/" + idxStr,
+			WeaponSlot:          ws,
+			SlotIdx:             i,
+			WeaponDef:           model.WeaponByID(ws.WeaponID),
+			Mod1Def:             model.WeaponModByID(ws.Mod1ID),
+			Mod2Def:             model.WeaponModByID(ws.Mod2ID),
+			WeaponSelectorURL:   "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr,
+			Mod1SelectorURL:     "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr + "&slot=1",
+			Mod2SelectorURL:     "/api/weapon-mods/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr + "&slot=2",
+			WeaponClearURL:      base + "/weapon/" + idxStr + "/none",
+			RemoveURL:           base + "/weapon/" + idxStr,
+			FireModeSemiURL:     fmBase + "Semi",
+			FireModeBurstURL:    fmBase + "Burst",
+			FireModeFullAutoURL: fmBase + "FullAuto",
 		}
 	}
 	return views

@@ -11,6 +11,7 @@ const (
 	WeaponTypeShotgun      WeaponType = "Shotgun"
 	WeaponTypeSMG          WeaponType = "SMG"
 	WeaponTypeSniperRifle  WeaponType = "Sniper Rifle"
+	WeaponTypeHeavy        WeaponType = "Heavy"
 	// WeaponTypeAny marks a mod as universal — compatible with every weapon.
 	WeaponTypeAny WeaponType = ""
 )
@@ -104,6 +105,10 @@ var WeaponCatalog = []WeaponDef{
 	{ID: "SniperRifle_Valiant", RootPath: "SFXGameContent", Name: "N7 Valiant", Category: "Sniper Rifle", PictureFile: "SniperRifle_Valiant.webp"},
 	{ID: "SniperRifle_Viper", RootPath: "SFXGameContent", Name: "M-97 Viper", Category: "Sniper Rifle", PictureFile: "SniperRifle_Viper.webp"},
 	{ID: "SniperRifle_Widow", RootPath: "SFXGameContent", Name: "M-98 Widow", Category: "Sniper Rifle", PictureFile: "SniperRifle_Widow.webp"},
+
+	// ---- Heavy Weapons -----------------------------------------------------
+	{ID: "Heavy_Flamethrower_Player", RootPath: "SFXGameContent", Name: "Heavy Flamethrower", Category: "Heavy", PictureFile: "hvy_flamethrower_512x256.png"},
+	{ID: "Heavy_Cain", RootPath: "SFXGameContent", Name: "Cain", Category: "Heavy", PictureFile: "hvy_cain_512x256.png"},
 }
 
 // weaponIndex is a map built once at startup for O(1) lookups.
@@ -134,6 +139,7 @@ var weaponTypeOrder = []WeaponType{
 	WeaponTypeShotgun,
 	WeaponTypeSniperRifle,
 	WeaponTypePistol,
+	WeaponTypeHeavy,
 }
 
 func weaponTypeID(t WeaponType) string {

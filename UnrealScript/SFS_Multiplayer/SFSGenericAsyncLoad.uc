@@ -24,6 +24,7 @@ var Class<SFXWeapon> LoadedWeapon;
 var Class<SFXPowerCustomActionBase> LoadedPowerClass;
 var Class<SFXWeaponMod> LoadedWeaponMod;
 var Class<SFXGameEffect_MatchConsumableBase> LoadedConsumable;
+var string WeaponFireMode;
 var string Mod1ID;
 var string Mod2ID;
 var SFXWeapon targetWeapon;

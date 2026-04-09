@@ -9,11 +9,21 @@ const (
 	PawnTypeHenchman PawnType = "Henchman"
 )
 
+// FireMode describes the firing mode of an equipped weapon.
+type FireMode string
+
+const (
+	FireModeSemi     FireMode = "Semi"
+	FireModeBurst    FireMode = "Burst"
+	FireModeFullAuto FireMode = "FullAuto"
+)
+
 // WeaponSlot holds one equipped weapon and its two mod slots.
 type WeaponSlot struct {
-	WeaponID string `json:"weaponId"`
-	Mod1ID   string `json:"mod1Id,omitempty"`
-	Mod2ID   string `json:"mod2Id,omitempty"`
+	WeaponID string   `json:"weaponId"`
+	Mod1ID   string   `json:"mod1Id,omitempty"`
+	Mod2ID   string   `json:"mod2Id,omitempty"`
+	FireMode FireMode `json:"fireMode,omitempty"`
 }
 
 // Spectre is a single N7/Spectre character loadout.
