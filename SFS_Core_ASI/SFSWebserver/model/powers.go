@@ -2444,19 +2444,94 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomAction_LiaraPassive", Name: "Pure Biotic", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContentDLC_EXP_Pack003",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Health & Shield Bonus: 10%\nPower Recharge Speed Bonus: 20%"},
+			{Rank: 2, Description: "Health & Shield Bonus: 20%\nPower Recharge Speed Bonus: 40%"},
+			{Rank: 3, Description: "Health & Shield Bonus: 30%\nPower Recharge Speed Bonus: 60%"},
+			{Rank: 4, Description: "Health & Shield Bonus: 30%\nPower Recharge Speed Bonus: 100%"},   // Rank 4 - Evolution A
+			{Rank: 5, Description: "Health & Shield Bonus: 50%\nPower Recharge Speed Bonus: 60%"},    // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase weapon damage by 20%."},                                 // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increase power force and duration by 30%."},                      // Rank 5 - Evolution B
+			{Rank: 8, Description: "Increase recharge speed of all squadmate biotic powers by 10%."}, // Rank 6 - Evolution A
+			{Rank: 9, Description: "Increase recharge speed of Liara's Singularity by 100%."},        // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_Pull", Name: "Pull (SP)", Picture: "Pull.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Yank an opponent helplessly off the ground."},                     // Rank 1
+			{Rank: 2, Description: "Increases recharge speed by 25%."},                                // Rank 2
+			{Rank: 3, Description: "Increase duration by 40%."},                                       // Rank 3
+			{Rank: 4, Description: "Increase duration by 50%."},                                       // Rank 4 - Evolution A (Duration)
+			{Rank: 5, Description: "Increase impact radius by 2 meters."},                             // Rank 4 - Evolution B (Radius)
+			{Rank: 6, Description: "Inflict 34 damage per second to lifted targets."},                 // Rank 5 - Evolution A (Lift Damage)
+			{Rank: 7, Description: "Increase all damage to targets lifted by Pull by 25%."},           // Rank 5 - Evolution B (Expose)
+			{Rank: 8, Description: "Launch two Pull projectiles to seek two targets instead of one."}, // Rank 6 - Evolution A (Double Pull)
+			{Rank: 9, Description: "Increase recharge speed by 60%."},                                 // Rank 6 - Evolution B (Recharge Speed)
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_Singularity", Name: "Singularity (SP)", Picture: "Singularity.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Create a sphere of dark energy that traps and dangles enemies caught in its field."},                       // Rank 1
+			{Rank: 2, Description: "Increase recharge speed by 25%."},                                                                          // Rank 2
+			{Rank: 3, Description: "Increase Singularity's hold duration by 20%.\nIncrease impact radius by 20%."},                             // Rank 3
+			{Rank: 4, Description: "Increase Singularity's hold duration by 30%.\nAdditional enemies can be lifted before Singularity fades."}, // Rank 4 - Evolution A (Duration)
+			{Rank: 5, Description: "Increase impact radius by 25%."},                                                                           // Rank 4 - Evolution B (Radius)
+			{Rank: 6, Description: "Inflict 20 damage per second to lifted targets."},                                                          // Rank 5 - Evolution A (Lift Damage)
+			{Rank: 7, Description: "Increase recharge speed by 30%."},                                                                          // Rank 5 - Evolution B (Recharge Speed)
+			{Rank: 8, Description: "Expand the Singularity field by 35% for 10 seconds."},                                                      // Rank 6 - Evolution A (Expand)
+			{Rank: 9, Description: "Detonate Singularity when the field dies to inflict 300 damage across 5 meters."},                          // Rank 6 - Evolution B (Detonate)
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_Throw", Name: "Throw (SP)", Picture: "Throw.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Toss your enemy through the air with this biotic blast."},            // Rank 1
+			{Rank: 2, Description: "Increase recharge speed by 25%."},                                    // Rank 2
+			{Rank: 3, Description: "Increase force by 30%."},                                             // Rank 3
+			{Rank: 4, Description: "Increase force by 40%."},                                             // Rank 4 - Evolution A (Force)
+			{Rank: 5, Description: "Increase impact radius by 2 meters."},                                // Rank 4 - Evolution B (Radius)
+			{Rank: 6, Description: "Increase force and damage of biotic detonations by 50%."},            // Rank 5 - Evolution A (Detonate)
+			{Rank: 7, Description: "Reset recharge time after a biotic combo detonates."},                // Rank 5 - Evolution B (Recharge Combo)
+			{Rank: 8, Description: "Launch two Throw projectiles that seek two targets instead of one."}, // Rank 6 - Evolution A (Double Throw)
+			{Rank: 9, Description: "Increase recharge speed by 60%."},                                    // Rank 6 - Evolution B (Recharge Speed)
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_SamaraPassive", Name: "Asari Justicar", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContentDLC_EXP_Pack003",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Health & Shield Bonus: 10%\nPower Damage Bonus: 20%"},                                                                       // Rank 1
+			{Rank: 2, Description: "Health & Shield Bonus: 20%\nPower Damage Bonus: 40%"},                                                                       // Rank 2
+			{Rank: 3, Description: "Health & Shield Bonus: 30%\nPower Damage Bonus: 60%"},                                                                       // Rank 3
+			{Rank: 4, Description: "Health & Shield Bonus: 30%\nPower Damage Bonus: 100%"},                                                                      // Rank 4 - Evolution A (Durability)
+			{Rank: 5, Description: "Health & Shield Bonus: 50%\nPower Damage Bonus: 60%"},                                                                       // Rank 4 - Evolution B (Weapon Damage)
+			{Rank: 6, Description: "Increase weapon damage bonus by 20%."},                                                                                      // Rank 5 - Evolution A (Weapon Damage)
+			{Rank: 7, Description: "Health & Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 140% (Durability), 100% (Weapon Damage)"}, // Rank 5 - Evolution B (Power Damage)
+			{Rank: 8, Description: "Health & Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 110% (Durability), 70% (Weapon Damage) [Weapon Damage], 150% (Durability), 110% (Weapon Damage) [Power Damage]"}, // Rank 6 - Evolution A (Squad Bonus)
+			{Rank: 9, Description: "Health & Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 110% (Durability), 70% (Weapon Damage) [Weapon Damage], 150% (Durability), 110% (Weapon Damage) [Power Damage]"}, // Rank 6 - Evolution B (Squad Bonus)
+		},
+	},
+	{
 		ID: "SFXPowerCustomAction_WarpAmmo", Name: "Warp Ammo", Picture: "Warp.webp",
 		RootPath:           "SFXGameContent",
 		AmmoPowerSpriteDir: "WarpAmmo/sprites/DefineSprite_181",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Blast vulnerable opponents already lifted by biotics for a damage bonus, and weaken the armor of grounded targets.\n\nHealth Damage Bonus: +15%\nArmor Damage Bonus: +15%\nBarrier Damage: +30%\nArmor Weakening: -25%\nLifted Target Damage: +50%"}, // Rank 1
+			{Rank: 2, Description: "Increase damage to lifted targets by 25%.\n\nLifted Target Damage: +75%"},                                                                                        // Rank 2
+			{Rank: 3, Description: "Increase health and armor damage by 5%.\nIncrease barrier damage by 10%.\n\nHealth Damage Bonus: +20%\nArmor Damage Bonus: +20%\nBarrier Damage: +40%"},          // Rank 3
+			{Rank: 4, Description: "Increase health and armor damage by 7.50%.\nIncrease barrier damage by 15%.\n\nHealth Damage Bonus: +27.50%\nArmor Damage Bonus: +27.50%\nBarrier Damage: +55%"}, // Rank 4 - Evolution A (Damage)
+			{Rank: 5, Description: "Squadmates gain Warp Ammo at 50% effectiveness."},                                                                                                                // Rank 4 - Evolution B (Squad Bonus)
+			{Rank: 6, Description: "Increase ammo capacity by 30%."},                                                                                                                                 // Rank 5 - Evolution A (Ammo Capacity)
+			{Rank: 7, Description: "Increase headshot damage by 25%."},                                                                                                                               // Rank 5 - Evolution B (Headshots)
+			{Rank: 8, Description: "Increase health and armor damage by 12.50%.\nIncrease barrier damage by 25%.\n\nHealth Damage Bonus: +40% (Damage), +32.50% (Squad Bonus)\nArmor Damage Bonus: +40% (Damage), +32.50% (Squad Bonus)\nBarrier Damage: +80% (Damage), +65% (Squad Bonus)"}, // Rank 6 - Evolution A (Damage)
+			{Rank: 9, Description: "Increase damage to lifted targets by 50%.\nWeaken armored targets by an additional 25%.\n\nArmor Weakening: -50%\nLifted Target Damage: +125%"},                                                                                                          // Rank 6 - Evolution B (Enhanced Warp)
 		},
 	},
 

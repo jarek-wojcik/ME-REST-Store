@@ -315,10 +315,13 @@ var CharacterCatalog = []CharacterDef{
 
 	// ---- Armax -------------------------------------------------------------
 	{ID: "Char_SimHenchmen.SimJack", Name: "Jack", SubClass: "Squadmate", PictureFile: "/SP/AAA_CSC_-_A_-_Jack.webp",
-		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"},
+		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomAction_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"},
 		PawnType: PawnTypeHenchman},
 	{ID: "Char_SimHenchmen.SimLiara", Name: "Liara", SubClass: "Squadmate", PictureFile: "/SP/Liara0Glow.png",
-		PowerIDs: [5]string{"SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_JackPassive"},
+		PowerIDs: [5]string{"SFXPowerCustomAction_Singularity", "SFXPowerCustomAction_Stasis", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_WarpAmmo", "SFXPowerCustomAction_LiaraPassive"},
+		PawnType: PawnTypeHenchman},
+	{ID: "Char_SimHenchmen.SimSamara", Name: "Samara", SubClass: "Squadmate", PictureFile: "/SP/AAA_CSC_-_A_-_Samara.webp",
+		PowerIDs: [5]string{"SFXPowerCustomActionMP_Reave", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomAction_Pull", "SFXPowerCustomAction_Throw", "SFXPowerCustomAction_SamaraPassive"},
 		PawnType: PawnTypeHenchman},
 }
 
