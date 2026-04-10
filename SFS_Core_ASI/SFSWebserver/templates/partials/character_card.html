@@ -32,6 +32,30 @@
         Change Appearance
     </button>
     {{end}}
+    {{if .ShowHelmetToggle}}
+    <button class="w-full text-[10px] font-semibold tracking-wide uppercase
+                   border-b border-[#1e3a5f] py-1.5 px-2
+                   transition-all duration-150 cursor-pointer focus:outline-none
+                   {{if .UseHelmet}}bg-[#0a1a0a] text-green-400 hover:bg-[#0d1b0d] hover:text-green-300{{else}}bg-[#0a0e1a] text-gray-400 hover:bg-[#0d1b2e] hover:text-[#00aaff]{{end}}"
+            hx-post="{{.VisualHelmetURL}}"
+            hx-target="#{{.CardID}}"
+            hx-swap="outerHTML"
+            title="{{if .UseHelmet}}Remove helmet{{else}}Use helmet{{end}}">
+        {{if .UseHelmet}}&#10003; {{end}}Use Helmet
+    </button>
+    {{end}}
+    {{if .ShowHeadgearToggle}}
+    <button class="w-full text-[10px] font-semibold tracking-wide uppercase
+                   border-b border-[#1e3a5f] py-1.5 px-2
+                   transition-all duration-150 cursor-pointer focus:outline-none
+                   {{if .UseHeadgear}}bg-[#0a1a0a] text-green-400 hover:bg-[#0d1b0d] hover:text-green-300{{else}}bg-[#0a0e1a] text-gray-400 hover:bg-[#0d1b2e] hover:text-[#00aaff]{{end}}"
+            hx-post="{{.VisualHeadgearURL}}"
+            hx-target="#{{.CardID}}"
+            hx-swap="outerHTML"
+            title="{{if .UseHeadgear}}Remove headgear{{else}}Use headgear{{end}}">
+        {{if .UseHeadgear}}&#10003; {{end}}Use Headgear
+    </button>
+    {{end}}
     {{if .SetActiveURL}}
     <button class="w-full text-[10px] font-semibold tracking-wide uppercase
                    border-b border-[#1e3a5f] py-1.5 px-2

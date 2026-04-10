@@ -380,6 +380,21 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
+		ID: "SFXPowerCustomActionMP_Barrier", Name: "Barrier", Picture: "Barrier.webp",
+		RootPath: "SFXGameMPContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
 		ID: "SFXPowerCustomActionMP_Barrier_KroganVanguard", Name: "Barrier (Krogan Vanguard)", Picture: "Barrier.webp",
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
@@ -2516,6 +2531,321 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Health & Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 140% (Durability), 100% (Weapon Damage)"}, // Rank 5 - Evolution B (Power Damage)
 			{Rank: 8, Description: "Health & Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 110% (Durability), 70% (Weapon Damage) [Weapon Damage], 150% (Durability), 110% (Weapon Damage) [Power Damage]"}, // Rank 6 - Evolution A (Squad Bonus)
 			{Rank: 9, Description: "Health & Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 110% (Durability), 70% (Weapon Damage) [Weapon Damage], 150% (Durability), 110% (Weapon Damage) [Power Damage]"}, // Rank 6 - Evolution B (Squad Bonus)
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_ConcussiveShot", Name: "Concussive Shot (SP)", Picture: "ConcussiveShot.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Flatten your enemy with a precise blast at short or long range.\n\nEffective against barriers."},                                   // Rank 1
+			{Rank: 2, Description: "Increases recharge speed by 25%."},                                                                                                 // Rank 2
+			{Rank: 3, Description: "Increase force and damage by 20%."},                                                                                                // Rank 3
+			{Rank: 4, Description: "Increase force and damage by 30%."},                                                                                                // Rank 4 - Evolution A (Force & Damage)
+			{Rank: 5, Description: "Increase impact radius by 1.50 meters."},                                                                                           // Rank 4 - Evolution B (Radius)
+			{Rank: 6, Description: "Increase force and damage to frozen targets by 100%."},                                                                             // Rank 5 - Evolution A (Shatter)
+			{Rank: 7, Description: "Increases recharge speed by 35%."},                                                                                                 // Rank 5 - Evolution B (Recharge Speed)
+			{Rank: 8, Description: "Power Concussive Shot with the properties of the active ammo power, enabling it to burn, freeze, disrupt, warp, or pierce armor."}, // Rank 6 - Evolution A (Amplification)
+			{Rank: 9, Description: "Increase damage to organics by 100% over 10 seconds. Increase force by 50%."},                                                      // Rank 6 - Evolution B (Shredder)
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_ArmorPiercingAmmo", Name: "Armor-Piercing Ammo", Picture: "ArmorPiercingAmmo.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "More weapon damage.\nMore damage to armor.\n\nHealth Damage Bonus: +10%\nArmor Damage Bonus: +10%\nArmor Effectiveness: -50%\nPenetration: 0.50 m"},                                                    // Rank 1
+			{Rank: 2, Description: "Increase ammo's cover penetration by 40%.\n\nPenetration: 0.70 m"},                                                                                                                                     // Rank 2
+			{Rank: 3, Description: "Increase health and armor damage by 4%.\n\nHealth Damage Bonus: +14%\nArmor Damage Bonus: +14%"},                                                                                                       // Rank 3
+			{Rank: 4, Description: "Increase health and armor damage by 6%.\n\nHealth Damage Bonus: +20%\nArmor Damage Bonus: +20%"},                                                                                                       // Rank 4 - Evolution A (Damage)
+			{Rank: 5, Description: "Squadmates gain your ammo power at 50% effectiveness."},                                                                                                                                                // Rank 4 - Evolution B (Squad Bonus)
+			{Rank: 6, Description: "Increase ammo capacity by 30%."},                                                                                                                                                                       // Rank 5 - Evolution A (Ammo Capacity)
+			{Rank: 7, Description: "Increase headshot damage by 25%."},                                                                                                                                                                     // Rank 5 - Evolution B (Headshots)
+			{Rank: 8, Description: "Increase health and armor damage by 10%.\n\nHealth Damage Bonus: +30%\nArmor Damage Bonus: +30% (Damage), +24% (Squad Bonus)\nArmor Effectiveness: -50%\nPenetration: 0.70 m"},                         // Rank 6 - Evolution A (Damage)
+			{Rank: 9, Description: "Increase ammo's cover-penetration by 60%.\nDecrease the effectiveness of armored targets by 25%.\n\nHealth Damage Bonus: +20%\nArmor Damage Bonus: +20%\nArmor Effectiveness: -75%\nPenetration: 1 m"}, // Rank 6 - Evolution B (Piercing)
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_GarrusPassive", Name: "Turian Rebel", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Health & Shield Bonus: 10%\nWeapon Damage Bonus: 20%"},  // Rank 1
+			{Rank: 2, Description: "Health & Shield Bonus: 20%\nWeapon Damage Bonus: 40%"},  // Rank 2
+			{Rank: 3, Description: "Health & Shield Bonus: 30%\nWeapon Damage Bonus: 60%"},  // Rank 3
+			{Rank: 4, Description: "Health & Shield Bonus: 30%\nWeapon Damage Bonus: 100%"}, // Rank 4 - Evolution A (Weapon Damage)
+			{Rank: 5, Description: "Health & Shield Bonus: 50%\nWeapon Damage Bonus: 60%"},  // Rank 4 - Evolution B (Durability)
+			{Rank: 6, Description: "Increase power damage by 20%."},                         // Rank 5 - Evolution A (Power Damage)
+			{Rank: 7, Description: "Increase assault rifle damage by 50%."},                 // Rank 5 - Evolution B (Assault Rifles)
+			{Rank: 8, Description: "Increase power damage of squadmates by 10%."},           // Rank 6 - Evolution A (Squad Bonus)
+			{Rank: 9, Description: "Increase sniper rifle damage by 60%."},                  // Rank 6 - Evolution B (Sniper Rifles)
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_IncendiaryAmmo", Name: "Incendiary Ammo", Picture: "IncendiaryAmmo.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_DisruptorAmmo", Name: "Disruptor Ammo", Picture: "DisruptorAmmo.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_GethShieldBoost", Name: "Defense Matrix", Picture: "GethShieldBoost.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_ProtectorDrone", Name: "Protector Drone", Picture: "ProtectorDrone.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_Cloak_Kasumi", Name: "Shadow Strike", Picture: "Cloak.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_Slam", Name: "Slam", Picture: "Slam.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_TaliPassive", Name: "Quarian Machinist", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_WrexPassive", Name: "Warlord", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_MirandaPassive", Name: "Operative", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_KaidenPassive", Name: "Alliance Officer", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_JacobPassive", Name: "Fitness", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_AshleyPassive", Name: "Combat Veteran", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_EDIPassive", Name: "Cerberus Infiltration", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_GruntPassive", Name: "Krogan Berserker", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_KasumiPassive", Name: "Shadow Master", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_JimmyPassive", Name: "Veteran", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_ProtheanPassive", Name: "Ancient Knowledge", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_ZaeedPassive", Name: "Mercenary Training", Picture: "MPPassive.webp",
+		RootPath: "SFXGameContent",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: ""}, // Rank 1
+			{Rank: 2, Description: ""}, // Rank 2
+			{Rank: 3, Description: ""}, // Rank 3
+			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
+			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
+			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
+			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
+			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
+			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
 		},
 	},
 	{

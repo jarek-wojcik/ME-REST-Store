@@ -20,9 +20,6 @@ public event simulated function HandlePostAdd()
         log(Self.Name, "HandlePostAdd: No BioPlayerInput found", Outer);
     }
 }
-public function HandleEvent(SFSEvent E)
-{
-}
 public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
     local int i;

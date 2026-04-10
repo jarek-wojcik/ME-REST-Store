@@ -31,6 +31,8 @@ var SFXWeapon targetWeapon;
 var SFSPowerModelStruct PowerModel;
 var int SlotIndex;
 var bool bIsBorrowedPower;
+var bool bUsesHelmet;
+var bool bUsesHeadgear;
 
 function OnAssetLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {

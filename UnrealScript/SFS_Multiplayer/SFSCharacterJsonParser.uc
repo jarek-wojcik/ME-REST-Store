@@ -34,6 +34,8 @@ static function bool FromSimpleJson(string JsonText, out SFSCharacterModelStruct
     local string CharacterID;
     local string AppearanceCharID;
     local string AppearancePawnType;
+    local bool bUseHelmet;
+    local bool bUseHeadgear;
     local string Active;
     local string TeamId;
     local string SortOrder;
@@ -44,6 +46,8 @@ static function bool FromSimpleJson(string JsonText, out SFSCharacterModelStruct
     CharacterID = ExtractJsonField(JsonText, "characterId");
     AppearanceCharID = ExtractJsonField(JsonText, "appearanceCharId");
     AppearancePawnType = ExtractJsonField(JsonText, "appearancePawnType");
+    bUseHelmet = ExtractJsonField(JsonText, "appearanceHelmet") == "true";
+    bUseHeadgear = ExtractJsonField(JsonText, "appearanceHeadgear") == "true";
     Active = ExtractJsonField(JsonText, "active");
     TeamId = ExtractJsonField(JsonText, "teamId");
     SortOrder = ExtractJsonField(JsonText, "sortOrder");
@@ -56,6 +60,8 @@ static function bool FromSimpleJson(string JsonText, out SFSCharacterModelStruct
     Model.CharacterID = CharacterID;
     Model.AppearanceCharID = AppearanceCharID;
     Model.AppearancePawnType = AppearancePawnType;
+    Model.bUseHelmet = bUseHelmet;
+    Model.bUseHeadgear = bUseHeadgear;
     // Powers
     Model.PowerCount = 0;
     for (i = 0; i < 5; i++)

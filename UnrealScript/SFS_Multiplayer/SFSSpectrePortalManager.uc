@@ -32,6 +32,9 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         log(Self.Name, "Character ID: " $ Character.Id, Outer);
         log(Self.Name, "Character Name: " $ Character.Name, Outer);
         log(Self.Name, "Character base class: " $ Character.CharacterID, Outer);
+        log(Self.Name, "Character Appearance class: " $ Character.AppearanceCharID, Outer);
+        log(Self.Name, "Character Uses Helmet: " $ Character.bUseHelmet, Outer);
+        log(Self.Name, "Character Uses Headgear: " $ Character.bUseHeadgear, Outer);
         log(Self.Name, "--- Weapons (Count: " $ Character.WeaponCount $ ") ---", Outer);
         for (i = 0; i < Character.WeaponCount; i++)
         {
@@ -62,32 +65,6 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         PowerManager.LoadPowers(Character, Outer);
         LoadConsumables(Character, Outer);
     }
-}
-public function onAppearanceLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
-{
-    local SFXPawn appearancePawn;
-    local Vector appearanceCharLocation;
-    
-    appearanceCharLocation = Owner.location;
-    appearanceCharLocation.Z *= 100.0;
-    switch (load.LoadType)
-    {
-        case EAsyncLoadType.ALT_PlayerMP:
-            log(Self.Name, "Spawning: " $ load.LoadedPlayerMP.Class $ " - " $ load.LoadedPlayerMP, Outer);
-            appearancePawn = Outer.Spawn(load.LoadedPlayerMP.Class, , , appearanceCharLocation, , load.LoadedPlayerMP, TRUE);
-            break;
-        case EAsyncLoadType.ALT_Pawn:
-            log(Self.Name, "Spawning: " $ load.LoadedPawn.Class $ " - " $ load.LoadedPawn, Outer);
-            appearancePawn = Outer.Spawn(load.LoadedPawn.Class, , , appearanceCharLocation, , load.LoadedPawn, TRUE);
-            break;
-        case EAsyncLoadType.ALT_Henchman:
-            log(Self.Name, "Spawning: " $ load.LoadedHenchman.Class $ " - " $ load.LoadedHenchman, Outer);
-            appearancePawn = Outer.Spawn(load.LoadedHenchman.Class, , , appearanceCharLocation, , load.LoadedHenchman, TRUE);
-            break;
-        default:
-    }
-    appearanceManager.CopyAppearanceSelf(appearancePawn, "-1", FALSE);
-    appearancePawn.Destroy();
 }
 public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
@@ -124,13 +101,39 @@ public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
                 default:
             }
             log(Self.Name, "Attempting to load appearance: " $ Character.AppearanceCharID $ " with load type " $ LoadType, Outer);
-            asyncLoader.LoadAsync(Character.AppearanceCharID, LoadType, onAppearanceLoaded);
+            asyncLoader.LoadAppearanceAsync(Character.AppearanceCharID, Character.bUseHelmet, Character.bUseHeadgear, LoadType, onAppearanceLoaded);
         }
     }
     else
     {
         log(Self.Name, "Could not parse Character.AppearanceCharID. Won't apply custom appearance", Outer);
     }
+}
+public function onAppearanceLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
+{
+    local SFXPawn appearancePawn;
+    local Vector appearanceCharLocation;
+    
+    appearanceCharLocation = Owner.location;
+    appearanceCharLocation.Z *= 100.0;
+    switch (load.LoadType)
+    {
+        case EAsyncLoadType.ALT_PlayerMP:
+            log(Self.Name, "Spawning: " $ load.LoadedPlayerMP.Class $ " - " $ load.LoadedPlayerMP, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedPlayerMP.Class, , , appearanceCharLocation, , load.LoadedPlayerMP, TRUE);
+            break;
+        case EAsyncLoadType.ALT_Pawn:
+            log(Self.Name, "Spawning: " $ load.LoadedPawn.Class $ " - " $ load.LoadedPawn, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedPawn.Class, , , appearanceCharLocation, , load.LoadedPawn, TRUE);
+            break;
+        case EAsyncLoadType.ALT_Henchman:
+            log(Self.Name, "Spawning: " $ load.LoadedHenchman.Class $ " - " $ load.LoadedHenchman, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedHenchman.Class, , , appearanceCharLocation, , load.LoadedHenchman, TRUE);
+            break;
+        default:
+    }
+    appearanceManager.CopyAppearanceWithVisuals(appearancePawn, Owner, load.bUsesHeadgear, load.bUsesHelmet);
+    appearancePawn.Destroy();
 }
 public function LoadConsumables(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {

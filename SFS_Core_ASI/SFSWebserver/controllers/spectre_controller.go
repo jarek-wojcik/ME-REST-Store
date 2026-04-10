@@ -34,11 +34,14 @@ func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre, f
 		urls.IsActive = s.Active
 	}
 	urls.HasBorrowedPower = s.BorrowedPower != nil
+	appearanceDef := model.CharacterByID(s.AppearanceCharacterID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "character_card", SpectreView{
 		Spectre:             s,
 		CharDef:             def,
-		AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
+		AppearanceCharDef:   appearanceDef,
+		ShowHelmetToggle:    def.HasHelmet || (appearanceDef != nil && appearanceDef.HasHelmet),
+		ShowHeadgearToggle:  def.HasHeadgear || (appearanceDef != nil && appearanceDef.HasHeadgear),
 		WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
 		ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
 		WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
@@ -744,6 +747,24 @@ func (c *SpectreController) Register() {
 			return
 		}
 		s, err := updateSpectreConsumable(c.db, spectreID, category, consumableID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/visual/{choice}
+	// Toggles helmet or headgear visual (mutually exclusive). choice: helmet | headgear.
+	// Clicking the already-active choice clears both (toggle off).
+	http.HandleFunc("POST /api/spectres/{id}/visual/{choice}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		choice := r.PathValue("choice")
+		if choice != "helmet" && choice != "headgear" {
+			respondText(w, 400, "choice must be helmet or headgear\n")
+			return
+		}
+		s, err := setSpectreVisual(c.db, spectreID, choice)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return

@@ -42,6 +42,8 @@ type Spectre struct {
 	GearConsumableID      string       `json:"gearConsumableId,omitempty"`   // equipped gear consumable
 	Powers                []PowerSlot  `json:"powers"`
 	BorrowedPower         *PowerSlot   `json:"borrowedPower,omitempty"` // one borrowed power from another character class
+	UseHelmet             bool         `json:"appearanceHelmet"`        // render helmet on next spawn
+	UseHeadgear           bool         `json:"appearanceHeadgear"`      // render headgear on next spawn
 	Active                bool         `json:"active,omitempty"`        // whether this spectre is set as active
 	TeamID                string       `json:"teamId,omitempty"`        // non-empty for strike-team members
 	SortOrder             int64        `json:"sortOrder,omitempty"`     // creation time (unix nanos) for ordering within a team

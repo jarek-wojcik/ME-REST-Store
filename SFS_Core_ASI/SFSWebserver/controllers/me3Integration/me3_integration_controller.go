@@ -251,6 +251,8 @@ func spectreToFlat(s *model.Spectre) string {
 		borrowed,
 		qualifiedConsumablePath(s.ArmorConsumableID), qualifiedConsumablePath(s.WeaponConsumableID), qualifiedConsumablePath(s.AmmoConsumableID), qualifiedConsumablePath(s.GearConsumableID),
 		appearancePawnType(s),
+		fmt.Sprintf("%t", s.UseHelmet),
+		fmt.Sprintf("%t", s.UseHeadgear),
 	)
 	return strings.Join(fields, "|")
 }

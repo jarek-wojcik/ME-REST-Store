@@ -15,6 +15,7 @@ public function CopyAppearance(SFXPawn src, SFXPawn trg, string Id, bool b_useHe
     local int i;
     local bool b_crouchMod;
     
+    //DEPRECATED
     if (src == None || trg == None)
     {
         return;
@@ -59,6 +60,63 @@ public function CopyAppearance(SFXPawn src, SFXPawn trg, string Id, bool b_useHe
         else
         {
             // For copying looks from MP Kits or pawns that have a full head+body mesh.
+            copyAppearanceBasic(srcSkel, dstSkel);
+        }
+        dstSkel.bForceRefpose = srcSkel.bForceRefpose;
+    }
+}
+public function CopyAppearanceWithVisuals(SFXPawn src, SFXPawn trg, bool b_useHeadgear, bool b_useHelmet)
+{
+    local SkeletalMeshComponent srcSkel;
+    local SkeletalMeshComponent dstSkel;
+    local bool b_crouchMod;
+    
+    if (src == None || trg == None)
+    {
+        return;
+    }
+    else
+    {
+        b_crouchMod = Class'SFSDependencyCheckerUtility'.static.CheckForCrouchModPresence(BioPlayerController(Outer.Controller));
+        log(Self.Name, "crouch mod is present: " $ b_crouchMod, Outer);
+    }
+    srcSkel = src.Mesh;
+    dstSkel = trg.Mesh;
+    if (srcSkel != None && dstSkel != None)
+    {
+        removeOldHead(SFXPawn_PlayerMP(trg));
+        removeOldHair(SFXPawn_PlayerMP(trg));
+        removeOldHeadgear(SFXPawn_PlayerMP(trg));
+        if (SFXPawn_Henchman(src) != None && SFXPawn_PlayerMP(trg) != None)
+        {
+            logHenchmanAndTargetStuff(SFXPawn_Henchman(src), SFXPawn_PlayerMP(trg));
+            copyAppearanceBasic(srcSkel, dstSkel);
+            copyOtherProperties(SFXPawn_Henchman(src), SFXPawn_PlayerMP(trg));
+            // If both are true, helmet takes priority.
+            if ((b_useHelmet || b_useHeadgear) && HasHeadgearMesh(src))
+            {
+                if (b_useHelmet)
+                {
+                    // Helmet: skip head/hair, only attach headgear mesh.
+                    createHeadgearMeshFromSource(SFXPawn_PlayerMP(trg), SFXPawn_Henchman(src));
+                }
+                else
+                {
+                    // Headgear over visible face: copy head, hair, and headgear.
+                    createHeadMeshFromSource(SFXPawn_PlayerMP(trg), SFXPawn_Henchman(src));
+                    createHairMeshFromSource(SFXPawn_PlayerMP(trg), SFXPawn_Henchman(src));
+                    createHeadgearMeshFromSource(SFXPawn_PlayerMP(trg), SFXPawn_Henchman(src));
+                }
+            }
+            else
+            {
+                createHeadMeshFromSource(SFXPawn_PlayerMP(trg), SFXPawn_Henchman(src));
+                createHairMeshFromSource(SFXPawn_PlayerMP(trg), SFXPawn_Henchman(src));
+            }
+            trg.Mesh.SetAnimTreeTemplate(default.crouchAnimTree);
+        }
+        else
+        {
             copyAppearanceBasic(srcSkel, dstSkel);
         }
         dstSkel.bForceRefpose = srcSkel.bForceRefpose;

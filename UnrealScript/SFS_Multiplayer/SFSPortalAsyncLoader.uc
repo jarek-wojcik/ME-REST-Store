@@ -13,6 +13,17 @@ public function LoadAsync(string AssetPath, EAsyncLoadType LoadType, delegate<SF
     AsyncLoads.AddItem(AsyncLoad);
     StartCheckTimer();
 }
+public function LoadAppearanceAsync(string AssetPath, bool bUsesHelmet, bool bUsesHeadgear, EAsyncLoadType LoadType, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
+{
+    local SFSGenericAsyncLoad AsyncLoad;
+    
+    AsyncLoad = CreateAsyncLoad(AssetPath, LoadType, Callback);
+    AsyncLoad.bUsesHelmet = bUsesHelmet;
+    AsyncLoad.bUsesHeadgear = bUsesHeadgear;
+    PollLoadStatus(AsyncLoad);
+    AsyncLoads.AddItem(AsyncLoad);
+    StartCheckTimer();
+}
 public function LoadWeaponAsync(string AssetPath, string Mod1ID, string Mod2ID, string WeaponFireMode, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
     local SFSGenericAsyncLoad AsyncLoad;

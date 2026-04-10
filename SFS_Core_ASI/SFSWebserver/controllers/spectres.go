@@ -41,6 +41,8 @@ type CardURLs struct {
 	GearConsumableClearURL      string // POST: clears gear consumable
 	SetActiveURL                string // POST: toggles active state; empty string hides the button
 	IsActive                    bool   // true when this entity is currently active
+	VisualHelmetURL             string // POST: toggle UseHelmet (clears UseHeadgear)
+	VisualHeadgearURL           string // POST: toggle UseHeadgear (clears UseHelmet)
 	ArmorConsumableSelectorURL  string // GET: opens armor consumable selector modal
 	WeaponConsumableSelectorURL string // GET: opens weapon consumable selector modal
 	AmmoConsumableSelectorURL   string // GET: opens ammo consumable selector modal
@@ -86,6 +88,8 @@ type SpectreView struct {
 	model.Spectre
 	CharDef             *model.CharacterDef
 	AppearanceCharDef   *model.CharacterDef // visual override portrait; nil means use CharDef image
+	ShowHelmetToggle    bool                // true when base or appearance class has HasHelmet
+	ShowHeadgearToggle  bool                // true when base or appearance class has HasHeadgear
 	WeaponViews         []WeaponSlotView
 	ArmorConsumableDef  *model.ConsumableDef // equipped armor consumable; nil when slot is empty
 	WeaponConsumableDef *model.ConsumableDef // equipped weapon consumable; nil when slot is empty
@@ -115,6 +119,8 @@ func spectreURLs(spectreID string) CardURLs {
 		AmmoConsumableClearURL:      base + "/consumable/ammo/none",
 		GearConsumableClearURL:      base + "/consumable/gear/none",
 		SetActiveURL:                base + "/active/toggle",
+		VisualHelmetURL:             base + "/visual/helmet",
+		VisualHeadgearURL:           base + "/visual/headgear",
 		ArmorConsumableSelectorURL:  "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=armor",
 		WeaponConsumableSelectorURL: "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=weapon",
 		AmmoConsumableSelectorURL:   "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=ammo",
@@ -146,6 +152,8 @@ func teamSpectreURLs(spectreID string) CardURLs {
 		AmmoConsumableClearURL:      base + "/consumable/ammo/none",
 		GearConsumableClearURL:      base + "/consumable/gear/none",
 		SetActiveURL:                "", // team members don't have an individual active toggle
+		VisualHelmetURL:             base + "/visual/helmet",
+		VisualHeadgearURL:           base + "/visual/headgear",
 		ArmorConsumableSelectorURL:  "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=armor",
 		WeaponConsumableSelectorURL: "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=weapon",
 		AmmoConsumableSelectorURL:   "/api/consumables/selector?entityId=" + spectreID + "&kind=spectre&category=ammo",
@@ -1081,10 +1089,13 @@ func spectreViews(spectres []model.Spectre) []SpectreView {
 		urls := spectreURLs(s.ID)
 		urls.HasBorrowedPower = s.BorrowedPower != nil
 		urls.IsActive = s.Active
+		appearanceDef := model.CharacterByID(s.AppearanceCharacterID)
 		views = append(views, SpectreView{
 			Spectre:             s,
 			CharDef:             def,
-			AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
+			AppearanceCharDef:   appearanceDef,
+			ShowHelmetToggle:    def.HasHelmet || (appearanceDef != nil && appearanceDef.HasHelmet),
+			ShowHeadgearToggle:  def.HasHeadgear || (appearanceDef != nil && appearanceDef.HasHeadgear),
 			WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
 			ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
 			WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
@@ -1108,10 +1119,13 @@ func teamSpectreViews(spectres []model.Spectre) []SpectreView {
 		}
 		urls := teamSpectreURLs(s.ID)
 		urls.HasBorrowedPower = s.BorrowedPower != nil
+		appearanceDef3 := model.CharacterByID(s.AppearanceCharacterID)
 		views = append(views, SpectreView{
 			Spectre:             s,
 			CharDef:             def,
-			AppearanceCharDef:   model.CharacterByID(s.AppearanceCharacterID),
+			AppearanceCharDef:   appearanceDef3,
+			ShowHelmetToggle:    def.HasHelmet || (appearanceDef3 != nil && appearanceDef3.HasHelmet),
+			ShowHeadgearToggle:  def.HasHeadgear || (appearanceDef3 != nil && appearanceDef3.HasHeadgear),
 			WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
 			ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
 			WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
@@ -1122,4 +1136,42 @@ func teamSpectreViews(spectres []model.Spectre) []SpectreView {
 		})
 	}
 	return views
+}
+
+// setSpectreVisual sets UseHelmet or UseHeadgear on a spectre (mutually exclusive).
+// Calling with the already-active choice clears both (toggle off).
+func setSpectreVisual(db *bolt.DB, spectreID, choice string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		switch choice {
+		case "helmet":
+			if s.UseHelmet {
+				s.UseHelmet = false
+			} else {
+				s.UseHelmet = true
+				s.UseHeadgear = false
+			}
+		case "headgear":
+			if s.UseHeadgear {
+				s.UseHeadgear = false
+			} else {
+				s.UseHeadgear = true
+				s.UseHelmet = false
+			}
+		}
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
 }
