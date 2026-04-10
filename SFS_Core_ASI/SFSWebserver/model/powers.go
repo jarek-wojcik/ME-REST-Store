@@ -383,15 +383,15 @@ var PowerCatalog = []PowerDef{
 		ID: "SFXPowerCustomActionMP_Barrier", Name: "Barrier", Picture: "Barrier.webp",
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Reinforce armor with this biotic field. Detonate the field to lift and dangle nearby targets.\nReduce all forms of damage taken. Slows power use by 50%.\nRecharge Speed: 10 sec | Damage Reduction: 25% | Blast Damage: 500 | Blast Radius: 3 m"}, // Rank 1
+			{Rank: 2, Description: "Increase recharge speed after detonation by 25%.\nRecharge Speed: 8 sec | Damage Reduction: 25% | Blast Damage: 650 | Blast Radius: 3.90 m"},                                                                                                       // Rank 2
+			{Rank: 3, Description: "Increase damage, force, and radius of the detonation by 20%.\nRecharge Speed: 8 sec | Damage Reduction: 25% | Blast Damage: 750 | Blast Radius: 4.50 m"},                                                                                           // Rank 3
+			{Rank: 4, Description: "Increase damage, force, and radius of the detonation by 30%.\nRecharge Speed: 8 sec | Damage Reduction: 25% | Blast Damage: 900 | Blast Radius: 5.40 m"},                                                                                           // Rank 4 - Evolution A (Blast Effect)
+			{Rank: 5, Description: "Decrease damage taken by 5%.\nRecharge Speed: 8 sec | Damage Reduction: 30% | Blast Damage: 750 | Blast Radius: 4.50 m"},                                                                                                                           // Rank 4 - Evolution B (Barrier Strength)
+			{Rank: 6, Description: "Increase shield regeneration rate by 15% while Barrier is active."},                                                                                                                                                                                // Rank 5 - Evolution A (Shield Recharge)
+			{Rank: 7, Description: "Increase damage and force by 30% while Barrier is active."},                                                                                                                                                                                        // Rank 5 - Evolution B (Power Synergy)
+			{Rank: 8, Description: "Reduce power speed penalty by 30%."},                                                                                                                                                                                                               // Rank 6 - Evolution A (Power Recharge)
+			{Rank: 9, Description: "Increase damage protection by 10%."},                                                                                                                                                                                                               // Rank 6 - Evolution B (Barrier Strength)
 		},
 	},
 	{
@@ -2090,18 +2090,18 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ProtheanMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_ProtheanMeleePassive", Name: "Ancient Warrior", Picture: "MPMeleePassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Plague an opponent with a persistent, damaging biotic field.\n\nEffect transfers to a second target if the first is killed.\nEffect's length depends on Dark Channel's duration.\nOnly one field may be active at a time."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."},               // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},                       // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},                       // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase power duration by 40%."},               // Rank 4 - Evolution B
-			{Rank: 6, Description: "Slow target's movement speed by -30%."},         // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase recharge speed by 35%."},               // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage by 50%."},                       // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase damage to armor and barriers by 75%."}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds.\n\nHealth & Shield Bonus: 15%\nMelee Damage Bonus: 15%\nAscension Damage Bonus: 10%\nAscension Recharge Speed: 5%\nAscension Damage Penalty: 15%"}, // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 10%.\n\nHealth & Shield Bonus: 25%\nMelee Damage Bonus: 15%\nAscension Damage Bonus: 10%\nAscension Recharge Speed: 5%\nAscension Damage Penalty: 15%"},                                                                                                                                                                                                               // Rank 2
+			{Rank: 3, Description: "Increase melee damage by 20%.\n\nHealth & Shield Bonus: 25%\nMelee Damage Bonus: 35%\nAscension Damage Bonus: 10%\nAscension Recharge Speed: 5%\nAscension Damage Penalty: 15%"},                                                                                                                                                                                                                            // Rank 3
+			{Rank: 4, Description: "Increase damage bonus by 5% while Ascension Stance is active.\n\nHealth & Shield Bonus: 25%\nMelee Damage Bonus: 35%\nAscension Damage Bonus: 15%\nAscension Recharge Speed: 5%\nAscension Damage Penalty: 15%"},                                                                                                                                                                                            // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase health and shield bonuses by 15%.\n\nHealth & Shield Bonus: 40%\nMelee Damage Bonus: 35%\nAscension Damage Bonus: 10%\nAscension Recharge Speed: 5%\nAscension Damage Penalty: 15%"},                                                                                                                                                                                                               // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase recharge speed by 10% while Ascension Stance is active.\n\nAscension Recharge Speed: 15%"},                                                                                                                                                                                                                                                                                                         // Rank 5 - Evolution A
+			{Rank: 7, Description: "Decrease shield recharge delay by 15%."}, // Rank 5 - Evolution B
+			{Rank: 8, Description: "Increase damage by 10% and recharge speed by 10% while Ascension Stance is active at the expense of damage taken increasing by 10%.\n\nAscension Damage Bonus: 25% (Ascension Damage Bonus path) / 20% (Durability path)\nAscension Recharge Speed: 25% (Ascension Recharge Speed path) / 15% (Shield Recharge path)\nAscension Damage Penalty: 25%"}, // Rank 6 - Evolution A
+			{Rank: 9, Description: "Increase health and shield bonuses by 25%.\n\nHealth & Shield Bonus: 50% (Ascension Damage Bonus path) / 65% (Durability path)\nAscension Recharge Speed: 25% (Ascension Recharge Speed path) / 15% (Shield Recharge path)\nAscension Damage Penalty: 15%"},                                                                                           // Rank 6 - Evolution B
 		},
 	},
 
@@ -2412,18 +2412,18 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_CollectorPassive", Name: "Collector", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_CollectorPassive", Name: "Vengeful Ancient", Picture: "MPPassive.webp",
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds."}, // Rank 1
-			{Rank: 2, Description: "Increase health and shield bonuses by 10%."},                                                                                           // Rank 2
-			{Rank: 3, Description: "Increase melee damage bonus by 20%."},                                                                                                  // Rank 3
-			{Rank: 4, Description: "Increase damage bonus by 5% while Ascension Stance is active."},                                                                        // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase health and shield bonuses by 15%."},                                                                                           // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase recharge speed by 10% while Ascension Stance is active."},                                                                     // Rank 5 - Evolution A
-			{Rank: 7, Description: "Decrease shield-recharge delay by 15%."},                                                                                               // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage by 10% and recharge speed by 10% while Ascension Stance is active at the expense of damage taken increasing by -10%."}, // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase health and shield bonuses by 25%."},                                                                                           // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost biotic and offensive abilities.\nIncrease Collector and Prothean weapon damage.\n\nWeapon Damage Bonus: 2.50%\nCollector/Prothean Weapon Damage: 5%\nPower Damage Bonus: 10%\nWeight Capacity Bonus: 10"},                                                                                                                                                        // Rank 1
+			{Rank: 2, Description: "Increase weapon damage bonus by 2.50%.\n\nWeapon Damage Bonus: 5%\nCollector/Prothean Weapon Damage: 5%\nPower Damage Bonus: 10%\nWeight Capacity Bonus: 10"},                                                                                                                                                                                                          // Rank 2
+			{Rank: 3, Description: "Increase power damage and force bonuses by 10%.\n\nWeapon Damage Bonus: 5%\nCollector/Prothean Weapon Damage: 5%\nPower Damage Bonus: 20%\nWeight Capacity Bonus: 10"},                                                                                                                                                                                                 // Rank 3
+			{Rank: 4, Description: "Weapon Damage: Increase weapon damage bonus by 7.50%.\n\nWeapon Damage Bonus: 12.50%\nCollector/Prothean Weapon Damage: 5%\nPower Damage Bonus: 20%\nWeight Capacity Bonus: 10"},                                                                                                                                                                                       // Rank 4 - Evolution A
+			{Rank: 5, Description: "Damage & Capacity: Increase power damage and force bonuses by 10%. Increase weight capacity bonus by 20 points.\n\nWeapon Damage Bonus: 5%\nCollector/Prothean Weapon Damage: 5%\nPower Damage Bonus: 30%\nWeight Capacity Bonus: 30"},                                                                                                                                 // Rank 4 - Evolution B
+			{Rank: 6, Description: "Power Damage: Increase power damage and force bonuses by 15%.\n\nWeapon Damage Bonus: 12.50% (Weapon Damage), 5% (Damage & Capacity)\nCollector/Prothean Weapon Damage: 5%\nPower Damage Bonus: 35% (Weapon Damage), 45% (Damage & Capacity)\nWeight Capacity Bonus: 10 (Weapon Damage), 30 (Damage & Capacity)\n\nHeadshots: Increase headshot damage bonus by 20%."}, // Rank 5 - Evolution A
+			{Rank: 7, Description: "Headshots: Increase headshot damage bonus by 20%."}, // Rank 5 - Evolution B
+			{Rank: 8, Description: "Power Damage: Increase power damage and force bonuses by 20%.\n\nWeapon Damage Bonus: 12.50% (Weapon Damage), 5% (Damage & Capacity)\nCollector/Prothean Weapon Damage: 5%\nPower Damage Bonus: 55% (Weapon Damage), 65% (Damage & Capacity) [Power Damage], 35% (Weapon Damage), 45% (Damage & Capacity) [Headshots]\nWeight Capacity Bonus: 10 (Weapon Damage), 30 (Damage & Capacity)"},                                                                             // Rank 6 - Evolution A
+			{Rank: 9, Description: "Collector/Prothean Weapon Damage: Increase weapon damage bonus by 10%. Increase Collector and Prothean weapon damage bonus by 5%.\n\nWeapon Damage Bonus: 22.50% (Weapon Damage), 15% (Damage & Capacity)\nCollector/Prothean Weapon Damage Bonus: 10%\nPower Damage Bonus: 35% (Weapon Damage), 45% (Damage & Capacity) [Power Damage], 20% (Weapon Damage), 30% (Damage & Capacity) [Headshots]\nWeight Capacity Bonus: 10 (Weapon Damage), 30 (Damage & Capacity)"}, // Rank 6 - Evolution B
 		},
 	},
 	{
@@ -2744,18 +2744,18 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_AshleyPassive", Name: "Combat Veteran", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_AshleyPassive", Name: "Alliance Officer", Picture: "MPPassive.webp",
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Health & Shield Bonus: 15%\nWeapon Damage Bonus: 15%"}, // Rank 1
+			{Rank: 2, Description: "Health & Shield Bonus: 30%\nWeapon Damage Bonus: 30%"}, // Rank 2
+			{Rank: 3, Description: "Health & Shield Bonus: 45%\nWeapon Damage Bonus: 45%"}, // Rank 3
+			{Rank: 4, Description: "Health & Shield Bonus: 45%\nWeapon Damage Bonus: 75%"}, // Rank 4 - Evolution A (Weapon Damage)
+			{Rank: 5, Description: "Health & Shield Bonus: 75%\nWeapon Damage Bonus: 45%"}, // Rank 4 - Evolution B (Durability)
+			{Rank: 6, Description: "Increase power damage by 20%."},                        // Rank 5 - Evolution A (Power Damage)
+			{Rank: 7, Description: "Increase sniper rifle damage by 45%."},                 // Rank 5 - Evolution B (Sniper Rifles)
+			{Rank: 8, Description: "Increase squadmate weapon damage by 10%."},             // Rank 6 - Evolution A (Squad Bonus)
+			{Rank: 9, Description: "Increase assault rifle damage by 60%."},                // Rank 6 - Evolution B (Assault Rifles)
 		},
 	},
 	{
