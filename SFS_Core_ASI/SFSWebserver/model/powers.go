@@ -11,6 +11,7 @@ type PowerType string
 const (
 	PowerTypeActive         PowerType = "Active"
 	PowerTypePassive        PowerType = "Passive"
+	PowerTypeMeleePassive   PowerType = "MeleePassive"
 	PowerTypeSpectrePassive PowerType = "SpectrePassive"
 )
 
@@ -725,7 +726,7 @@ var PowerCatalog = []PowerDef{
 
 	//Melee Passives --------------------------
 	{
-		ID: "SFXPowerCustomActionMP_AsariMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_AsariMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -740,7 +741,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Adept", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Adept", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -755,7 +756,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Engineer", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Engineer", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -770,7 +771,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Sentinel", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Sentinel", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -785,7 +786,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Vanguard", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Vanguard", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -800,7 +801,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Infiltrator", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Infiltrator", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -815,7 +816,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Soldier", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Soldier", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -830,7 +831,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_DrellMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_DrellMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, durability, and movement speed."},                                                    // Rank 1
@@ -845,7 +846,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_FemQuarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_FemQuarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -860,7 +861,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_KroganMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_KroganMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and durability.\n\nMelee and kill 3 enemies within 30 seconds to send the krogan into a frenzy, increasing melee damage and reducing damage taken for 30 seconds."}, // Rank 1
@@ -875,7 +876,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_TurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -890,7 +891,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SalarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_SalarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1814,7 +1815,7 @@ var PowerCatalog = []PowerDef{
 	// DLC Passives (Melee) --------------------
 	// MP1
 	{
-		ID: "SFXPowerCustomActionMP_GethMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_GethMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, durability, and shield regeneration."},                                                // Rank 1
@@ -1829,7 +1830,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BatarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_BatarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -1844,7 +1845,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AsariMeleePassive_Commando", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_AsariMeleePassive_Commando", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1859,7 +1860,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_KroganMeleePassive_Vanguard", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_KroganMeleePassive_Vanguard", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and durability.\n\nMelee and kill 3 enemies within 30 seconds to send the krogan into a frenzy, increasing melee damage and reducing damage taken for 30 seconds."}, // Rank 1
@@ -1875,7 +1876,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP2
 	{
-		ID: "SFXPowerCustomActionMP_WhipManMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_WhipManMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1890,7 +1891,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MaleQuarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_MaleQuarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -1905,7 +1906,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_VorchaMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_VorchaMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -1921,7 +1922,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP3
 	{
-		ID: "SFXPowerCustomActionMP_N7EngineerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_N7EngineerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1936,7 +1937,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7InfiltratorMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_N7InfiltratorMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, durability, and movement speed."},                    // Rank 1
@@ -1951,7 +1952,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7VanguardMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_N7VanguardMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1966,7 +1967,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7SentinelMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_N7SentinelMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},            // Rank 1
@@ -1981,7 +1982,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7AdeptMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_N7AdeptMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1997,7 +1998,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP4
 	{
-		ID: "SFXPowerCustomActionMP_VolusMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_VolusMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -2012,7 +2013,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7TurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_N7TurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -2028,7 +2029,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP5
 	{
-		ID: "SFXPowerCustomActionMP_FembotMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_FembotMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -2043,7 +2044,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_FemTurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_FemTurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and durability.\n\n30 of melee damage is applied as poison damage over 5 seconds."},           // Rank 1
@@ -2058,7 +2059,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_GethDestroyerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_GethDestroyerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and shield regeneration in addition to upgrading shield draining and advanced squad tactics. Shield upgrades also increase the strength of your Hex Shield.\n\nYour heavy melee drains energy from your target, restoring your shields."}, // Rank 1
@@ -2073,7 +2074,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MercMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_MercMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, and omni-bow damage. Your omni-bow attacks are considered melee attacks and receive bonuses from melee upgrades. Concussive and armor-piercing arrows are considered power attacks and receive bonuses from power upgrades. While active, concussive and armor-piercing arrow damage supplements the base omni-bow damage."}, // Rank 1
@@ -2088,7 +2089,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_WarlordMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_WarlordMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and durability.\nThis krogan regenerates health slowly during combat, restoring 100 health per second.\n\nMelee and kill 2 enemies within 45 seconds to go into a frenzy to increase melee damage, reduce damage taken, and to boost health regeneration for 45 seconds."}, // Rank 1
@@ -2103,7 +2104,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ProtheanMeleePassive", Name: "Ancient Warrior", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomActionMP_ProtheanMeleePassive", Name: "Ancient Warrior", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds.\n\nHealth & Shield Bonus: 15%\nMelee Damage Bonus: 15%\nAscension Damage Bonus: 10%\nAscension Recharge Speed: 5%\nAscension Damage Penalty: 15%"}, // Rank 1
@@ -2880,7 +2881,7 @@ var PowerCatalog = []PowerDef{
 
 	// Aliased Powers ----------------------
 	{
-		ID: "SFXPowerCustomAction_N7SoldierMeleePassive", Name: "T5-V Internal Systems", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomAction_N7SoldierMeleePassive", Name: "T5-V Internal Systems", Picture: "MPMeleePassive.webp", Type: PowerTypeMeleePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Upgrade the T5-V's internal systems to boost health, shields, melee damage, and durability."},                                      // Rank 1
