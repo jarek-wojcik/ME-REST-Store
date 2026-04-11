@@ -671,7 +671,7 @@
                 <div class="flex gap-1.5 items-start">
 
                     <!-- Weapon selector (2× height) -->
-                    <button class="flex items-center gap-2 flex-1 min-w-0 h-24 px-3 rounded-lg
+                    <button class="flex items-center justify-center flex-1 min-w-0 h-24 px-3 rounded-lg
                                    border border-[#1a2d4a] bg-[#0a0f1c]
                                    hover:border-[#00aaff]/30 hover:bg-[#0d1829]
                                    transition-all cursor-pointer focus:outline-none"
@@ -767,7 +767,15 @@
 
                 <!-- Armor consumable -->
                 <div class="flex flex-col gap-1 pr-2">
-                    <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Armor</span>
+                    <div class="flex items-center">
+                        <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Armor</span>
+                        {{if .ArmorConsumableClearURL}}
+                        <button class="ml-auto text-[9px] text-red-800 hover:text-red-400
+                                   cursor-pointer focus:outline-none transition-colors"
+                                hx-post="{{.ArmorConsumableClearURL}}"
+                                hx-target="#{{.CardID}}" hx-swap="outerHTML">✕</button>
+                        {{end}}
+                    </div>
                     <div class="flex items-center gap-1">
                         <button class="flex-1 flex flex-col items-center justify-center gap-1 h-[72px] rounded border
                                        border-[#1a2d4a] bg-[#0a0f1c] px-2 min-w-0
@@ -779,24 +787,28 @@
                                 @click="modalOpen=true">
                             {{if .ArmorConsumableDef}}
                             <img src="{{.ArmorConsumableDef.PictureURL}}"
-                                 class="h-10 w-10 object-contain flex-shrink-0"/>
-                            <span class="text-[9px] text-gray-300 truncate w-full text-center">{{.ArmorConsumableDef.Name}}</span>
+                                 class="h-[6rem] w-[6rem] object-contain flex-shrink-0"/>
                             {{else}}
                             <span class="text-[9px] text-gray-700">—</span>
                             {{end}}
                         </button>
-                        {{if .ArmorConsumableClearURL}}
-                        <button class="text-[9px] text-red-800 hover:text-red-400
-                                   cursor-pointer focus:outline-none transition-colors"
-                                hx-post="{{.ArmorConsumableClearURL}}"
-                                hx-target="#{{.CardID}}" hx-swap="outerHTML">✕</button>
-                        {{end}}
                     </div>
+                    {{if .ArmorConsumableDef}}
+                    <span class="text-[9px] text-gray-300 truncate font-semibold text-center">{{.ArmorConsumableDef.Name}}</span>
+                    {{end}}
                 </div>
 
                 <!-- Weapon consumable -->
                 <div class="flex flex-col gap-1">
-                    <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Weapon</span>
+                    <div class="flex items-center">
+                        <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Weapon</span>
+                        {{if .WeaponConsumableClearURL}}
+                        <button class="ml-auto text-[9px] text-red-800 hover:text-red-400
+                                   cursor-pointer focus:outline-none transition-colors"
+                                hx-post="{{.WeaponConsumableClearURL}}"
+                                hx-target="#{{.CardID}}" hx-swap="outerHTML">✕</button>
+                        {{end}}
+                    </div>
                     <div class="flex items-center gap-1">
                         <button class="flex-1 flex flex-col items-center justify-center gap-1 h-[72px] rounded border
                                        border-[#1a2d4a] bg-[#0a0f1c] px-2 min-w-0
@@ -808,24 +820,28 @@
                                 @click="modalOpen=true">
                             {{if .WeaponConsumableDef}}
                             <img src="{{.WeaponConsumableDef.PictureURL}}"
-                                 class="h-10 w-10 object-contain flex-shrink-0"/>
-                            <span class="text-[9px] text-gray-300 truncate w-full text-center">{{.WeaponConsumableDef.Name}}</span>
+                                 class="h-[6rem] w-[6rem] object-contain flex-shrink-0"/>
                             {{else}}
                             <span class="text-[9px] text-gray-700">—</span>
                             {{end}}
                         </button>
-                        {{if .WeaponConsumableClearURL}}
-                        <button class="text-[9px] text-red-800 hover:text-red-400
-                                   cursor-pointer focus:outline-none transition-colors"
-                                hx-post="{{.WeaponConsumableClearURL}}"
-                                hx-target="#{{.CardID}}" hx-swap="outerHTML">✕</button>
-                        {{end}}
                     </div>
+                    {{if .WeaponConsumableDef}}
+                    <span class="text-[9px] text-gray-300 truncate font-semibold text-center">{{.WeaponConsumableDef.Name}}</span>
+                    {{end}}
                 </div>
 
                 <!-- Ammo consumable -->
                 <div class="flex flex-col gap-1 pr-2">
-                    <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Ammo</span>
+                    <div class="flex items-center">
+                        <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Ammo</span>
+                        {{if .AmmoConsumableClearURL}}
+                        <button class="ml-auto text-[9px] text-red-800 hover:text-red-400
+                                   cursor-pointer focus:outline-none transition-colors"
+                                hx-post="{{.AmmoConsumableClearURL}}"
+                                hx-target="#{{.CardID}}" hx-swap="outerHTML">✕</button>
+                        {{end}}
+                    </div>
                     <div class="flex items-center gap-1">
                         <button class="flex-1 flex flex-col items-center justify-center gap-1 h-[72px] rounded border
                                        border-[#1a2d4a] bg-[#0a0f1c] px-2 min-w-0
@@ -837,24 +853,28 @@
                                 @click="modalOpen=true">
                             {{if .AmmoConsumableDef}}
                             <img src="{{.AmmoConsumableDef.PictureURL}}"
-                                 class="h-10 w-10 object-contain flex-shrink-0"/>
-                            <span class="text-[9px] text-gray-300 truncate w-full text-center">{{.AmmoConsumableDef.Name}}</span>
+                                 class="h-[6rem] w-[6rem] object-contain flex-shrink-0"/>
                             {{else}}
                             <span class="text-[9px] text-gray-700">—</span>
                             {{end}}
                         </button>
-                        {{if .AmmoConsumableClearURL}}
-                        <button class="text-[9px] text-red-800 hover:text-red-400
-                                   cursor-pointer focus:outline-none transition-colors"
-                                hx-post="{{.AmmoConsumableClearURL}}"
-                                hx-target="#{{.CardID}}" hx-swap="outerHTML">✕</button>
-                        {{end}}
                     </div>
+                    {{if .AmmoConsumableDef}}
+                    <span class="text-[9px] text-gray-300 truncate font-semibold text-center">{{.AmmoConsumableDef.Name}}</span>
+                    {{end}}
                 </div>
 
                 <!-- Gear consumable -->
                 <div class="flex flex-col gap-1">
-                    <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Gear</span>
+                    <div class="flex items-center">
+                        <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Gear</span>
+                        {{if .GearConsumableClearURL}}
+                        <button class="ml-auto text-[9px] text-red-800 hover:text-red-400
+                                   cursor-pointer focus:outline-none transition-colors"
+                                hx-post="{{.GearConsumableClearURL}}"
+                                hx-target="#{{.CardID}}" hx-swap="outerHTML">✕</button>
+                        {{end}}
+                    </div>
                     <div class="flex items-center gap-1">
                         <button class="flex-1 flex flex-col items-center justify-center gap-1 h-[72px] rounded border
                                        border-[#1a2d4a] bg-[#0a0f1c] px-2 min-w-0
@@ -866,19 +886,15 @@
                                 @click="modalOpen=true">
                             {{if .GearConsumableDef}}
                             <img src="{{.GearConsumableDef.PictureURL}}"
-                                 class="h-10 w-10 object-contain flex-shrink-0"/>
-                            <span class="text-[9px] text-gray-300 truncate w-full text-center">{{.GearConsumableDef.Name}}</span>
+                                 class="h-[6rem] w-[6rem] object-contain flex-shrink-0"/>
                             {{else}}
                             <span class="text-[9px] text-gray-700">—</span>
                             {{end}}
                         </button>
-                        {{if .GearConsumableClearURL}}
-                        <button class="text-[9px] text-red-800 hover:text-red-400
-                                   cursor-pointer focus:outline-none transition-colors"
-                                hx-post="{{.GearConsumableClearURL}}"
-                                hx-target="#{{.CardID}}" hx-swap="outerHTML">✕</button>
-                        {{end}}
                     </div>
+                    {{if .GearConsumableDef}}
+                    <span class="text-[9px] text-gray-300 truncate font-semibold text-center">{{.GearConsumableDef.Name}}</span>
+                    {{end}}
                 </div>
 
             </div><!-- /consumables grid -->
