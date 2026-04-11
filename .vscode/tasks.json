@@ -18,6 +18,24 @@
                 "clear": true
             },
             "problemMatcher": "$go"
+        },
+        {
+            "label": "SFSWebserver: Rebuild and Run",
+            "type": "shell",
+            "command": "go build -ldflags=\"-s -w\" -o ..\\SFSWebserver.exe . && ..\\SFSWebserver.exe",
+            "options": {
+                "cwd": "${workspaceFolder}/SFS_Core_ASI/SFSWebserver"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": "$go"
         }
     ]
 }

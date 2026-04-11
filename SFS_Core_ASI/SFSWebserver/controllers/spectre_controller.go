@@ -22,21 +22,48 @@ func NewSpectreController(db *bolt.DB, tmpl *template.Template) *SpectreControll
 }
 
 func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre, fromTeam bool) {
+	// Standalone spectres use the new RPG character sheet layout.
+	if !fromTeam {
+		c.renderCardSheet(w, s)
+		return
+	}
 	def := model.CharacterByID(s.CharacterID)
 	if def == nil {
 		def = &model.CharacterCatalog[0]
 	}
 	var urls CardURLs
-	if fromTeam {
-		urls = teamSpectreURLs(s.ID)
-	} else {
-		urls = spectreURLs(s.ID)
-		urls.IsActive = s.Active
-	}
+	urls = teamSpectreURLs(s.ID)
 	urls.HasBorrowedPower = s.BorrowedPower != nil
 	appearanceDef := model.CharacterByID(s.AppearanceCharacterID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "character_card", SpectreView{
+		Spectre:             s,
+		CharDef:             def,
+		AppearanceCharDef:   appearanceDef,
+		ShowHelmetToggle:    def.HasHelmet || (appearanceDef != nil && appearanceDef.HasHelmet),
+		ShowHeadgearToggle:  def.HasHeadgear || (appearanceDef != nil && appearanceDef.HasHeadgear),
+		WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
+		ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
+		WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
+		AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
+		GearConsumableDef:   model.ConsumableByID(s.GearConsumableID),
+		PowerViews:          spectrePowerViews(s, urls),
+		CardURLs:            urls,
+	})
+}
+
+// renderCardSheet renders a standalone spectre using the character-sheet template.
+func (c *SpectreController) renderCardSheet(w http.ResponseWriter, s model.Spectre) {
+	def := model.CharacterByID(s.CharacterID)
+	if def == nil {
+		def = &model.CharacterCatalog[0]
+	}
+	urls := spectreURLs(s.ID)
+	urls.HasBorrowedPower = s.BorrowedPower != nil
+	urls.IsActive = s.Active
+	appearanceDef := model.CharacterByID(s.AppearanceCharacterID)
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	_ = c.tmpl.ExecuteTemplate(w, "character_card_sheet", SpectreView{
 		Spectre:             s,
 		CharDef:             def,
 		AppearanceCharDef:   appearanceDef,
@@ -765,6 +792,26 @@ func (c *SpectreController) Register() {
 			return
 		}
 		s, err := setSpectreVisual(c.db, spectreID, choice)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/shield-type
+	// Sets the ShieldType field. Form field: shieldType = "Shield" | "Barrier".
+	http.HandleFunc("POST /api/spectres/{id}/shield-type", func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			respondText(w, 400, "bad form\n")
+			return
+		}
+		shieldType := r.FormValue("shieldType")
+		if shieldType != "Shield" && shieldType != "Barrier" {
+			respondText(w, 400, "shieldType must be Shield or Barrier\n")
+			return
+		}
+		s, err := updateSpectreShieldType(c.db, r.PathValue("id"), shieldType)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return

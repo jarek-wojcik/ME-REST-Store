@@ -320,13 +320,14 @@ func getSpectre(db *bolt.DB, spectreID string) (model.Spectre, error) {
 }
 
 // createSpectre persists a new spectre with the given name.
+// Power slots are intentionally empty — the user fills them in on the sheet.
 func createSpectre(db *bolt.DB, name string) (model.Spectre, error) {
 	const defaultChar = "AdeptHumanMale"
 	s := model.Spectre{
 		ID:          newID(),
 		Name:        name,
 		CharacterID: defaultChar,
-		Powers:      defaultPowersForChar(defaultChar),
+		Powers:      []model.PowerSlot{{}, {}, {}, {}, {}},
 	}
 	data, err := json.Marshal(s)
 	if err != nil {
@@ -1016,6 +1017,28 @@ func toggleSpectreActive(db *bolt.DB, spectreID string) (model.Spectre, error) {
 				return err
 			}
 		}
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// updateSpectreShieldType sets the ShieldType field ("Shield" or "Barrier").
+func updateSpectreShieldType(db *bolt.DB, spectreID, shieldType string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.ShieldType = shieldType
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err

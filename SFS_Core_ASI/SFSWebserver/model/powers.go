@@ -5,6 +5,15 @@ import (
 	"strings"
 )
 
+// PowerType classifies a power's activation style.
+type PowerType string
+
+const (
+	PowerTypeActive         PowerType = "Active"
+	PowerTypePassive        PowerType = "Passive"
+	PowerTypeSpectrePassive PowerType = "SpectrePassive"
+)
+
 // RankDesc holds a short description for a specific power rank.
 // Indices 1â€“3 map to ranks 1â€“3; then for the evolution ranks:
 //
@@ -28,6 +37,7 @@ type PowerDef struct {
 	Picture            string     // filename in /static/assets/powers/, e.g. "Warp.webp"
 	RankDescs          []RankDesc // descriptions indexed 1â€“9 (see RankDesc comment for the mapping)
 	AmmoPowerSpriteDir string     // non-empty for ammo powers: path under /static/assets/powers/AmmoPowers/ containing 1.png-9.png
+	Type               PowerType  // Passive, Active, or SpectrePassive
 }
 
 // IconURL returns the URL for the power's sprite sheet.
@@ -60,12 +70,15 @@ func (p PowerDef) DescForRank(rank int) string {
 	return "Rank " + strconv.Itoa(rank)
 }
 
+
+}
+
 // PowerCatalog lists every unique power icon set.
 var PowerCatalog = []PowerDef{
 
 	//Base Game Power -------------------------
 	{
-		ID: "SFXPowerCustomActionMP_Marksman", Name: "Marksman", Picture: "Marksman.webp",
+		ID: "SFXPowerCustomActionMP_Marksman", Name: "Marksman", Picture: "Marksman.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost weapon accuracy and firing rate for a short time."}, // Rank 1
@@ -80,7 +93,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_LiftGrenade", Name: "Lift Grenade", Picture: "LiftGrenade.webp",
+		ID: "SFXPowerCustomActionMP_LiftGrenade", Name: "Lift Grenade", Picture: "LiftGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Lob this grenade into a group of enemies to send them flying.\n\nDeal high damage."},  // Rank 1
@@ -95,7 +108,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Incinerate", Name: "Incinerate", Picture: "Incinerate.webp",
+		ID: "SFXPowerCustomActionMP_Incinerate", Name: "Incinerate", Picture: "Incinerate.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Burn your opponents and incinerate their armor.\n\nHeavy damage to health and armor.\nMake an enemy panic, stopping health regeneration.\n\nApplies fire DoT."}, // Rank 1
@@ -110,7 +123,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_InfernoGrenade", Name: "Inferno Grenade", Picture: "InfernoGrenade.webp",
+		ID: "SFXPowerCustomActionMP_InfernoGrenade", Name: "Inferno Grenade", Picture: "InfernoGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Cluster-bomb a small area with incendiary munitions.\n\nDamage can be sustained indefinitely with Incendiary ammo. Applies fire DoT."}, // Rank 1
@@ -125,7 +138,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_InfernoGrenade_Batarian", Name: "Inferno Grenade (Batarian)", Picture: "InfernoGrenade.webp",
+		ID: "SFXPowerCustomActionMP_InfernoGrenade_Batarian", Name: "Inferno Grenade (Batarian)", Picture: "InfernoGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Cluster-bomb a small area with incendiary munitions.\n\nDamage can be sustained indefinitely with Incendiary ammo. Applies fire DoT."}, // Rank 1
@@ -140,7 +153,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AIHacking", Name: "AI Hacking", Picture: "Hacking.webp",
+		ID: "SFXPowerCustomActionMP_AIHacking", Name: "AI Hacking", Picture: "Hacking.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Sabotage weapons and hack synthetics.\n\nCompromised synthetics fight on your side.\nAffected weapons overheat."}, // Rank 1
@@ -155,7 +168,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Fortification", Name: "Fortification", Picture: "Fortification.webp",
+		ID: "SFXPowerCustomActionMP_Fortification", Name: "Fortification", Picture: "Fortification.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Reinforce armor using protective Foucault currents.\nPurge the current and send its charge to your gauntlets for increased melee damage.\n\nSlow power use by -50%."}, // Rank 1
@@ -170,7 +183,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_FragGrenade", Name: "Frag Grenade", Picture: "FragGrenade.webp",
+		ID: "SFXPowerCustomActionMP_FragGrenade", Name: "Frag Grenade", Picture: "FragGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Rip your enemies apart with this shrapnel-packed grenade."}, // Rank 1
@@ -185,7 +198,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_EnergyDrain", Name: "Energy Drain", Picture: "EnergyDrain.webp",
+		ID: "SFXPowerCustomActionMP_EnergyDrain", Name: "Energy Drain", Picture: "EnergyDrain.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Hit an enemy with this energy pulse to inflict damage and to steal barrier and shield power."},              // Rank 1
@@ -200,7 +213,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Discharge", Name: "Nova", Picture: "Discharge.webp",
+		ID: "SFXPowerCustomActionMP_Discharge", Name: "Nova", Picture: "Discharge.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Transfer the energy of your biotic barrier to charge and spark this deadly blast.\n\nBarrier strength determines blast intensity."}, // Rank 1
@@ -215,7 +228,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Decoy", Name: "Decoy", Picture: "Decoy.webp",
+		ID: "SFXPowerCustomActionMP_Decoy", Name: "Decoy", Picture: "Decoy.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Distract opponents with this decoy."},                                  // Rank 1
@@ -230,7 +243,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Carnage", Name: "Carnage", Picture: "Carnage.webp",
+		ID: "SFXPowerCustomActionMP_Carnage", Name: "Carnage", Picture: "Carnage.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Rip a target into shreds with this vicious blast.\n\nMajor collateral damage to enemies nearby.\nEffective against armor."}, // Rank 1
@@ -245,7 +258,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Carnage_KroganVanguard", Name: "Carnage (Krogan Vanguard)", Picture: "Carnage.webp",
+		ID: "SFXPowerCustomActionMP_Carnage_KroganVanguard", Name: "Carnage (Krogan Vanguard)", Picture: "Carnage.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Rip a target into shreds with this vicious blast.\n\nMajor collateral damage to enemies nearby.\nEffective against armor."}, // Rank 1
@@ -260,7 +273,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Cloak", Name: "Tactical Cloak", Picture: "Cloak.webp",
+		ID: "SFXPowerCustomActionMP_Cloak", Name: "Tactical Cloak", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack."}, // Rank 1
@@ -275,7 +288,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Cloak_Geth", Name: "Tactical Cloak (Geth Infiltrator)", Picture: "Cloak.webp",
+		ID: "SFXPowerCustomActionMP_Cloak_Geth", Name: "Tactical Cloak (Geth Infiltrator)", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack."}, // Rank 1
@@ -290,7 +303,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Cloak_N7Infiltrator", Name: "Tactical Cloak (N7 Shadow)", Picture: "Cloak.webp",
+		ID: "SFXPowerCustomActionMP_Cloak_N7Infiltrator", Name: "Tactical Cloak (N7 Shadow)", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack."}, // Rank 1
@@ -305,7 +318,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_CombatDrone", Name: "Combat Drone", Picture: "CombatDrone.webp",
+		ID: "SFXPowerCustomActionMP_CombatDrone", Name: "Combat Drone", Picture: "CombatDrone.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Deploy this attack drone to stun targets and draw enemy fire."},                                                                       // Rank 1
@@ -320,7 +333,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ConcussiveShot", Name: "Concussive Shot", Picture: "ConcussiveShot.webp",
+		ID: "SFXPowerCustomActionMP_ConcussiveShot", Name: "Concussive Shot", Picture: "ConcussiveShot.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Flatten your enemy with a precise blast at short or long range.\n\nEffective against barriers."}, // Rank 1
@@ -335,7 +348,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_CryoBlast", Name: "Cryo Blast", Picture: "CryoBlast.webp",
+		ID: "SFXPowerCustomActionMP_CryoBlast", Name: "Cryo Blast", Picture: "CryoBlast.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Flash-freeze and shatter unprotected enemies. Slow down the rest.\n\nWeaken armor.\nFrozen targets won't regenerate health."}, // Rank 1
@@ -350,7 +363,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BioticGrenade", Name: "Biotic Grenade", Picture: "BioticGrenade.webp",
+		ID: "SFXPowerCustomActionMP_BioticGrenade", Name: "Biotic Grenade", Picture: "BioticGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Lob this biotic grenade cluster at your enemies and watch them fly."}, // Rank 1
@@ -365,7 +378,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BioticCharge", Name: "Biotic Charge", Picture: "BioticCharge.webp",
+		ID: "SFXPowerCustomActionMP_BioticCharge", Name: "Biotic Charge", Picture: "BioticCharge.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Smash into a target while encased in this biotic barrier, leveling your opponents.\n\nInvulnerable while this power is in effect."}, // Rank 1
@@ -380,7 +393,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Barrier", Name: "Barrier", Picture: "Barrier.webp",
+		ID: "SFXPowerCustomActionMP_Barrier", Name: "Barrier", Picture: "Barrier.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Reinforce armor with this biotic field. Detonate the field to lift and dangle nearby targets.\nReduce all forms of damage taken. Slows power use by 50%.\nRecharge Speed: 10 sec | Damage Reduction: 25% | Blast Damage: 500 | Blast Radius: 3 m"}, // Rank 1
@@ -395,7 +408,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Barrier_KroganVanguard", Name: "Barrier (Krogan Vanguard)", Picture: "Barrier.webp",
+		ID: "SFXPowerCustomActionMP_Barrier_KroganVanguard", Name: "Barrier (Krogan Vanguard)", Picture: "Barrier.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Reinforce armor with this biotic field. Detonate the field to lift and dangle nearby targets.\n\nReduce all forms of damage taken.\nSlows power use by -50%."}, // Rank 1
@@ -410,7 +423,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AdrenalineRush", Name: "Adrenaline Rush", Picture: "AdrenalineRush.webp",
+		ID: "SFXPowerCustomActionMP_AdrenalineRush", Name: "Adrenaline Rush", Picture: "AdrenalineRush.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Accelerate reflexes, granting time to line up the perfect shot.\n\nMore weapon damage."}, // Rank 1
@@ -425,7 +438,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ProximityMine", Name: "Proximity Mine", Picture: "ProximityMine.webp",
+		ID: "SFXPowerCustomActionMP_ProximityMine", Name: "Proximity Mine", Picture: "ProximityMine.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Fire this sticky mine into traffic. It will detonate when an enemy steps within range."}, // Rank 1
@@ -440,7 +453,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ProximityMine_Geth", Name: "Proximity Mine (Geth)", Picture: "ProximityMine.webp",
+		ID: "SFXPowerCustomActionMP_ProximityMine_Geth", Name: "Proximity Mine (Geth)", Picture: "ProximityMine.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Fire this sticky mine into traffic. It will detonate when an enemy steps within range."}, // Rank 1
@@ -455,7 +468,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Pull", Name: "Pull", Picture: "Pull.webp",
+		ID: "SFXPowerCustomActionMP_Pull", Name: "Pull", Picture: "Pull.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Yank an opponent helplessly off the ground."},                                                                   // Rank 1
@@ -470,7 +483,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Pull_Asari", Name: "Pull (Asari Justicar)", Picture: "Pull.webp",
+		ID: "SFXPowerCustomActionMP_Pull_Asari", Name: "Pull (Asari Justicar)", Picture: "Pull.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Yank an opponent helplessly off the ground."},                                                                   // Rank 1
@@ -485,7 +498,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Reave", Name: "Reave", Picture: "Reave.webp",
+		ID: "SFXPowerCustomActionMP_Reave", Name: "Reave", Picture: "Reave.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Drain a target's health and disrupt their resistances, receiving increased damage protection while this power is in effect.\n\nEffective against barriers and armor."}, // Rank 1
@@ -500,7 +513,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Reave_Asari", Name: "Reave (Asari Justicar)", Picture: "Reave.webp",
+		ID: "SFXPowerCustomActionMP_Reave_Asari", Name: "Reave (Asari Justicar)", Picture: "Reave.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Drain a target's health and disrupt their resistances, receiving increased damage protection while this power is in effect.\n\nEffective against barriers and armor."}, // Rank 1
@@ -515,7 +528,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Shockwave", Name: "Shockwave", Picture: "Shockwave.webp",
+		ID: "SFXPowerCustomActionMP_Shockwave", Name: "Shockwave", Picture: "Shockwave.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Topple a row of enemies with this cascading shockwave."},  // Rank 1
@@ -530,7 +543,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Shockwave_Batarian", Name: "Shockwave (Batarian)", Picture: "Shockwave.webp",
+		ID: "SFXPowerCustomActionMP_Shockwave_Batarian", Name: "Shockwave (Batarian)", Picture: "Shockwave.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Topple a row of enemies with this cascading shockwave."},  // Rank 1
@@ -545,7 +558,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Overload", Name: "Overload", Picture: "Overload.webp",
+		ID: "SFXPowerCustomActionMP_Overload", Name: "Overload", Picture: "Overload.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Overload electronics with this power surge, stunning your enemy.\n\nEffective against shields, barriers, and synthetics.\nNot as effective against organics."}, // Rank 1
@@ -560,7 +573,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Overload_Geth", Name: "Overload (Geth)", Picture: "Overload.webp",
+		ID: "SFXPowerCustomActionMP_Overload_Geth", Name: "Overload (Geth)", Picture: "Overload.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Overload electronics with this power surge, stunning your enemy.\n\nEffective against shields, barriers, and synthetics.\nNot as effective against organics."}, // Rank 1
@@ -575,7 +588,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SentryTurret", Name: "Sentry Turret", Picture: "SentryTurret.webp",
+		ID: "SFXPowerCustomActionMP_SentryTurret", Name: "Sentry Turret", Picture: "SentryTurret.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Deploy this heavy-weapon turret for cover fire."},                                                  // Rank 1
@@ -590,7 +603,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Stasis", Name: "Stasis", Picture: "Stasis.webp",
+		ID: "SFXPowerCustomActionMP_Stasis", Name: "Stasis", Picture: "Stasis.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Stop an enemy in its tracks with this powerful mass effect field. No effect on armored targets.\n\nEnemies eventually break out of Stasis after taking major damage."}, // Rank 1
@@ -605,7 +618,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_StickyGrenade", Name: "Sticky Grenade", Picture: "StickyGrenade.webp",
+		ID: "SFXPowerCustomActionMP_StickyGrenade", Name: "Sticky Grenade", Picture: "StickyGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Stick this grenade to your opponent, and the explosion will tear apart the target and the shrapnel will damage other enemies caught in the blast."}, // Rank 1
@@ -620,7 +633,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Singularity", Name: "Singularity", Picture: "Singularity.webp",
+		ID: "SFXPowerCustomActionMP_Singularity", Name: "Singularity", Picture: "Singularity.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Create a sphere of dark energy that traps and dangles enemies caught in its field."}, // Rank 1
@@ -635,7 +648,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TechArmor", Name: "Tech Armor", Picture: "TechArmor.webp",
+		ID: "SFXPowerCustomActionMP_TechArmor", Name: "Tech Armor", Picture: "TechArmor.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Protect yourself with this holographic armor or detonate it to damage nearby enemies.\n\nSlows power use by -50%."}, // Rank 1
@@ -650,7 +663,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TechArmor_Krogan", Name: "Tech Armor (Krogan)", Picture: "TechArmor.webp",
+		ID: "SFXPowerCustomActionMP_TechArmor_Krogan", Name: "Tech Armor (Krogan)", Picture: "TechArmor.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Protect yourself with this holographic armor or detonate it to damage nearby enemies.\n\nSlows power use by -50%."}, // Rank 1
@@ -665,7 +678,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TechArmor_Turian", Name: "Tech Armor (Turian)", Picture: "TechArmor.webp",
+		ID: "SFXPowerCustomActionMP_TechArmor_Turian", Name: "Tech Armor (Turian)", Picture: "TechArmor.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Protect yourself with this holographic armor or detonate it to damage nearby enemies.\n\nSlows power use by -50%."}, // Rank 1
@@ -680,7 +693,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Throw", Name: "Throw", Picture: "Throw.webp",
+		ID: "SFXPowerCustomActionMP_Throw", Name: "Throw", Picture: "Throw.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Toss your enemy through the air with this biotic blast."},           // Rank 1
@@ -695,7 +708,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Warp", Name: "Warp", Picture: "Warp.webp",
+		ID: "SFXPowerCustomActionMP_Warp", Name: "Warp", Picture: "Warp.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Rip your enemy apart at a molecular level.\n\nStop targeted enemy from regenerating health.\nWeaken armor.\n\nApplies fire DoT."}, // Rank 1
@@ -712,7 +725,7 @@ var PowerCatalog = []PowerDef{
 
 	//Melee Passives --------------------------
 	{
-		ID: "SFXPowerCustomActionMP_AsariMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_AsariMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -727,7 +740,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Adept", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Adept", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -742,7 +755,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Engineer", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Engineer", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -757,7 +770,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Sentinel", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Sentinel", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -772,7 +785,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Vanguard", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Vanguard", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -787,7 +800,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Infiltrator", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Infiltrator", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -802,7 +815,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Soldier", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_HumanMeleePassive_Soldier", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -817,7 +830,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_DrellMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_DrellMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, durability, and movement speed."},                                                    // Rank 1
@@ -832,7 +845,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_FemQuarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_FemQuarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -847,7 +860,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_KroganMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_KroganMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and durability.\n\nMelee and kill 3 enemies within 30 seconds to send the krogan into a frenzy, increasing melee damage and reducing damage taken for 30 seconds."}, // Rank 1
@@ -862,7 +875,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_TurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -877,7 +890,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SalarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_SalarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -894,7 +907,7 @@ var PowerCatalog = []PowerDef{
 
 	//Fitness Passives ------------------------
 	{
-		ID: "SFXPowerCustomActionMP_HumanPassive", Name: "Alliance Training", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_HumanPassive", Name: "Alliance Training", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "A decade of rigorous combat training in the Alliance starts to click.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -909,7 +922,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_DrellPassive", Name: "Drell Assassin", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_DrellPassive", Name: "Drell Assassin", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Practice makes perfect, and years spent tuning reflexes for the perfect killshot are paying dividends.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -924,7 +937,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_KroganPassive", Name: "Krogan Berserker", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_KroganPassive", Name: "Krogan Berserker", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Battle-skills hardened on unforgiving Tuchanka come into play.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -939,7 +952,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_FemQuarianPassive", Name: "Quarian Defender", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_FemQuarianPassive", Name: "Quarian Defender", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Built on a lifetime spent defending the flotilla from the geth, combat skills reach new heights.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -954,7 +967,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AsariPassive", Name: "Asari Justicar", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_AsariPassive", Name: "Asari Justicar", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Centuries of training as a justicar come into focus on the battlefield.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -969,7 +982,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TurianPassive", Name: "Turian Veteran", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_TurianPassive", Name: "Turian Veteran", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Seasoned by years of hard fighting across the galaxy, combat skills come into their own.\n\nMore weapon damage.\nGreater stability and weapon control.\nMore strength."}, // Rank 1
@@ -984,7 +997,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SalarianPassive", Name: "Salarian Operative", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_SalarianPassive", Name: "Salarian Operative", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameMPContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Years spent training as an STG operative are paying off.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -1001,7 +1014,7 @@ var PowerCatalog = []PowerDef{
 
 	//DLC Powers -----------------------------
 	{
-		ID: "SFXPowerCustomAction_MultiFragGrenade", Name: "Multi Frag Grenade", Picture: "MultiFragGrenade.webp",
+		ID: "SFXPowerCustomAction_MultiFragGrenade", Name: "Multi Frag Grenade", Picture: "MultiFragGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Launch multiple frag grenades by upgrading the T5-V's right gauntlet."}, // Rank 1
@@ -1016,7 +1029,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_PalmBlaster", Name: "Palm Blaster", Picture: "PalmBlaster.webp",
+		ID: "SFXPowerCustomActionMP_PalmBlaster", Name: "Palm Blaster", Picture: "PalmBlaster.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Focus the energy of your barrier to fire a high-powered beam at a target from afar.\n\nFiring the beam consumes 40% of max barrier."}, // Rank 1
@@ -1031,7 +1044,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ReconMine", Name: "Recon Mine", Picture: "ReconMine.webp",
+		ID: "SFXPowerCustomActionMP_ReconMine", Name: "Recon Mine", Picture: "ReconMine.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Launch a mine that sticks to the first surface it touches and arms after 3 seconds. The mine scans the area for enemies to provide a tactical overlay, and it can be detonated at any time to deal massive damage to nearby targets.\n\nOnly one mine can be active at a time."}, // Rank 1
@@ -1046,7 +1059,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_RepairMatrix", Name: "Repair Matrix", Picture: "RepairMatrix.webp",
+		ID: "SFXPowerCustomActionMP_RepairMatrix", Name: "Repair Matrix", Picture: "RepairMatrix.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Reinforce armor with metal-repelling Foucault currents to increase movement speed, decrease damage taken, and to regenerate shields for a short duration. When activated, the fallen caster instantly gets back on their feet. This can only occur once, and a limited number of charges can be carried for this power."}, // Rank 1
@@ -1061,7 +1074,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SeekerSwarm", Name: "Seeker Swarm", Picture: "SeekerSwarm.webp",
+		ID: "SFXPowerCustomActionMP_SeekerSwarm", Name: "Seeker Swarm", Picture: "SeekerSwarm.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Launch a slow-moving sphere of ark energy to cause damage over time to any target it passes over. The sphere can be detonated at any time to cause massive damage.\n\nThis power only has a cooldown when detonated."}, // Rank 1
@@ -1076,7 +1089,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ShadowStrike", Name: "Shadow Strike", Picture: "ShadowStrike.webp",
+		ID: "SFXPowerCustomActionMP_ShadowStrike", Name: "Shadow Strike", Picture: "ShadowStrike.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Cloak and sneak behind your target to unleash a vicious sword attack.\n\nReceives damage bonuses from sword upgrades.\nConsidered a melee attack."}, // Rank 1
@@ -1091,7 +1104,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SiegePulse", Name: "Siege Pulse", Picture: "SiegePulse.webp",
+		ID: "SFXPowerCustomActionMP_SiegePulse", Name: "Siege Pulse", Picture: "SiegePulse.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Generate 3 electric charges that are stored in your platform's batteries. Use the power again to consume a charge to launch a long-range pulse that blasts a massive area. Each shot has a chance of incapacitating unarmored enemies.\n\nHighly effective against armor, shields, and barriers."}, // Rank 1
@@ -1106,7 +1119,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SonicSlash", Name: "Sonic Slash", Picture: "SonicSlash.webp",
+		ID: "SFXPowerCustomActionMP_SonicSlash", Name: "Sonic Slash", Picture: "SonicSlash.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Charge your sword with biotic energy and slash nearby enemies in a wide swath, flattening unshielded opponents."}, // Rank 1
@@ -1121,7 +1134,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_StimPack", Name: "Stim Pack", Picture: "StimPack.webp",
+		ID: "SFXPowerCustomActionMP_StimPack", Name: "Stim Pack", Picture: "StimPack.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "A specially designed ops survival pack that temporarily increases survivability and all damage output.\n\nA limited number of these packs can be carried."}, // Rank 1
@@ -1136,7 +1149,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Supercharge", Name: "Geth Turbocharge", Picture: "Supercharge.webp",
+		ID: "SFXPowerCustomActionMP_Supercharge", Name: "Geth Turbocharge", Picture: "Supercharge.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Advanced diagnostics redirect power into offensive systems, boosting combat capabilities.\n\nFaster movement.\nSee through smoke and objects.\nMore weapon, power, and melee damage.\nGreater weapon accuracy.\nShields reduced by -50%."}, // Rank 1
@@ -1151,7 +1164,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SupplyTurret", Name: "Supply Drone", Picture: "SupplyTurret.webp",
+		ID: "SFXPowerCustomActionMP_SupplyTurret", Name: "Supply Drone", Picture: "SupplyTurret.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Deploy an immobile pylon that supplies ammo and grenades. A built-in tech generator also increases maximum shields for nearby allies.\n\nOnly one pylon can be active at a time.\nAmmo and grenades expire after 17.5s."}, // Rank 1
@@ -1166,7 +1179,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TechHammerModal", Name: "Tech Hammer", Picture: "TechHammerModal.webp",
+		ID: "SFXPowerCustomActionMP_TechHammerModal", Name: "Tech Hammer", Picture: "TechHammerModal.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Charge your hammer with electric energy, making all hammer impacts do electrical damage in a large area while stunning enemies. Your melee attacks will expend these charges.\n\nHighly effective against shields and barriers."}, // Rank 1
@@ -1181,7 +1194,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_VenomTippedBlades", Name: "Venom-Tipped Blades", Picture: "VenomTippedBlades.webp",
+		ID: "SFXPowerCustomActionMP_VenomTippedBlades", Name: "Venom-Tipped Blades", Picture: "VenomTippedBlades.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Launch a short-range volley of venom tipped blades to paralyze non-shielded targets. These blades cause instant damage and poison the target, causing damage over time.\n\nBlade damage is most effective at close-range.\nA limited number of these blades can be carried."}, // Rank 1
@@ -1196,7 +1209,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_WhipSmash", Name: "Smash", Picture: "WhipSmash.webp",
+		ID: "SFXPowerCustomAction_WhipSmash", Name: "Smash", Picture: "WhipSmash.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Drive the lash into the ground to cause area-of-effect damage and devastating direct damage."},                       // Rank 1
@@ -1211,7 +1224,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AnnihilationSphere", Name: "Annihilation Field", Picture: "AnnihilationSphere.webp",
+		ID: "SFXPowerCustomActionMP_AnnihilationSphere", Name: "Annihilation Field", Picture: "AnnihilationSphere.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Spin this fiery effect around you to burn nearby enemies. When active, the field can be recast to blast a short-range area and to detonate combos."}, // Rank 1
@@ -1226,7 +1239,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BatarianArmor", Name: "Batarian Armor", Picture: "BatarianArmor.webp",
+		ID: "SFXPowerCustomActionMP_BatarianArmor", Name: "Batarian Armor", Picture: "BatarianArmor.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Reinforce armor with razor-sharp blades to damage enemies that melee.\n\nLess damage taken.\nMore melee damage dealt.\nSlows power use by -50%."}, // Rank 1
@@ -1241,7 +1254,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BatarianAttack", Name: "Batarian Kick", Picture: "BatarianAttack.webp",
+		ID: "SFXPowerCustomActionMP_BatarianAttack", Name: "Batarian Kick", Picture: "BatarianAttack.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Fire a salvo of blades to impale your enemies, inflicting massive bleed damage.\n\nThe closer your target is, the more damage you deal."}, // Rank 1
@@ -1256,7 +1269,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BatarianNet", Name: "Batarian Net", Picture: "BatarianNet.webp",
+		ID: "SFXPowerCustomActionMP_BatarianNet", Name: "Batarian Net", Picture: "BatarianNet.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Entangle opponents in an electrified net, dealing massive damage to armored targets and incapacitating unarmored targets as they break free.\n\nTargets build up resistances to the grappling effects of the net."}, // Rank 1
@@ -1271,7 +1284,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BioticFocus", Name: "Biotic Focus", Picture: "BioticFocus.webp",
+		ID: "SFXPowerCustomActionMP_BioticFocus", Name: "Biotic Focus", Picture: "BioticFocus.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Focus your biotic energy and atavistic muscle structure to decrease damage taken and to increase melee damage and movement speed for a short time."}, // Rank 1
@@ -1286,7 +1299,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BioticHammerModal", Name: "Biotic Hammer", Picture: "BioticHammerModal.webp",
+		ID: "SFXPowerCustomActionMP_BioticHammerModal", Name: "Biotic Hammer", Picture: "BioticHammerModal.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Charge your hammer with biotic energy, drastically increasing direct damage and force. Your melee attacks will expend these charges.\n\nHighly effective against armor and barriers."}, // Rank 1
@@ -1301,7 +1314,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BioticOrbs", Name: "Dark Energy Orbs", Picture: "BioticOrbs.webp",
+		ID: "SFXPowerCustomActionMP_BioticOrbs", Name: "Dark Energy Orbs", Picture: "BioticOrbs.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Summon 3 biotic orbs to float around you. Use the power again to launch an orb at your target. Each floating orb increases the recharge speed of your powers by 10%.\n\nHighly effective against armor and barriers."}, // Rank 1
@@ -1316,7 +1329,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Bloodlust", Name: "Bloodlust", Picture: "Bloodlust.webp",
+		ID: "SFXPowerCustomActionMP_Bloodlust", Name: "Bloodlust", Picture: "Bloodlust.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "The vorcha flies into a frenzy, increasing movement speed, health regeneration, and melee damage. Each kill intensifies these effects and can stack up to three times.\n\nAdditional stacks last for 15 seconds.\nSlows power use by -60%.\nLasts until deactivated."}, // Rank 1
@@ -1331,7 +1344,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MercBowModalOne", Name: "Bow Shot", Picture: "BowModalOne.webp",
+		ID: "SFXPowerCustomActionMP_MercBowModalOne", Name: "Bow Shot", Picture: "BowModalOne.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Load 3 concussive charges into your omni-bow to increase impact force, to knock down unarmored enemies, and to increase the number of arrows fired simultaneously. When you run out of concussive charges, you will fire normal arrows again.\n\nHighly effective against barriers.\nConsumes a grenade."}, // Rank 1
@@ -1346,7 +1359,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MercBowModalTwo", Name: "Bow Explosive Shot", Picture: "BowModalTwo.webp",
+		ID: "SFXPowerCustomActionMP_MercBowModalTwo", Name: "Bow Explosive Shot", Picture: "BowModalTwo.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Load 3 armor-piercing charges into your omni-bow to increase damage as well as the number of arrows fired simultaneously. When you run out of these armor-piercing charges, you will fire normal arrows again.\n\nHighly effective against armor.\nConsumes a grenade."}, // Rank 1
@@ -1361,7 +1374,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BubbleShield", Name: "Barrier Bubbles", Picture: "BubbleShield.webp",
+		ID: "SFXPowerCustomActionMP_BubbleShield", Name: "Barrier Bubbles", Picture: "BubbleShield.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Create a defensive shield that surrounds the caster and nearby allies.\n\nMore damage dealt to enemies entering the shielded area."}, // Rank 1
@@ -1376,7 +1389,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_CainMine", Name: "M-920 Cain Mine", Picture: "CainMine.webp",
+		ID: "SFXPowerCustomActionMP_CainMine", Name: "M-920 Cain Mine", Picture: "CainMine.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Attach a C4 proximity explosive to any surface that arms after 1.5 seconds. Decimate the defenses of enemies that trip the sensor. Only 3 mines can be armed at a time.\n\nHighly effective against armor, shields, and barriers.\nConsumes a grenade."}, // Rank 1
@@ -1391,7 +1404,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_CryoCone", Name: "Cryo Cone", Picture: "CryoCone.webp",
+		ID: "SFXPowerCustomActionMP_CryoCone", Name: "Cryo Cone", Picture: "CryoCone.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Flash-freeze unprotected enemies and slow down the rest with a wave of ice damage.\n\nFrozen targets don't regenerate health.\nWeaken armor by 25%."}, // Rank 1
@@ -1406,7 +1419,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Damping", Name: "Damping", Picture: "Damping.webp",
+		ID: "SFXPowerCustomActionMP_Damping", Name: "Damping", Picture: "Damping.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Reveal weaknesses in defenses, increasing all damage done to the target and slowing its movement speed.\n\nProvide the entire squad with a tactical readout. Only one scan can be active on a target."}, // Rank 1
@@ -1421,7 +1434,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_DarkSingularity", Name: "Dark Singularity", Picture: "DarkSingularity.webp",
+		ID: "SFXPowerCustomAction_DarkSingularity", Name: "Dark Singularity", Picture: "DarkSingularity.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Summon 3 Seeker Swarms to cloud around you. Use the power again to launch a swarm at your target that deals damage and slows movement."}, // Rank 1
@@ -1436,7 +1449,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_DevestatorMode", Name: "Devastator Mode", Picture: "DevestatorMode.webp",
+		ID: "SFXPowerCustomAction_DevestatorMode", Name: "Devastator Mode", Picture: "DevestatorMode.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Turn into a powerful turret with the T5-V Battlesuit.\n\nIncrease weapon damage, rate of fire, and magazine size.\nSlows movement speed.\nStays active until disabled."}, // Rank 1
@@ -1451,7 +1464,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ElectricSlash", Name: "Electric Slash", Picture: "ElectricSlash.webp",
+		ID: "SFXPowerCustomActionMP_ElectricSlash", Name: "Electric Slash", Picture: "ElectricSlash.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Unleash a wave of electrical energy from your sword to stun and damage all enemies in a cone.\n\nHighly effective against shields/barriers.\nConsidered a power attack.\nReceives damage bonuses from power upgrades."}, // Rank 1
@@ -1466,7 +1479,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_EMPGrenade", Name: "EMP Grenade", Picture: "EMPGrenade.webp",
+		ID: "SFXPowerCustomAction_EMPGrenade", Name: "EMP Grenade", Picture: "EMPGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Stun and electrocute your enemies with an EMP-packed grenade. Effective against shields and barriers."}, // Rank 1
@@ -1481,7 +1494,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Flamer", Name: "Flamer", Picture: "Flamer.webp",
+		ID: "SFXPowerCustomActionMP_Flamer", Name: "Flamer", Picture: "Flamer.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Fire a powerful short-range flame attack. The flames will persist for a max duration and can be canceled early for a faster recharge.\n\nHighly effective against armor.\n\nSubject to a self-stacking glitch; damage can reach 3 times the presented value with continuous fire. Applies fire DoT."}, // Rank 1
@@ -1496,7 +1509,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_GethSentryTurret", Name: "Geth Turret", Picture: "GethTurret.webp",
+		ID: "SFXPowerCustomActionMP_GethSentryTurret", Name: "Geth Turret", Picture: "GethTurret.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Deploy a multifunctional turret that deals heavy damage and repairs the shields of allies within 8 meters every 8 seconds."}, // Rank 1
@@ -1511,7 +1524,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_GethSentryTurret_MP5", Name: "Geth Turret (Juggernaut)", Picture: "GethTurret.webp",
+		ID: "SFXPowerCustomActionMP_GethSentryTurret_MP5", Name: "Geth Turret (Juggernaut)", Picture: "GethTurret.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Deploy a multifunctional turret that deals heavy damage and repairs the shields of allies within 8 meters every 8 seconds."}, // Rank 1
@@ -1526,7 +1539,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HexShield", Name: "Hex Shield", Picture: "HexShield.webp",
+		ID: "SFXPowerCustomActionMP_HexShield", Name: "Hex Shield", Picture: "HexShield.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Spawn a geth energy barrier that blocks all fast-moving projectiles, including bullets."},                             // Rank 1
@@ -1541,7 +1554,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_HomingGrenade", Name: "Homing Grenade", Picture: "HomingGrenade.webp",
+		ID: "SFXPowerCustomActionMP_HomingGrenade", Name: "Homing Grenade", Picture: "HomingGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Launch this seeking grenade to track down a target, causing a massive explosion on impact."},                   // Rank 1
@@ -1556,7 +1569,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BioticCharge_Krogan", Name: "Biotic Charge (Krogan)", Picture: "KroganBioticCharge.webp",
+		ID: "SFXPowerCustomActionMP_BioticCharge_Krogan", Name: "Biotic Charge (Krogan)", Picture: "KroganBioticCharge.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Smash into a target while encased in this biotic barrier, leveling your opponents.\n\nInvulnerable while this power is in effect."}, // Rank 1
@@ -1571,7 +1584,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Lash", Name: "Lash", Picture: "Lash.webp",
+		ID: "SFXPowerCustomActionMP_Lash", Name: "Lash", Picture: "Lash.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Latch this biotic field onto enemies to jerk them toward you, doing massive damage in the process."},                    // Rank 1
@@ -1586,7 +1599,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_LineStrike", Name: "Line Strike", Picture: "LineStrike.webp",
+		ID: "SFXPowerCustomActionMP_LineStrike", Name: "Line Strike", Picture: "LineStrike.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Slash through an enemy line while encased in this biotic barrier causing instant biotic damage and applying a poison effect that does damage over time to every hit enemy.\n\nInvulnerable while this power is in effect."}, // Rank 1
@@ -1601,7 +1614,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_MissileLauncher", Name: "Missile Launcher", Picture: "MissileLauncher.webp",
+		ID: "SFXPowerCustomAction_MissileLauncher", Name: "Missile Launcher", Picture: "MissileLauncher.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Rip a target into shreds with the T5-V's autofiring shoulder cannon.\n\nLock onto a target to launch a stinger missile.\nStays active until disabled.\nDecreases max shields by -50% while active."}, // Rank 1
@@ -1618,7 +1631,7 @@ var PowerCatalog = []PowerDef{
 
 	// Missing DLC Active Powers --------------
 	{
-		ID: "SFXPowerCustomActionMP_DarkChannel2", Name: "Dark Channel", Picture: "DarkChannel.webp",
+		ID: "SFXPowerCustomActionMP_DarkChannel2", Name: "Dark Channel", Picture: "DarkChannel.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Plague an opponent with a persistent, damaging biotic field.\n\nEffect transfers to a second target if the first is killed.\nEffect's length depends on Dark Channel's duration.\nOnly one field may be active at a time."}, // Rank 1
@@ -1633,7 +1646,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Throw_N7", Name: "Throw", Picture: "Throw.webp",
+		ID: "SFXPowerCustomActionMP_Throw_N7", Name: "Throw", Picture: "Throw.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Toss your enemy through the air with this biotic blast."},           // Rank 1
@@ -1648,7 +1661,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_EMPGrenade2", Name: "EMP Grenade", Picture: "EMPGrenade.webp",
+		ID: "SFXPowerCustomActionMP_EMPGrenade2", Name: "EMP Grenade", Picture: "EMPGrenade.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Stun and electrocute your enemies with an EMP-packed grenade. Effective against shields and barriers."}, // Rank 1
@@ -1663,7 +1676,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_SnapFreeze", Name: "Snap Freeze", Picture: "CryoCone.webp",
+		ID: "SFXPowerCustomActionMP_SnapFreeze", Name: "Snap Freeze", Picture: "CryoCone.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Flash-freeze unprotected enemies and slow down the rest with a wave of ice damage.\n\nFrozen targets don't regenerate health.\nWeaken armor by 25%."}, // Rank 1
@@ -1678,7 +1691,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_DarkChannelProthean", Name: "Dark Channel (Prothean)", Picture: "DarkChannel.webp",
+		ID: "SFXPowerCustomActionMP_DarkChannelProthean", Name: "Dark Channel (Prothean)", Picture: "DarkChannel.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost biotic and offensive abilities.\nIncrease Collector and Prothean weapon damage."},            // Rank 1
@@ -1693,7 +1706,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TechArmor_Warlord", Name: "Tech Armor (Warlord)", Picture: "TechArmor.webp",
+		ID: "SFXPowerCustomActionMP_TechArmor_Warlord", Name: "Tech Armor (Warlord)", Picture: "TechArmor.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Protect yourself with this holographic armor or detonate it to damage nearby enemies.\n\nSlows power use by -50%."}, // Rank 1
@@ -1708,7 +1721,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_FembotCloak", Name: "Tactical Cloak (Geth)", Picture: "Cloak.webp",
+		ID: "SFXPowerCustomActionMP_FembotCloak", Name: "Tactical Cloak (Geth)", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack."}, // Rank 1
@@ -1723,7 +1736,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AsariCloak", Name: "Tactical Cloak (Asari)", Picture: "Cloak.webp",
+		ID: "SFXPowerCustomActionMP_AsariCloak", Name: "Tactical Cloak (Asari)", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack."}, // Rank 1
@@ -1738,7 +1751,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_TurianCloak", Name: "Tactical Cloak (Turian)", Picture: "Cloak.webp",
+		ID: "SFXPowerCustomActionMP_TurianCloak", Name: "Tactical Cloak (Turian)", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack."}, // Rank 1
@@ -1753,7 +1766,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_JetPackCharge", Name: "Havoc Strike", Picture: "HavocStrike.webp",
+		ID: "SFXPowerCustomActionMP_JetPackCharge", Name: "Havoc Strike", Picture: "HavocStrike.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Use the propulsion pack to launch a devastating strike on multiple targets."},                           // Rank 1
@@ -1768,7 +1781,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_Decoy_Volus", Name: "Decoy (Volus)", Picture: "Decoy.webp",
+		ID: "SFXPowerCustomActionMP_Decoy_Volus", Name: "Decoy (Volus)", Picture: "Decoy.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Distract opponents with this decoy."},                                  // Rank 1
@@ -1783,7 +1796,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ShieldBoost", Name: "Shield Boost (Volus)", Picture: "ShieldBoost.webp",
+		ID: "SFXPowerCustomActionMP_ShieldBoost", Name: "Shield Boost (Volus)", Picture: "ShieldBoost.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Repair your shields and those of nearby allies, providing a large initial boost to shields, and then restoring shields every second for 3 seconds."}, // Rank 1
@@ -1801,7 +1814,7 @@ var PowerCatalog = []PowerDef{
 	// DLC Passives (Melee) --------------------
 	// MP1
 	{
-		ID: "SFXPowerCustomActionMP_GethMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_GethMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, durability, and shield regeneration."},                                                // Rank 1
@@ -1816,7 +1829,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BatarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_BatarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -1831,7 +1844,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AsariMeleePassive_Commando", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_AsariMeleePassive_Commando", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1846,7 +1859,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_KroganMeleePassive_Vanguard", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_KroganMeleePassive_Vanguard", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and durability.\n\nMelee and kill 3 enemies within 30 seconds to send the krogan into a frenzy, increasing melee damage and reducing damage taken for 30 seconds."}, // Rank 1
@@ -1862,7 +1875,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP2
 	{
-		ID: "SFXPowerCustomActionMP_WhipManMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_WhipManMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1877,7 +1890,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MaleQuarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_MaleQuarianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -1892,7 +1905,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_VorchaMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_VorchaMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -1908,7 +1921,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP3
 	{
-		ID: "SFXPowerCustomActionMP_N7EngineerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_N7EngineerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1923,7 +1936,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7InfiltratorMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_N7InfiltratorMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, durability, and movement speed."},                    // Rank 1
@@ -1938,7 +1951,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7VanguardMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_N7VanguardMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1953,7 +1966,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7SentinelMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_N7SentinelMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},            // Rank 1
@@ -1968,7 +1981,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7AdeptMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_N7AdeptMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1984,7 +1997,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP4
 	{
-		ID: "SFXPowerCustomActionMP_VolusMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_VolusMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                     // Rank 1
@@ -1999,7 +2012,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7TurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_N7TurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -2015,7 +2028,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP5
 	{
-		ID: "SFXPowerCustomActionMP_FembotMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_FembotMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability."},                                                                    // Rank 1
@@ -2030,7 +2043,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_FemTurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_FemTurianMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and durability.\n\n30 of melee damage is applied as poison damage over 5 seconds."},           // Rank 1
@@ -2045,7 +2058,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_GethDestroyerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_GethDestroyerMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and shield regeneration in addition to upgrading shield draining and advanced squad tactics. Shield upgrades also increase the strength of your Hex Shield.\n\nYour heavy melee drains energy from your target, restoring your shields."}, // Rank 1
@@ -2060,7 +2073,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MercMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_MercMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, and omni-bow damage. Your omni-bow attacks are considered melee attacks and receive bonuses from melee upgrades. Concussive and armor-piercing arrows are considered power attacks and receive bonuses from power upgrades. While active, concussive and armor-piercing arrow damage supplements the base omni-bow damage."}, // Rank 1
@@ -2075,7 +2088,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_WarlordMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_WarlordMeleePassive", Name: "Fitness", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields, melee damage, and durability.\nThis krogan regenerates health slowly during combat, restoring 100 health per second.\n\nMelee and kill 2 enemies within 45 seconds to go into a frenzy to increase melee damage, reduce damage taken, and to boost health regeneration for 45 seconds."}, // Rank 1
@@ -2090,7 +2103,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ProtheanMeleePassive", Name: "Ancient Warrior", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomActionMP_ProtheanMeleePassive", Name: "Ancient Warrior", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost health, shields/barriers, melee damage, and durability.\n\nUtilize heavy melee to switch to the powerful Ascension Stance to increase damage and power recharge speed at the expense of increasing the damage taken. This stance lasts 45 seconds.\n\nHealth & Shield Bonus: 15%\nMelee Damage Bonus: 15%\nAscension Damage Bonus: 10%\nAscension Recharge Speed: 5%\nAscension Damage Penalty: 15%"}, // Rank 1
@@ -2108,7 +2121,7 @@ var PowerCatalog = []PowerDef{
 	// DLC Passives (Race/Class) ---------------
 	// MP1
 	{
-		ID: "SFXPowerCustomActionMP_GethPassive", Name: "Geth Hardware", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_GethPassive", Name: "Geth Hardware", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Advanced combat platform fine-tunes powers and weapons, especially geth weapons.\n\nMore power damage.\nMore weapon damage.\nMore geth weapon damage.\nMore strength."}, // Rank 1
@@ -2123,7 +2136,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BatarianPassive", Name: "Batarian Enforcer", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_BatarianPassive", Name: "Batarian Enforcer", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "The destruction of their home system has made the batarians even more ruthless in their struggle for survival.\n\nMore power damage.\nMore weapon damage.\nGreater thermal clip capacity.\nMore strength."}, // Rank 1
@@ -2138,7 +2151,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AsariCommandoPassive", Name: "Asari Commando", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_AsariCommandoPassive", Name: "Asari Commando", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Centuries of rigid training gives the asari greater martial prowess and the mental focus to strengthen their biotics.\n\nLonger power duration.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2153,7 +2166,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_KroganPassive_Vanguard", Name: "Krogan Vanguard", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_KroganPassive_Vanguard", Name: "Krogan Vanguard", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Battle-skills hardened on unforgiving Tuchanka come into play.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2169,7 +2182,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP2
 	{
-		ID: "SFXPowerCustomActionMP_WhipManPassive", Name: "Cerberus Operative", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_WhipManPassive", Name: "Cerberus Operative", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "These operatives had upgrades installed by their former employer Cerberus to dramatically improve biotic and combat skills.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2184,7 +2197,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MaleQuarianPassive", Name: "Quarian Machinist", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_MaleQuarianPassive", Name: "Quarian Machinist", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Built on a lifetime spent defending the flotilla from the geth, combat skills reach new heights.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2199,7 +2212,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_VorchaPassive", Name: "Vorcha Survivor", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_VorchaPassive", Name: "Vorcha Survivor", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "A vorcha's adaptable nature gives them advantages in combat.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2215,7 +2228,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP3
 	{
-		ID: "SFXPowerCustomActionMP_N7EngineerPassive", Name: "N7 Engineer", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_N7EngineerPassive", Name: "N7 Engineer", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Combat skills are perfected to an art with N7 training.\n\nMore power damage.\nMore weapon damage.\nGreater grenade capacity."}, // Rank 1
@@ -2230,7 +2243,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7InfiltratorPassive", Name: "N7 Infiltrator", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_N7InfiltratorPassive", Name: "N7 Infiltrator", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Combat skills are perfected to an art with N7 training.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2245,7 +2258,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7VanguardPassive", Name: "N7 Vanguard", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_N7VanguardPassive", Name: "N7 Vanguard", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Combat skills are perfected to an art with N7 training.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2260,7 +2273,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7SentinelPassive", Name: "N7 Sentinel", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_N7SentinelPassive", Name: "N7 Sentinel", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Combat skills are perfected to an art with N7 training.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2275,7 +2288,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7AdeptPassive", Name: "N7 Adept", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_N7AdeptPassive", Name: "N7 Adept", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP3",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Combat skills are perfected to an art with N7 training.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2291,7 +2304,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP4
 	{
-		ID: "SFXPowerCustomActionMP_VolusPassive", Name: "Volus Mercenary", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_VolusPassive", Name: "Volus Mercenary", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Upgrades to the advanced power armor suit provide enhanced combat abilities.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2306,7 +2319,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AsariPassive_Infiltrator", Name: "Asari Infiltrator", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_AsariPassive_Infiltrator", Name: "Asari Infiltrator", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Centuries of training as a justicar come into focus on the battlefield.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2321,7 +2334,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_AsariPassive_Sentinel", Name: "Asari Sentinel", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_AsariPassive_Sentinel", Name: "Asari Sentinel", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Centuries of training as a justicar come into focus on the battlefield.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2336,7 +2349,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_N7TurianPassive", Name: "N7 Turian", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_N7TurianPassive", Name: "N7 Turian", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "The turian's lethal 26th Armiger Legion is a respected and feared frontline assault squad.\n\nMore weapon damage.\nGreater stability and weapon control.\nMore strength."}, // Rank 1
@@ -2352,7 +2365,7 @@ var PowerCatalog = []PowerDef{
 	},
 	// MP5
 	{
-		ID: "SFXPowerCustomActionMP_FembotPassive", Name: "Geth Juggernaut", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_FembotPassive", Name: "Geth Juggernaut", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "An infiltration unit designed for close-quarters combat.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2367,7 +2380,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_FemTurianPassive", Name: "Turian Cabal", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_FemTurianPassive", Name: "Turian Cabal", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Seasoned by years of hard fighting across the galaxy, combat skills come into their own.\n\nMore weapon damage.\nGreater stability and weapon control.\nMore strength."}, // Rank 1
@@ -2382,7 +2395,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_GethDestroyerPassive", Name: "Geth Destroyer", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_GethDestroyerPassive", Name: "Geth Destroyer", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "This advanced combat platform fine-tunes powers and weapons.\n\nMore weapon damage.\nMore weapon stability and spare ammunition.\nMore strength."}, // Rank 1
@@ -2397,7 +2410,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_MercPassive", Name: "Talon Mercenary", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_MercPassive", Name: "Talon Mercenary", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Years of experience working for hire have honed your combat abilities.\n\nIncrease power and weapon damage. Your battery pack also slowly regenerates a charge that can be consumed to lay Cain Trip Mines or to equip Concussive or Armor-Piercing Arrows."}, // Rank 1
@@ -2412,7 +2425,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_CollectorPassive", Name: "Vengeful Ancient", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_CollectorPassive", Name: "Vengeful Ancient", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Boost biotic and offensive abilities.\nIncrease Collector and Prothean weapon damage.\n\nWeapon Damage Bonus: 2.50%\nCollector/Prothean Weapon Damage: 5%\nPower Damage Bonus: 10%\nWeight Capacity Bonus: 10"},                                                                                                                                                        // Rank 1
@@ -2427,7 +2440,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_WarlordPassive", Name: "Krogan Warlord", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomActionMP_WarlordPassive", Name: "Krogan Warlord", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_CON_MP5",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Battle-skills hardened on unforgiving Tuchanka come into play.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1
@@ -2444,7 +2457,7 @@ var PowerCatalog = []PowerDef{
 
 	//Squadmate Powers ----------------------
 	{
-		ID: "SFXPowerCustomAction_JackPassive", Name: "Subject Zero", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_JackPassive", Name: "Subject Zero", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_EXP_Pack003",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Health & Shield Bonus: 10%\nPower Recharge Speed Bonus: 20%"},
@@ -2459,7 +2472,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_LiaraPassive", Name: "Pure Biotic", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_LiaraPassive", Name: "Pure Biotic", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_EXP_Pack003",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Health & Shield Bonus: 10%\nPower Recharge Speed Bonus: 20%"},
@@ -2474,7 +2487,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_Pull", Name: "Pull (SP)", Picture: "Pull.webp",
+		ID: "SFXPowerCustomAction_Pull", Name: "Pull (SP)", Picture: "Pull.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Yank an opponent helplessly off the ground."},                     // Rank 1
@@ -2489,7 +2502,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_Singularity", Name: "Singularity (SP)", Picture: "Singularity.webp",
+		ID: "SFXPowerCustomAction_Singularity", Name: "Singularity (SP)", Picture: "Singularity.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Create a sphere of dark energy that traps and dangles enemies caught in its field."},                       // Rank 1
@@ -2504,7 +2517,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_Throw", Name: "Throw (SP)", Picture: "Throw.webp",
+		ID: "SFXPowerCustomAction_Throw", Name: "Throw (SP)", Picture: "Throw.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Toss your enemy through the air with this biotic blast."},            // Rank 1
@@ -2519,7 +2532,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_SamaraPassive", Name: "Asari Justicar", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_SamaraPassive", Name: "Asari Justicar", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContentDLC_EXP_Pack003",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Health & Shield Bonus: 10%\nPower Damage Bonus: 20%"},                                                                       // Rank 1
@@ -2534,7 +2547,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_ConcussiveShot", Name: "Concussive Shot (SP)", Picture: "ConcussiveShot.webp",
+		ID: "SFXPowerCustomAction_ConcussiveShot", Name: "Concussive Shot (SP)", Picture: "ConcussiveShot.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Flatten your enemy with a precise blast at short or long range.\n\nEffective against barriers."},                                   // Rank 1
@@ -2549,7 +2562,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_ArmorPiercingAmmo", Name: "Armor-Piercing Ammo", Picture: "ArmorPiercingAmmo.webp",
+		ID: "SFXPowerCustomAction_ArmorPiercingAmmo", Name: "Armor-Piercing Ammo", Picture: "ArmorPiercingAmmo.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "More weapon damage.\nMore damage to armor.\n\nHealth Damage Bonus: +10%\nArmor Damage Bonus: +10%\nArmor Effectiveness: -50%\nPenetration: 0.50 m"},                                                    // Rank 1
@@ -2564,7 +2577,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_GarrusPassive", Name: "Turian Rebel", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_GarrusPassive", Name: "Turian Rebel", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Health & Shield Bonus: 10%\nWeapon Damage Bonus: 20%"},  // Rank 1
@@ -2579,7 +2592,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_IncendiaryAmmo", Name: "Incendiary Ammo", Picture: "IncendiaryAmmo.webp",
+		ID: "SFXPowerCustomAction_IncendiaryAmmo", Name: "Incendiary Ammo", Picture: "IncendiaryAmmo.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2594,7 +2607,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_DisruptorAmmo", Name: "Disruptor Ammo", Picture: "DisruptorAmmo.webp",
+		ID: "SFXPowerCustomAction_DisruptorAmmo", Name: "Disruptor Ammo", Picture: "DisruptorAmmo.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2609,7 +2622,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_GethShieldBoost", Name: "Defense Matrix", Picture: "GethShieldBoost.webp",
+		ID: "SFXPowerCustomAction_GethShieldBoost", Name: "Defense Matrix", Picture: "GethShieldBoost.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2624,7 +2637,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_ProtectorDrone", Name: "Protector Drone", Picture: "ProtectorDrone.webp",
+		ID: "SFXPowerCustomAction_ProtectorDrone", Name: "Protector Drone", Picture: "ProtectorDrone.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2639,7 +2652,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_Cloak_Kasumi", Name: "Shadow Strike", Picture: "Cloak.webp",
+		ID: "SFXPowerCustomAction_Cloak_Kasumi", Name: "Shadow Strike", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2654,7 +2667,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_Slam", Name: "Slam", Picture: "Slam.webp",
+		ID: "SFXPowerCustomAction_Slam", Name: "Slam", Picture: "Slam.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2669,7 +2682,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_TaliPassive", Name: "Quarian Machinist", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_TaliPassive", Name: "Quarian Machinist", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2684,7 +2697,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_WrexPassive", Name: "Warlord", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_WrexPassive", Name: "Warlord", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2699,7 +2712,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_MirandaPassive", Name: "Operative", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_MirandaPassive", Name: "Operative", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2714,7 +2727,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_KaidenPassive", Name: "Alliance Officer", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_KaidenPassive", Name: "Alliance Officer", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2729,7 +2742,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_JacobPassive", Name: "Fitness", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_JacobPassive", Name: "Fitness", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2744,7 +2757,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_AshleyPassive", Name: "Alliance Officer", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_AshleyPassive", Name: "Alliance Officer", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Health & Shield Bonus: 15%\nWeapon Damage Bonus: 15%"}, // Rank 1
@@ -2759,7 +2772,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_EDIPassive", Name: "Cerberus Infiltration", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_EDIPassive", Name: "Cerberus Infiltration", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2774,7 +2787,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_GruntPassive", Name: "Krogan Berserker", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_GruntPassive", Name: "Krogan Berserker", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2789,7 +2802,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_KasumiPassive", Name: "Shadow Master", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_KasumiPassive", Name: "Shadow Master", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2804,7 +2817,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_JimmyPassive", Name: "Veteran", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_JimmyPassive", Name: "Veteran", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2819,7 +2832,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_ProtheanPassive", Name: "Ancient Knowledge", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_ProtheanPassive", Name: "Ancient Knowledge", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2834,7 +2847,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_ZaeedPassive", Name: "Mercenary Training", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_ZaeedPassive", Name: "Mercenary Training", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: ""}, // Rank 1
@@ -2849,7 +2862,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_WarpAmmo", Name: "Warp Ammo", Picture: "Warp.webp",
+		ID: "SFXPowerCustomAction_WarpAmmo", Name: "Warp Ammo", Picture: "Warp.webp", Type: PowerTypeActive,
 		RootPath:           "SFXGameContent",
 		AmmoPowerSpriteDir: "WarpAmmo/sprites/DefineSprite_181",
 		RankDescs: []RankDesc{
@@ -2867,7 +2880,7 @@ var PowerCatalog = []PowerDef{
 
 	// Aliased Powers ----------------------
 	{
-		ID: "SFXPowerCustomAction_N7SoldierMeleePassive", Name: "T5-V Internal Systems", Picture: "MPMeleePassive.webp",
+		ID: "SFXPowerCustomAction_N7SoldierMeleePassive", Name: "T5-V Internal Systems", Picture: "MPMeleePassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Upgrade the T5-V's internal systems to boost health, shields, melee damage, and durability."},                                      // Rank 1
@@ -2882,7 +2895,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_N7SoldierPassive", Name: "T5-V Battlesuit", Picture: "MPPassive.webp",
+		ID: "SFXPowerCustomAction_N7SoldierPassive", Name: "T5-V Battlesuit", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Upgrade the cutting-edge T5-V Battlesuit.\n\nMore power damage.\nMore weapon damage.\nMore strength."}, // Rank 1

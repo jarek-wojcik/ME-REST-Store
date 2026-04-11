@@ -45,6 +45,7 @@ type Spectre struct {
 	UseHelmet             bool         `json:"appearanceHelmet"`        // render helmet on next spawn
 	UseHeadgear           bool         `json:"appearanceHeadgear"`      // render headgear on next spawn
 	Active                bool         `json:"active,omitempty"`        // whether this spectre is set as active
+	ShieldType            string       `json:"shieldType,omitempty"`    // "Shield" or "Barrier"; empty defaults to "Shield"
 	TeamID                string       `json:"teamId,omitempty"`        // non-empty for strike-team members
 	SortOrder             int64        `json:"sortOrder,omitempty"`     // creation time (unix nanos) for ordering within a team
 
