@@ -654,12 +654,8 @@
                                 title="Full auto">A</button>
                     </div>
 
-                    <button class="ml-auto text-[9px] text-gray-600 hover:text-[#00aaff]
-                                   transition-colors cursor-pointer focus:outline-none"
-                            hx-post="{{.WeaponClearURL}}"
-                            hx-target="#{{$cardID}}" hx-swap="outerHTML"
-                            title="Clear weapon">Clear</button>
-                    <button class="text-[9px] text-red-800 hover:text-red-400
+
+                    <button class="ml-auto text-[9px] text-red-800 hover:text-red-400
                                    cursor-pointer focus:outline-none transition-colors"
                             hx-delete="{{.RemoveURL}}"
                             hx-target="#{{$cardID}}" hx-swap="outerHTML"
@@ -681,7 +677,7 @@
                             @click="modalOpen=true">
                         {{if .WeaponDef}}
                         <img id="WeaponPicture-{{.SlotIdx}}" src="{{.WeaponDef.PictureURL}}" alt="{{.WeaponDef.Name}}"
-                             class="h-[9rem] w-auto max-w-[15rem] object-contain flex-shrink-0" style="padding-top: 1rem"/>
+                             class="h-[7rem] w-auto max-w-[15rem] object-contain flex-shrink-0" style="padding-top: 1rem"/>
                         {{else}}
                         <div class="h-20 w-auto flex items-center justify-center flex-shrink-0">
                             <svg class="w-7 h-7 text-gray-700" fill="none" viewBox="0 0 24 24"
