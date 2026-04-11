@@ -24,7 +24,7 @@
             <button @click="renaming=true; $nextTick(() => $refs.nameInput.select())"
                     class="text-[9px] text-gray-600 hover:text-[#00aaff] transition-colors
                            cursor-pointer focus:outline-none flex-shrink-0">
-                rename
+                Rename
             </button>
             {{end}}
         </div>
@@ -265,7 +265,7 @@
                         </span>
                         {{else if $pv.PowerDef}}
                         <span class="text-[11px] font-semibold tracking-wide text-gray-300 leading-none">
-                            {{if $pv.IsBorrowedPower}}<span class="text-[#00aaff]/50 mr-0.5">⊕</span>{{end}}{{$pv.PowerDef.Name}}
+                            {{$pv.PowerDef.Name}}
                         </span>
                         {{else}}
                         <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-700 leading-none italic">
@@ -286,14 +286,22 @@
                                     hx-delete="{{$.ClearBorrowedPowerURL}}"
                                     hx-target="#{{$.CardID}}"
                                     hx-swap="outerHTML"
-                                    title="Remove borrowed power">Remove</button>
-                            {{else if $pv.ChangePowerURL}}
+                                    title="Remove borrowed power">X</button>
+                            {{else if and $pv.ChangePowerURL $pv.PowerDef}}
                             <button class="text-[9px] text-gray-600 hover:text-[#00aaff]
                                            transition-colors cursor-pointer focus:outline-none"
                                     hx-get="{{$pv.ChangePowerURL}}"
                                     hx-target="#modal-body"
                                     hx-swap="innerHTML"
-                                    @click="modalOpen=true">{{if $pv.IsBorrowSlotPlaceholder}}Select{{else if $pv.PowerDef}}Change{{else}}Select{{end}}</button>
+                                    @click="modalOpen=true">Change</button>
+                            {{if $pv.ClearPowerURL}}
+                            <button class="text-[9px] text-red-800 hover:text-red-400
+                                           transition-colors cursor-pointer focus:outline-none"
+                                    hx-delete="{{$pv.ClearPowerURL}}"
+                                    hx-target="#{{$.CardID}}"
+                                    hx-swap="outerHTML"
+                                    title="Remove power">X</button>
+                            {{end}}
                             {{end}}
                         </div>
                     </div>
@@ -575,7 +583,7 @@
                             @click="modalOpen=true">
                         {{if .WeaponDef}}
                         <img id="WeaponPicture-{{.SlotIdx}}" src="{{.WeaponDef.PictureURL}}" alt="{{.WeaponDef.Name}}"
-                             class="h-[10rem] w-auto max-w-[15rem] object-contain flex-shrink-0"/>
+                             class="h-[9rem] w-auto max-w-[15rem] object-contain flex-shrink-0" style="padding-top: 1rem"/>
                         {{else}}
                         <div class="h-20 w-auto flex items-center justify-center flex-shrink-0">
                             <svg class="w-7 h-7 text-gray-700" fill="none" viewBox="0 0 24 24"

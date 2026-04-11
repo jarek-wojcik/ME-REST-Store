@@ -64,6 +64,7 @@ type PowerSlotView struct {
 	IsPassive               bool            // true when the slot is a passive slot (by position, not power type)
 	IsFirstPassive          bool            // true for the first passive slot in display order (triggers section header)
 	ChangePowerURL          string          // GET: opens power-change flow for this slot
+	ClearPowerURL           string          // DELETE: clears this power slot (empty when slot is already empty or non-clearable)
 }
 
 // WeaponSlotView pairs a persisted WeaponSlot with resolved catalog defs and
@@ -872,6 +873,31 @@ func addSpectreBorrowedPower(db *bolt.DB, spectreID, powerID, charID string) (mo
 	return s, err
 }
 
+// clearSpectrePower clears the PowerID and resets the specified power slot.
+func clearSpectrePower(db *bolt.DB, spectreID string, slotIdx int) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		if slotIdx < 0 || slotIdx >= len(s.Powers) {
+			return fmt.Errorf("invalid slot index")
+		}
+		s.Powers[slotIdx] = model.PowerSlot{}
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
 // clearSpectreBorrowedPower removes the borrowed power slot.
 func clearSpectreBorrowedPower(db *bolt.DB, spectreID string) (model.Spectre, error) {
 	var s model.Spectre
@@ -1097,6 +1123,9 @@ func spectrePowerViews(s model.Spectre, urls CardURLs) []PowerSlotView {
 			SlotBaseURL:    fmt.Sprintf("%s/%d", urls.PowerBaseURL, i),
 			IsPassive:      isSlotPassive,
 			ChangePowerURL: base + fmt.Sprintf("/power/%d/change/selector%s", i, typeParam),
+		}
+		if pd != nil {
+			v.ClearPowerURL = fmt.Sprintf("%s/power/%d", base, i)
 		}
 		if isSlotPassive {
 			passiveViews = append(passiveViews, v)

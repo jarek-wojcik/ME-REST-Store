@@ -511,6 +511,23 @@ func (c *SpectreController) Register() {
 		c.renderCard(w, s, false)
 	})
 
+	// DELETE /api/spectres/{id}/power/{slot}
+	// Clears the power from the specified slot and returns the refreshed spectre card.
+	http.HandleFunc("DELETE /api/spectres/{id}/power/{slot}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
+		var slotIdx int
+		if _, err := fmt.Sscan(r.PathValue("slot"), &slotIdx); err != nil || slotIdx < 0 || slotIdx > 4 {
+			respondText(w, 400, "slot must be 0–4\n")
+			return
+		}
+		s, err := clearSpectrePower(c.db, spectreID, slotIdx)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
 	// POST /api/spectres/{id}/power/{slot}/rank/{rank}
 	http.HandleFunc("POST /api/spectres/{id}/power/{slot}/rank/{rank}", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
