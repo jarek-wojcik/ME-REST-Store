@@ -263,10 +263,7 @@
 
         <!-- Spectre tab -->
         <div x-show="activeTab === 'spectre'" x-cloak class="tab-panel">
-            <div class="flex items-center gap-3 mb-6">
-                <h1 class="text-xl font-semibold tracking-wide text-gray-100">Operatives</h1>
-                <span class="text-xs text-me-blue border border-me-border px-2 py-0.5 rounded tracking-widest uppercase">Character Management</span>
-            </div>
+        
             <div hx-get="/api/spectres"
                  hx-trigger="load"
                  hx-swap="outerHTML">
@@ -276,10 +273,6 @@
 
         <!-- Strike Teams tab -->
         <div x-show="activeTab === 'striketeams'" x-cloak class="tab-panel">
-            <div class="flex items-center gap-3 mb-6">
-                <h1 class="text-xl font-semibold tracking-wide text-gray-100">Strike Teams</h1>
-                <span class="text-xs text-me-blue border border-me-border px-2 py-0.5 rounded tracking-widest uppercase">Bot Management</span>
-            </div>
             <!-- Team management panel: loaded once by HTMX on page load -->
             <div hx-get="/api/teams"
                  hx-trigger="load"
@@ -290,19 +283,11 @@
 
         <!-- Mission Parameters tab -->
         <div x-show="activeTab === 'missionparams'" x-cloak class="tab-panel">
-            <div class="flex items-center gap-3 mb-6">
-                <h1 class="text-xl font-semibold tracking-wide text-gray-100">Mission Parameters</h1>
-                <span class="text-xs text-me-blue border border-me-border px-2 py-0.5 rounded tracking-widest uppercase">Match Settings</span>
-            </div>
             <div class="text-gray-500 text-sm">— Content coming soon —</div>
         </div>
 
         <!-- Portal Settings tab -->
         <div x-show="activeTab === 'settings'" x-cloak class="tab-panel">
-            <div class="flex items-center gap-3 mb-6">
-                <h1 class="text-xl font-semibold tracking-wide text-gray-100">Portal Settings</h1>
-                <span class="text-xs text-me-blue border border-me-border px-2 py-0.5 rounded tracking-widest uppercase">Display</span>
-            </div>
 
             <div class="max-w-md">
                 <div class="flex flex-col gap-4 p-5 rounded-xl border border-me-border bg-me-panel">
