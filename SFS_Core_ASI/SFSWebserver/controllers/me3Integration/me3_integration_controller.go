@@ -163,14 +163,6 @@ func qualifiedModID(id string) string {
 	return id
 }
 
-func flatPower(p model.PowerSlot) string {
-	powerID := p.PowerID
-	if def := model.PowerByID(p.PowerID); def != nil {
-		powerID = def.RootPath + "." + p.PowerID
-	}
-	return fmt.Sprintf("%s:%d:%s:%s:%s:%s", powerID, p.Rank, p.Evolution[0], p.Evolution[1], p.Evolution[2], p.KitID)
-}
-
 // pawnTypeForCharacter resolves the PawnType for a given character ID.
 func pawnTypeForCharacter(characterID string) string {
 	if def := model.CharacterByID(characterID); def != nil {
@@ -214,71 +206,6 @@ func qualifySpectre(s *model.Spectre) {
 	s.WeaponConsumableID = qualifiedConsumablePath(s.WeaponConsumableID)
 	s.AmmoConsumableID = qualifiedConsumablePath(s.AmmoConsumableID)
 	s.GearConsumableID = qualifiedConsumablePath(s.GearConsumableID)
-}
-
-// spectreToFlat serialises a Spectre as a single pipe-delimited line.
-// Format: id|name|characterId|appearanceCharId|w0Id|w0Mod1|w0Mod2|w0FireMode|w1Id|w1Mod1|w1Mod2|w1FireMode|w2Id|w2Mod1|w2Mod2|w2FireMode|w3Id|w3Mod1|w3Mod2|w3FireMode|w4Id|w4Mod1|w4Mod2|w4FireMode|power0|power1|power2|power3|power4|borrowedPower|armorConsumableId|weaponConsumableId|ammoConsumableId|gearConsumableId|pawnType
-// Weapon/mod/power ID fields are qualified as "RootPath.ID".
-// Power fields use the sub-format: rootPath.powerId:rank:evo0:evo1:evo2  (empty string when slot absent)
-// Weapon slots are always emitted as 5 groups of 4 fields (padded with empty strings).
-func spectreToFlat(s *model.Spectre) string {
-	weaponFields := make([]string, 20) // 5 slots × 4 fields
-	for i := range s.Weapons {
-		if i >= 5 {
-			break
-		}
-		weaponFields[i*4+0] = qualifiedWeaponID(s.Weapons[i].WeaponID)
-		weaponFields[i*4+1] = qualifiedModID(s.Weapons[i].Mod1ID)
-		weaponFields[i*4+2] = qualifiedModID(s.Weapons[i].Mod2ID)
-		weaponFields[i*4+3] = string(s.Weapons[i].FireMode)
-	}
-	powers := make([]string, 5)
-	for i := range powers {
-		if i < len(s.Powers) {
-			powers[i] = flatPower(s.Powers[i])
-		}
-	}
-	borrowed := ""
-	if s.BorrowedPower != nil {
-		borrowed = flatPower(*s.BorrowedPower)
-	}
-	fields := []string{
-		s.ID, s.Name, qualifiedCharacterID(s.CharacterID), qualifiedCharacterID(s.AppearanceCharacterID),
-	}
-	fields = append(fields, weaponFields...)
-	fields = append(fields, powers[0], powers[1], powers[2], powers[3], powers[4])
-	fields = append(fields,
-		borrowed,
-		qualifiedConsumablePath(s.ArmorConsumableID), qualifiedConsumablePath(s.WeaponConsumableID), qualifiedConsumablePath(s.AmmoConsumableID), qualifiedConsumablePath(s.GearConsumableID),
-		appearancePawnType(s),
-		fmt.Sprintf("%t", s.UseHelmet),
-		fmt.Sprintf("%t", s.UseHeadgear),
-	)
-	return strings.Join(fields, "|")
-}
-
-// teamSpectreToFlat serialises a strike-team Spectre as a single pipe-delimited line.
-// Same format as spectreToFlat.
-func teamSpectreToFlat(s model.Spectre) string {
-	return spectreToFlat(&s)
-}
-
-// strikeTeamToFlat serialises a StrikeTeamResponse as newline-separated lines.
-// Line 0: teamId|teamName
-// Lines 1-N: one spectre per line (teamSpectreToFlat format)
-func strikeTeamToFlat(r *StrikeTeamResponse) string {
-	lines := make([]string, 0, 1+len(r.Spectres))
-	lines = append(lines, r.ID+"|"+r.Name)
-	for _, s := range r.Spectres {
-		lines = append(lines, teamSpectreToFlat(s))
-	}
-	return strings.Join(lines, "\n")
-}
-
-func respondFlat(w http.ResponseWriter, text string) {
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	_, _ = fmt.Fprint(w, text)
 }
 
 func respondJSON(w http.ResponseWriter, status int, v any) {
@@ -349,8 +276,8 @@ func respondNotFound(w http.ResponseWriter, msg string) {
 
 // Register wires the ME3 integration routes onto the default mux.
 func (c *Me3IntegrationController) Register() {
-	// GET /activeCharacter[?flat=true]
-	// Returns the active Spectre as JSON, or as a flat pipe-delimited string when flat=true.
+	// GET /activeCharacter
+	// Returns the active Spectre as JSON.
 	// Returns 404 if no spectre is set as active.
 	http.HandleFunc("GET /activeCharacter", func(w http.ResponseWriter, r *http.Request) {
 		spectre, err := c.activeSpectre()
@@ -362,10 +289,6 @@ func (c *Me3IntegrationController) Register() {
 			respondNotFound(w, "no active character")
 			return
 		}
-		if r.URL.Query().Get("flat") == "true" {
-			respondFlat(w, spectreToFlat(spectre))
-			return
-		}
 		spectre.AppearancePawnType = model.PawnType(appearancePawnType(spectre))
 		qualifySpectre(spectre)
 		if r.URL.Query().Get("simpleJson") == "true" {
@@ -375,9 +298,8 @@ func (c *Me3IntegrationController) Register() {
 		respondJSON(w, http.StatusOK, spectre)
 	})
 
-	// GET /activeStrikeTeam[?flat=true]
-	// Returns the active Team and its Bots as JSON, or as newline-separated flat lines when flat=true.
-	// Line 0: teamId|teamName  Lines 1-N: one bot per line (id|characterId|weaponId|mod1|mod2|power0..power4)
+	// GET /activeStrikeTeam
+	// Returns the active Team and its Spectres as JSON.
 	// Returns 404 if no team is set as active.
 	http.HandleFunc("GET /activeStrikeTeam", func(w http.ResponseWriter, r *http.Request) {
 		team, err := c.activeStrikeTeam()
@@ -387,10 +309,6 @@ func (c *Me3IntegrationController) Register() {
 		}
 		if team == nil {
 			respondNotFound(w, "no active strike team")
-			return
-		}
-		if r.URL.Query().Get("flat") == "true" {
-			respondFlat(w, strikeTeamToFlat(team))
 			return
 		}
 		for i := range team.Spectres {

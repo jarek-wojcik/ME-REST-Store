@@ -35,6 +35,7 @@ type Spectre struct {
 	CharacterID           string       `json:"characterId"`
 	AppearanceCharacterID string       `json:"appearanceCharId,omitempty"`   // visual override; base class unchanged
 	AppearancePawnType    PawnType     `json:"appearancePawnType,omitempty"` // pawn type derived from the character class
+	ShieldType            string       `json:"shieldType,omitempty"`         // "Shield" or "Barrier"; empty defaults to "Shield"
 	Weapons               []WeaponSlot `json:"weapons,omitempty"`            // up to 5 weapon slots
 	ArmorConsumableID     string       `json:"armorConsumableId,omitempty"`  // equipped armor consumable
 	WeaponConsumableID    string       `json:"weaponConsumableId,omitempty"` // equipped weapon consumable
@@ -45,9 +46,9 @@ type Spectre struct {
 	UseHelmet             bool         `json:"appearanceHelmet"`        // render helmet on next spawn
 	UseHeadgear           bool         `json:"appearanceHeadgear"`      // render headgear on next spawn
 	Active                bool         `json:"active,omitempty"`        // whether this spectre is set as active
-	ShieldType            string       `json:"shieldType,omitempty"`    // "Shield" or "Barrier"; empty defaults to "Shield"
-	TeamID                string       `json:"teamId,omitempty"`        // non-empty for strike-team members
-	SortOrder             int64        `json:"sortOrder,omitempty"`     // creation time (unix nanos) for ordering within a team
+
+	TeamID    string `json:"teamId,omitempty"`    // non-empty for strike-team members
+	SortOrder int64  `json:"sortOrder,omitempty"` // creation time (unix nanos) for ordering within a team
 
 	// Deprecated individual weapon fields — read-only for migration purposes.
 	// Populated only when reading old DB records; never written after migration.
