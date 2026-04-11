@@ -556,12 +556,37 @@
         </div>
         {{end}}
 
-        <!-- Powers section: 2-per-row grid, collapses to 1 when card is narrow.
+        <!-- Powers section: active powers (including borrowed) first, then passive powers.
              Each cell needs ~490px (72px name + 9×64px sprite buttons + gaps).
              CSS grid auto-fill handles the responsive wrapping natively. -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(490px,1fr));">
         {{range $i, $pv := .PowerViews}}
-        {{if $pv.PowerDef}}
+        {{if $pv.IsFirstPassive}}
+        </div><!-- end active powers grid -->
+        <div class="px-3 py-1 bg-[#060a14] border-b border-[#1e3a5f]">
+            <span class="text-[9px] font-bold tracking-widest uppercase text-[#00aaff]/50">Passive Powers</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(490px,1fr));">
+        {{end}}
+        {{if $pv.IsBorrowSlotPlaceholder}}
+        <div class="flex items-center justify-center border-b border-r border-[#1e3a5f] min-h-[4.5rem]">
+            <button class="group/add flex items-center gap-2 px-3 py-2 rounded-lg
+                           border border-dashed border-[#1e3a5f] text-gray-600
+                           hover:border-[#00aaff]/50 hover:text-[#00aaff]
+                           transition-all duration-150 cursor-pointer focus:outline-none"
+                    hx-get="{{$pv.ChangePowerURL}}"
+                    hx-target="#modal-body"
+                    hx-swap="innerHTML"
+                    @click="modalOpen=true"
+                    title="Borrow an active power from another character class">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span class="tracking-wide uppercase text-[10px] font-semibold">Borrow Active Power</span>
+            </button>
+        </div>
+        {{else if $pv.PowerDef}}
         <div class="flex items-start gap-1.5 px-3 py-1.5 border-b border-r border-[#1e3a5f]">
 
             <!-- Power name (+ borrowed badge / remove button for spectre borrowed slot) -->
@@ -703,25 +728,6 @@
             </div>
         </div>
         {{end}}
-        {{end}}
-        {{if and .AddPowerURL (not .HasBorrowedPower)}}
-        <div class="flex items-center justify-center border-b border-r border-[#1e3a5f] min-h-[4.5rem]">
-            <button class="group/add flex items-center gap-2 px-3 py-2 rounded-lg
-                           border border-dashed border-[#1e3a5f] text-gray-600
-                           hover:border-[#00aaff]/50 hover:text-[#00aaff]
-                           transition-all duration-150 cursor-pointer focus:outline-none"
-                    hx-get="{{.AddPowerURL}}"
-                    hx-target="#modal-body"
-                    hx-swap="innerHTML"
-                    @click="modalOpen=true"
-                    title="Borrow a power from another character class">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24"
-                     stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                </svg>
-                <span class="tracking-wide uppercase text-[10px] font-semibold">Borrow Power</span>
-            </button>
-        </div>
         {{end}}
         </div><!-- end powers grid -->
 

@@ -71,9 +71,6 @@ func (p PowerDef) DescForRank(rank int) string {
 	return "Rank " + strconv.Itoa(rank)
 }
 
-
-}
-
 // PowerCatalog lists every unique power icon set.
 var PowerCatalog = []PowerDef{
 

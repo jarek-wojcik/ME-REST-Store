@@ -459,6 +459,19 @@ func passiveSortKey(p *PowerDef) int {
 	return 0
 }
 
+// AllPowersWithSourceOfType returns the same list as AllPowersWithSource but
+// filtered to only include powers whose Type matches t.
+func AllPowersWithSourceOfType(t PowerType) []PowerWithSource {
+	full := AllPowersWithSource()
+	result := full[:0:0]
+	for _, p := range full {
+		if p.Power != nil && p.Power.Type == t {
+			result = append(result, p)
+		}
+	}
+	return result
+}
+
 // AllPowersWithSource returns every unique power across the catalog, each
 // paired with the first character that has it.  Deduplication is by PowerID.
 // Results are sorted alphabetically by name, with all MPPassive powers after

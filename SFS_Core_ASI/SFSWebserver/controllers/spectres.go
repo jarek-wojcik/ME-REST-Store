@@ -53,14 +53,17 @@ type CardURLs struct {
 // flattened evolution fields for easy template access.
 type PowerSlotView struct {
 	model.PowerSlot
-	PowerDef        *model.PowerDef // nil if PowerID is empty or unknown
-	SlotIdx         int             // 0–4, used in API route paths
-	Evo0            string          // Evolution[0]: "A" or "B" (rank 4 choice)
-	Evo1            string          // Evolution[1]: "A" or "B" (rank 5 choice)
-	Evo2            string          // Evolution[2]: "A" or "B" (rank 6 choice)
-	SlotBaseURL     string          // e.g. "/api/spectres/abc123/power/0"
-	IsBorrowedPower bool            // true for the borrowed-power slot
-	ChangePowerURL  string          // GET: opens power-change flow for this slot
+	PowerDef                *model.PowerDef // nil if PowerID is empty or unknown
+	SlotIdx                 int             // 0–4, used in API route paths
+	Evo0                    string          // Evolution[0]: "A" or "B" (rank 4 choice)
+	Evo1                    string          // Evolution[1]: "A" or "B" (rank 5 choice)
+	Evo2                    string          // Evolution[2]: "A" or "B" (rank 6 choice)
+	SlotBaseURL             string          // e.g. "/api/spectres/abc123/power/0"
+	IsBorrowedPower         bool            // true for the borrowed-power slot (has real power)
+	IsBorrowSlotPlaceholder bool            // true when slot 4 exists but no borrowed power is set yet
+	IsPassive               bool            // true when the slot is a passive slot (by position, not power type)
+	IsFirstPassive          bool            // true for the first passive slot in display order (triggers section header)
+	ChangePowerURL          string          // GET: opens power-change flow for this slot
 }
 
 // WeaponSlotView pairs a persisted WeaponSlot with resolved catalog defs and
@@ -1048,30 +1051,89 @@ func updateSpectreShieldType(db *bolt.DB, spectreID, shieldType string) (model.S
 	return s, err
 }
 
-// spectrePowerViews builds the full []PowerSlotView for a spectre, including
-// the borrowed power as the last entry when one is set.
+// isPassivePower reports whether a PowerDef is passive-typed (Passive or MeleePassive).
+func isPassivePower(pd *model.PowerDef) bool {
+	if pd == nil {
+		return false
+	}
+	return pd.Type == model.PowerTypePassive || pd.Type == model.PowerTypeMeleePassive
+}
+
+// powerTypeForSlot returns the required PowerType for a fixed-position slot,
+// or an empty string when the slot has no type constraint.
+// Slot 3 = MPPassive; slot 4 = MPMeleePassive.
+func powerTypeForSlot(slotIdx int) model.PowerType {
+	switch slotIdx {
+	case 3:
+		return model.PowerTypePassive
+	case 4:
+		return model.PowerTypeMeleePassive
+	default:
+		return model.PowerTypeActive
+	}
+}
+
+// spectrePowerViews builds the full []PowerSlotView for a spectre.
+// Display order: active slots (0-2), borrowed power or placeholder (slot 4 visually),
+// then passive slots (3-4 in DB). Slot position — not power type — determines the bucket
+// so that empty slots still land in the correct group.
 func spectrePowerViews(s model.Spectre, urls CardURLs) []PowerSlotView {
 	base := "/api/spectres/" + s.ID
-	normal := powerViews(s.Powers, urls.PowerBaseURL)
-	for i := range normal {
-		normal[i].ChangePowerURL = base + fmt.Sprintf("/power/%d/change/selector", i)
+
+	var activeViews, passiveViews []PowerSlotView
+	for i, ps := range s.Powers {
+		pd := model.PowerByID(ps.PowerID)
+		// Use slot index to classify — isPassivePower(nil) would mis-classify empty passive slots.
+		isSlotPassive := i >= 3
+		requiredType := powerTypeForSlot(i)
+		typeParam := "?type=" + string(requiredType)
+		v := PowerSlotView{
+			PowerSlot:      ps,
+			PowerDef:       pd,
+			SlotIdx:        i,
+			Evo0:           ps.Evolution[0],
+			Evo1:           ps.Evolution[1],
+			Evo2:           ps.Evolution[2],
+			SlotBaseURL:    fmt.Sprintf("%s/%d", urls.PowerBaseURL, i),
+			IsPassive:      isSlotPassive,
+			ChangePowerURL: base + fmt.Sprintf("/power/%d/change/selector%s", i, typeParam),
+		}
+		if isSlotPassive {
+			passiveViews = append(passiveViews, v)
+		} else {
+			activeViews = append(activeViews, v)
+		}
 	}
-	if s.BorrowedPower == nil {
-		return normal
+
+	// Always add position 4: either the real borrowed power or an empty placeholder.
+	// This ensures the slot — and the passive separator — are always visible.
+	if s.BorrowedPower != nil {
+		bp := *s.BorrowedPower
+		activeViews = append(activeViews, PowerSlotView{
+			PowerSlot:       bp,
+			PowerDef:        model.PowerByID(bp.PowerID),
+			SlotIdx:         len(s.Powers),
+			Evo0:            bp.Evolution[0],
+			Evo1:            bp.Evolution[1],
+			Evo2:            bp.Evolution[2],
+			SlotBaseURL:     base + "/borrowed-power",
+			IsBorrowedPower: true,
+			ChangePowerURL:  base + "/borrowed-power/selector",
+		})
+	} else {
+		activeViews = append(activeViews, PowerSlotView{
+			SlotIdx:                 len(s.Powers),
+			IsBorrowSlotPlaceholder: true,
+			ChangePowerURL:          urls.AddPowerURL,
+		})
 	}
-	bp := *s.BorrowedPower
-	borrowedView := PowerSlotView{
-		PowerSlot:       bp,
-		PowerDef:        model.PowerByID(bp.PowerID),
-		SlotIdx:         len(s.Powers),
-		Evo0:            bp.Evolution[0],
-		Evo1:            bp.Evolution[1],
-		Evo2:            bp.Evolution[2],
-		SlotBaseURL:     base + "/borrowed-power",
-		IsBorrowedPower: true,
-		ChangePowerURL:  base + "/borrowed-power/selector",
+
+	// Mark the first passive slot so the template can render a section header.
+	if len(passiveViews) > 0 {
+		passiveViews[0].IsFirstPassive = true
 	}
-	return append(normal, borrowedView)
+
+	return append(activeViews, passiveViews...)
 }
 
 // weaponSlotViews builds a WeaponSlotView for each weapon slot, resolving

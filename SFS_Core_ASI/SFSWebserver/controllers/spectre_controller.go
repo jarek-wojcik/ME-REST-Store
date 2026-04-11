@@ -557,20 +557,21 @@ func (c *SpectreController) Register() {
 	})
 
 	// GET /api/spectres/{id}/borrowed-power/selector
-	// Returns the flat power-picker partial (skips character selection).
+	// Returns the flat power-picker partial filtered to Active-typed powers only.
 	http.HandleFunc("GET /api/spectres/{id}/borrowed-power/selector", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = c.tmpl.ExecuteTemplate(w, "spectre_borrow_power_flat", map[string]any{
-			"Heading":      "Borrow a Power",
-			"Powers":       model.AllPowersWithSource(),
+			"Heading":      "Borrow an Active Power",
+			"Powers":       model.AllPowersWithSourceOfType(model.PowerTypeActive),
 			"PostURLBase":  "/api/spectres/" + spectreID + "/borrowed-power/add",
 			"TargetCardID": "spectre-card-" + spectreID,
 		})
 	})
 
 	// GET /api/spectres/{id}/borrowed-power/from-char/{charId}
-	// Returns the power picker for the selected source character (step 2).
+	// Returns the power picker for the selected source character (step 2),
+	// filtered to Active-typed powers only.
 	http.HandleFunc("GET /api/spectres/{id}/borrowed-power/from-char/{charId}", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
 		charID := r.PathValue("charId")
@@ -581,8 +582,12 @@ func (c *SpectreController) Register() {
 		}
 		var powers []*model.PowerDef
 		for _, pid := range charDef.PowerIDs {
-			if pid != "" {
-				powers = append(powers, model.PowerByID(pid))
+			if pid == "" {
+				continue
+			}
+			pd := model.PowerByID(pid)
+			if pd != nil && pd.Type == model.PowerTypeActive {
+				powers = append(powers, pd)
 			}
 		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -597,12 +602,18 @@ func (c *SpectreController) Register() {
 
 	// POST /api/spectres/{id}/borrowed-power/add/{charId}/{powerID}
 	// Persists the chosen borrowed power and returns the refreshed spectre card.
+	// Only Active-typed powers may be borrowed.
 	http.HandleFunc("POST /api/spectres/{id}/borrowed-power/add/{charId}/{powerID}", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
 		charID := r.PathValue("charId")
 		powerID := r.PathValue("powerID")
-		if model.PowerByID(powerID) == nil {
+		pd := model.PowerByID(powerID)
+		if pd == nil {
 			respondText(w, 400, "unknown power\n")
+			return
+		}
+		if pd.Type != model.PowerTypeActive {
+			respondText(w, 400, "only Active powers may be borrowed\n")
 			return
 		}
 		s, err := addSpectreBorrowedPower(c.db, spectreID, powerID, charID)
@@ -669,13 +680,28 @@ func (c *SpectreController) Register() {
 
 	// GET /api/spectres/{id}/power/{slot}/change/selector
 	// Opens the flat power-picker for changing one normal power slot.
+	// The optional ?type= query param (Active, Passive, MeleePassive) restricts the list.
 	http.HandleFunc("GET /api/spectres/{id}/power/{slot}/change/selector", func(w http.ResponseWriter, r *http.Request) {
 		spectreID := r.PathValue("id")
 		slot := r.PathValue("slot")
+		typeFilter := model.PowerType(r.URL.Query().Get("type"))
+		var powers []model.PowerWithSource
+		var heading string
+		switch typeFilter {
+		case model.PowerTypePassive:
+			powers = model.AllPowersWithSourceOfType(model.PowerTypePassive)
+			heading = "Change Passive Power"
+		case model.PowerTypeMeleePassive:
+			powers = model.AllPowersWithSourceOfType(model.PowerTypeMeleePassive)
+			heading = "Change Melee Passive Power"
+		default:
+			powers = model.AllPowersWithSourceOfType(model.PowerTypeActive)
+			heading = "Change Active Power"
+		}
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		_ = c.tmpl.ExecuteTemplate(w, "spectre_borrow_power_flat", map[string]any{
-			"Heading":      "Change Power",
-			"Powers":       model.AllPowersWithSource(),
+			"Heading":      heading,
+			"Powers":       powers,
 			"PostURLBase":  "/api/spectres/" + spectreID + "/power/" + slot + "/change/set",
 			"TargetCardID": "spectre-card-" + spectreID,
 		})
@@ -719,8 +745,15 @@ func (c *SpectreController) Register() {
 			respondText(w, 400, "slot must be 0–4\n")
 			return
 		}
-		if model.PowerByID(powerID) == nil {
+		pd := model.PowerByID(powerID)
+		if pd == nil {
 			respondText(w, 400, "unknown power\n")
+			return
+		}
+		// Enforce type constraints for the fixed passive slots.
+		requiredType := powerTypeForSlot(slotIdx)
+		if requiredType != "" && pd.Type != requiredType {
+			respondText(w, 400, "power type does not match slot\n")
 			return
 		}
 		s, err := updateSpectrePowerID(c.db, spectreID, slotIdx, powerID, charID)

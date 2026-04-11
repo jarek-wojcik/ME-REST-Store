@@ -244,28 +244,26 @@
                 <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/50
                              select-none">◈ Powers</span>
                 <div class="flex-1 h-px bg-[#1a2d4a]"></div>
-                {{if and .AddPowerURL (not .HasBorrowedPower)}}
-                <button class="text-[8px] font-semibold text-gray-600 hover:text-[#00aaff]
-                               transition-colors cursor-pointer focus:outline-none"
-                        hx-get="{{.AddPowerURL}}"
-                        hx-target="#modal-body"
-                        hx-swap="innerHTML"
-                        @click="modalOpen=true"
-                        title="Borrow a power from another character class">
-                    + Borrow
-                </button>
-                {{end}}
             </div>
 
-            <!-- Power entries -->
+            <!-- Power entries — active powers first, then passive powers -->
             <div class="flex flex-col divide-y divide-[#1a2d4a]/50">
                 {{$cardID := .CardID}}
                 {{range $i, $pv := .PowerViews}}
+                {{if $pv.IsFirstPassive}}
+                <div class="px-4 py-1 bg-[#060a14]">
+                    <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/40 select-none">Passive Powers</span>
+                </div>
+                {{end}}
                 <div class="px-3 py-2.5">
 
                     <!-- Power name row -->
                     <div class="flex items-center gap-1.5 mb-2">
-                        {{if $pv.PowerDef}}
+                        {{if $pv.IsBorrowSlotPlaceholder}}
+                        <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-700 leading-none italic">
+                            Active Power 4
+                        </span>
+                        {{else if $pv.PowerDef}}
                         <span class="text-[11px] font-semibold tracking-wide text-gray-300 leading-none">
                             {{if $pv.IsBorrowedPower}}<span class="text-[#00aaff]/50 mr-0.5">⊕</span>{{end}}{{$pv.PowerDef.Name}}
                         </span>
@@ -295,7 +293,7 @@
                                     hx-get="{{$pv.ChangePowerURL}}"
                                     hx-target="#modal-body"
                                     hx-swap="innerHTML"
-                                    @click="modalOpen=true">{{if $pv.PowerDef}}Change{{else}}Select{{end}}</button>
+                                    @click="modalOpen=true">{{if $pv.IsBorrowSlotPlaceholder}}Borrow{{else if $pv.PowerDef}}Change{{else}}Select{{end}}</button>
                             {{end}}
                         </div>
                     </div>
