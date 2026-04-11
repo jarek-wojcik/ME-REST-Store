@@ -52,6 +52,38 @@ func (c *SpectreController) renderCard(w http.ResponseWriter, s model.Spectre, f
 	})
 }
 
+// xpProgressPct returns the 0-100 percentage of XP progress toward the next
+// level threshold. For level 1, the base is 0 (not 100k) so that characters
+// below the level-1 gate still show meaningful bar progress.
+func xpProgressPct(level, xp int) int {
+	var base int
+	if level >= 2 {
+		base = model.XPForLevel(level)
+	}
+	next := model.XPForLevel(level + 1)
+	gap := next - base
+	if gap <= 0 {
+		return 100
+	}
+	pct := (xp - base) * 100 / gap
+	if pct < 0 {
+		return 0
+	}
+	if pct > 100 {
+		return 100
+	}
+	return pct
+}
+
+// formatXP returns xp formatted with thousand-separator commas.
+func formatXP(xp int) string {
+	s := fmt.Sprintf("%d", xp)
+	for i := len(s) - 3; i > 0; i -= 3 {
+		s = s[:i] + "," + s[i:]
+	}
+	return s
+}
+
 // renderCardSheet renders a standalone spectre using the character-sheet template.
 func (c *SpectreController) renderCardSheet(w http.ResponseWriter, s model.Spectre) {
 	def := model.CharacterByID(s.CharacterID)
@@ -75,7 +107,11 @@ func (c *SpectreController) renderCardSheet(w http.ResponseWriter, s model.Spect
 		AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
 		GearConsumableDef:   model.ConsumableByID(s.GearConsumableID),
 		PowerViews:          spectrePowerViews(s, urls),
-		CardURLs:            urls,
+		SkillViews:          spectreSkillViews(s, s.ID),
+		XPProgressPct:        xpProgressPct(s.Level, s.XP),
+		XPDisplay:            formatXP(s.XP),
+		XPNextLevelDisplay:   formatXP(model.XPForLevel(s.Level + 1)),
+		CardURLs:             urls,
 	})
 }
 
@@ -868,4 +904,6 @@ func (c *SpectreController) Register() {
 		}
 		c.renderCard(w, s, false)
 	})
+
+	c.RegisterSkillRoutes()
 }

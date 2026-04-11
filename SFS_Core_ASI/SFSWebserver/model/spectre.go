@@ -47,6 +47,14 @@ type Spectre struct {
 	UseHeadgear           bool         `json:"appearanceHeadgear"`      // render headgear on next spawn
 	Active                bool         `json:"active,omitempty"`        // whether this spectre is set as active
 
+	// Progression
+	XP    int `json:"xp,omitempty"`    // total accumulated XP
+	Level int `json:"level,omitempty"` // current level (1-based; 0 = not yet levelled)
+
+	// Spectre skill system.
+	SkillLevels map[string]int `json:"skillLevels,omitempty"` // keyed by SkillID; absent key means level 0
+	SkillPoints int            `json:"skillPoints,omitempty"` // unspent skill points
+
 	TeamID    string `json:"teamId,omitempty"`    // non-empty for strike-team members
 	SortOrder int64  `json:"sortOrder,omitempty"` // creation time (unix nanos) for ordering within a team
 
@@ -88,4 +96,19 @@ func (s *Spectre) MigrateWeapons() {
 	s.LegacyWeapon2ID = ""
 	s.LegacyWeapon2Mod1 = ""
 	s.LegacyWeapon2Mod2 = ""
+}
+
+// MigrateSkills initialises SkillLevels and SkillPoints for spectres that were
+// created before the skill system was introduced. A nil SkillLevels map is the
+// sentinel that indicates the record has never been touched by the skill system,
+// so we grant the full starting pool. This is a no-op when skills are already
+// initialised (even when SkillPoints == 0 but SkillLevels is non-nil).
+func (s *Spectre) MigrateSkills() {
+	if s.SkillLevels == nil {
+		s.SkillLevels = make(map[string]int)
+		s.SkillPoints = InitialSkillPoints
+	}
+	if s.Level == 0 {
+		s.Level = 1
+	}
 }

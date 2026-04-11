@@ -57,6 +57,47 @@ Open `FemShep-ME3-ASI-Plugins.sln` in Visual Studio. The `.asi` output is rename
 - Alpine.js handles ephemeral local state only (active tab, modal open/close). HTMX handles all server round-trips.
 - Styling uses Tailwind CSS utility classes via CDN with an ME3-themed palette (`me-blue: #00aaff`).
 
+## Spectre Progression System (XP, Levels, Skill Points)
+
+### Data model (`model/spectre.go`)
+- `XP int` — cumulative XP total, persisted; starts at 0.
+- `Level int` — current level, persisted; **always starts at 1** (never 0). `MigrateSkills()` upgrades old records with `Level == 0` to `Level = 1`.
+- `SkillPoints int` — unspent points; starts at `InitialSkillPoints = 10`.
+- `SkillLevels map[string]int` — keyed by `SkillDef.ID`; absent key means level 0.
+
+### XP curve (`model/xp.go`)
+- Level 1 starts at **100,000 XP**.
+- XP required to move from level N to N+1: `round(250000 × 1.0157031729^(N−1))`.
+- `XPForLevel(n int) int` — returns the total cumulative XP threshold to reach level n.
+- `xpToNext(n int) int` — returns the XP gap between level n and n+1.
+- `LevelForXP(xp int) int` — reverse lookup; returns 0 if XP < 100,000 (i.e. below level 1 threshold).
+
+### Skill catalog (`model/spectreSkills.go`)
+- 12 `SkillDef` entries: `Pistols`, `SMGs`, `AssaultRifles`, `Shotguns`, `SniperRifles`, `MeleeCombat`, `Gadgets`, `Tech`, `Biotics`, `Barrier` (BarrierOnly), `Shielding` (ShieldOnly), `SpectreTraining`.
+- `MaxSkillLevel = 10` per skill. Each level costs 1 skill point.
+- `BarrierOnly: true` / `ShieldOnly: true` — the UI conditionally shows one or the other based on the Spectre's `ShieldType`.
+- The catalog is a compile-time static slice — never stored in DB. `SkillByID(id)` resolves at render time.
+
+### Granting XP (`controllers/spectres.go`)
+- `GrantXPToActive(db, xpAmount) (GrantXPResult, error)` — finds the active spectre, adds XP, recalculates level via `LevelForXP`, awards **1 skill point per level gained**, and persists.
+- `GrantXPResult` carries `.Spectre` (updated) and `.LevelsGained int`.
+- Returns `fmt.Errorf("no active spectre")` when nothing is active (caller maps to HTTP 404).
+
+### ME3 integration endpoint
+- `GET /grantXP?XP=<amount>` in `controllers/me3Integration/me3_integration_controller.go`.
+- Returns JSON: `{ xp, level, levelsGained, skillPoints, xpToNextLevel }`.
+- 400 for missing/non-positive XP, 404 for no active spectre, 500 for DB errors.
+
+### UI (`controllers/spectre_skills.go` + `templates/partials/character_card_sheet.html`)
+- `SkillView` / `SkillSegment` — view types built by `spectreSkillViews(s, spectreID)`.
+- Each segment button fires `hx-post` to `/api/spectres/{id}/skill/{skillId}/set/{level}`.
+- Routes also exist for `.../up` and `.../down` (delta ±1).
+- Hover descriptions use `$store.tooltip.show(title, desc, $el)` — same pattern as power evolutions.
+- Segment CSS: `.skill-segment`, `.skill-segment-filled` (green `rgb(76,225,125)`), `.skill-segment-empty`.
+- The character name header always shows **"Level X"** in `#00aaff` blue alongside the name.
+
+---
+
 ## C++ / Overlay Conventions
 
 - **Never put C++ objects with destructors in the same function as `__try`** — see the `onAttach` / `onAttachImpl` split in `SFSCoreASI.cpp`.

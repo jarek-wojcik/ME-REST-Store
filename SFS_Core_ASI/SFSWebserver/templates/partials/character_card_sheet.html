@@ -1,4 +1,8 @@
 {{define "character_card_sheet"}}
+<style>
+  .skill-segment { width: 20px; height: 20px; }  .skill-segment-filled   { background-color: rgb(76,225,125); border-color: rgba(76,225,125,0.6); box-shadow: 0 0 4px rgba(76,225,125,0.45); }
+  .skill-segment-empty    { background-color: #060a12; border-color: rgba(26,45,74,0.8); }
+  .skill-segment-empty:hover { border-color: rgba(76,225,125,0.3); }</style>
 <div id="{{.CardID}}"
      x-data="{ renaming: false }"
      class="w-fit rounded-xl overflow-hidden border border-[#1a2d4a]
@@ -7,71 +11,85 @@
     <!-- ══════════════════════════════════════════════════════════════
          SHEET HEADER — operative name + meta strip
          ══════════════════════════════════════════════════════════════ -->
-    <div class="relative flex items-center gap-3 px-5 py-3
+    <div class="relative px-5 pt-3 pb-0
                 bg-[#0a0e1a] border-b-2 border-[#1a2d4a]">
 
         <!-- Accent rule (top edge glow) -->
         <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r
                     from-transparent via-[#00aaff]/30 to-transparent pointer-events-none"></div>
 
-        <!-- ── Name display mode ── -->
-        <div x-show="!renaming" class="flex items-center gap-3 min-w-0 flex-1">
-            <div class="w-1 h-5 rounded-sm bg-[#00aaff] flex-shrink-0"></div>
-            <span class="text-sm font-bold tracking-[0.15em] uppercase text-white truncate"
-                  title="{{.Name}}">{{.Name}}</span>
+        <!-- ── Top row: name + actions ── -->
+        <div class="flex items-center gap-3 pb-2">
 
+            <!-- ── Name display mode ── -->
+            <div x-show="!renaming" class="flex items-center gap-3 min-w-0 flex-1">
+                <div class="w-1 h-5 rounded-sm bg-[#00aaff] flex-shrink-0"></div>
+                <span class="text-sm font-bold tracking-[0.15em] uppercase text-white truncate"
+                      title="{{.Name}}">{{.Name}}</span>
+                <span class="text-[11px] font-semibold text-[#00aaff] flex-shrink-0">Level {{.Level}}</span>
+                <!-- XP bar group: current | bar | next -->
+                <span class="text-[10px] text-gray-500 flex-shrink-0">{{.XPDisplay}}</span>
+                <div class="w-24 flex-shrink-0 h-[5px] bg-[#0d1525] border border-[#1a2d4a] rounded-sm overflow-hidden">
+                    <div class="h-full bg-[#00aaff] transition-all duration-500 rounded-sm"
+                         style="width: {{.XPProgressPct}}%; box-shadow: 0 0 6px rgba(0,170,255,0.5);"></div>
+                </div>
+                <span class="text-[10px] text-gray-500 flex-shrink-0">{{.XPNextLevelDisplay}}</span>
+            </div>
+
+            <!-- ── Name edit mode ── -->
             {{if .RenameURL}}
-            <button @click="renaming=true; $nextTick(() => $refs.nameInput.select())"
-                    class="text-[9px] text-gray-600 hover:text-[#00aaff] transition-colors
-                           cursor-pointer focus:outline-none flex-shrink-0">
-                Rename
-            </button>
+            <form x-show="renaming" class="flex items-center gap-1.5 flex-1 min-w-0"
+                  hx-post="{{.RenameURL}}"
+                  hx-target="#{{.CardID}}"
+                  hx-swap="outerHTML"
+                  @submit="renaming=false">
+                <input type="text" name="name" value="{{.Name}}"
+                       x-ref="nameInput" maxlength="40"
+                       class="flex-1 min-w-0 bg-[#0a0e1a] border border-[#00aaff]/50 rounded
+                              px-2 py-0.5 text-sm text-gray-200 focus:outline-none
+                              focus:border-[#00aaff] transition-colors"/>
+                <button type="submit"
+                        class="text-[10px] font-semibold text-[#00aaff] hover:text-white
+                               cursor-pointer focus:outline-none transition-colors">Save</button>
+                <button type="button" @click="renaming=false"
+                        class="text-[10px] text-gray-600 hover:text-gray-300
+                               cursor-pointer focus:outline-none transition-colors">Cancel</button>
+            </form>
             {{end}}
-        </div>
 
-        <!-- ── Name edit mode ── -->
-        {{if .RenameURL}}
-        <form x-show="renaming" class="flex items-center gap-1.5 flex-1 min-w-0"
-              hx-post="{{.RenameURL}}"
-              hx-target="#{{.CardID}}"
-              hx-swap="outerHTML"
-              @submit="renaming=false">
-            <input type="text" name="name" value="{{.Name}}"
-                   x-ref="nameInput" maxlength="40"
-                   class="flex-1 min-w-0 bg-[#0a0e1a] border border-[#00aaff]/50 rounded
-                          px-2 py-0.5 text-sm text-gray-200 focus:outline-none
-                          focus:border-[#00aaff] transition-colors"/>
-            <button type="submit"
-                    class="text-[10px] font-semibold text-[#00aaff] hover:text-white
-                           cursor-pointer focus:outline-none transition-colors">Save</button>
-            <button type="button" @click="renaming=false"
-                    class="text-[10px] text-gray-600 hover:text-gray-300
-                           cursor-pointer focus:outline-none transition-colors">Cancel</button>
-        </form>
-        {{end}}
-
-        <!-- ── Right-side action buttons ── -->
-        <div class="flex items-center gap-2 flex-shrink-0">
-            {{if .SetActiveURL}}
-            <button class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase
-                           rounded border transition-all cursor-pointer focus:outline-none
-                           {{if .IsActive}}bg-green-950/60 border-green-700/60 text-green-400{{else}}border-[#1a2d4a] text-gray-500 hover:border-green-700/50 hover:text-green-400{{end}}"
-                    hx-post="{{.SetActiveURL}}"
-                    hx-target="#spectre-card-panel"
-                    hx-swap="innerHTML">
-                {{if .IsActive}}● Active{{else}}Set Active{{end}}
-            </button>
-            {{end}}
-            <button class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase
-                           rounded border border-red-900/50 text-red-500
-                           hover:bg-red-950/40 hover:border-red-700/60 hover:text-red-300
-                           transition-all cursor-pointer focus:outline-none"
-                    hx-delete="{{.DeleteURL}}"
-                    hx-target="{{.DeleteTarget}}"
-                    hx-swap="innerHTML"
-                    hx-confirm="{{.DeleteConfirm}}">
-                Dismiss
-            </button>
+            <!-- ── Right-side action buttons ── -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+                {{if .RenameURL}}
+                <button x-show="!renaming"
+                        @click="renaming=true; $nextTick(() => $refs.nameInput.select())"
+                        class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase
+                               rounded border border-[#1a2d4a] text-gray-500
+                               hover:border-[#00aaff]/50 hover:text-[#00aaff]
+                               transition-all cursor-pointer focus:outline-none">
+                    Rename
+                </button>
+                {{end}}
+                {{if .SetActiveURL}}
+                <button class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase
+                               rounded border transition-all cursor-pointer focus:outline-none
+                               {{if .IsActive}}bg-green-950/60 border-green-700/60 text-green-400{{else}}border-[#1a2d4a] text-gray-500 hover:border-green-700/50 hover:text-green-400{{end}}"
+                        hx-post="{{.SetActiveURL}}"
+                        hx-target="#spectre-card-panel"
+                        hx-swap="innerHTML">
+                    {{if .IsActive}}● Active{{else}}Set Active{{end}}
+                </button>
+                {{end}}
+                <button class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase
+                               rounded border border-red-900/50 text-red-500
+                               hover:bg-red-950/40 hover:border-red-700/60 hover:text-red-300
+                               transition-all cursor-pointer focus:outline-none"
+                        hx-delete="{{.DeleteURL}}"
+                        hx-target="{{.DeleteTarget}}"
+                        hx-swap="innerHTML"
+                        hx-confirm="{{.DeleteConfirm}}">
+                    Dismiss
+                </button>
+            </div>
         </div>
     </div>
 
@@ -79,7 +97,7 @@
          THREE-SECTION BODY
          ══════════════════════════════════════════════════════════════ -->
     <div class="grid divide-x divide-[#1a2d4a]"
-         style="grid-template-columns: 270px minmax(0,370px) minmax(0,370px); max-width: 1210px;">
+         style="grid-template-columns: 270px 400px minmax(0,370px) minmax(0,370px); max-width: 1490px;">
 
         <!-- ╔══════════════════════════════╗
              ║  SECTION A — CHARACTER       ║
@@ -234,7 +252,87 @@
         </div>
 
         <!-- ╔══════════════════════════════╗
-             ║  SECTION B — POWERS          ║
+             ║  SECTION B — SPECTRE SKILLS  ║
+             ╚══════════════════════════════╝ -->
+        <div class="flex flex-col">
+
+            <!-- Section header with points pool -->
+            <div class="px-4 py-1.5 bg-[#0a0f1c] border-b border-[#1a2d4a]
+                        flex items-center gap-2">
+                <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/50
+                             select-none">◈ Spectre Skills</span>
+                <div class="flex-1 h-px bg-[#1a2d4a]"></div>
+                <span class="text-[8px] font-bold tracking-[0.15em] select-none
+                             {{if gt .SkillPoints 0}}text-[#00aaff]{{else}}text-gray-600{{end}}">Pts:&nbsp;{{.SkillPoints}}</span>
+            </div>
+
+            <!-- Skill rows -->
+            <div class="flex flex-col divide-y divide-[#1a2d4a]/30 overflow-y-auto flex-1">
+                {{range .SkillViews}}
+                <div class="flex items-center gap-1.5 px-2 py-1.5">
+
+                    <!-- Skill name -->
+                    <span class="text-[9px] font-semibold text-gray-400 leading-tight
+                                 w-[82px] flex-shrink-0 text-right truncate"
+                          title="{{.Def.Name}}">{{.Def.Name}}</span>
+
+                    <!-- 10 level blocks — click to set level; hover shows $store.tooltip -->
+                    <div class="flex gap-px flex-shrink-0">
+                        {{range .Segments}}
+                        <button type="button"
+                                class="skill-segment rounded-[2px] border transition-all
+                                       focus:outline-none cursor-pointer
+                                       {{if .Filled}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
+                                hx-post="{{.SetLevelURL}}"
+                                hx-target="#{{$.CardID}}"
+                                hx-swap="outerHTML"
+                                data-tooltip-title="Level {{.LevelNum}}"
+                                data-tooltip-desc="{{.Description}}"
+                                @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                @mouseleave="$store.tooltip.hide()">
+                        </button>
+                        {{end}}
+                    </div>
+
+                    <!-- +/- controls -->
+                    <div class="flex items-center gap-0.5 flex-shrink-0 ml-auto">
+                        {{if .CanLevelDown}}
+                        <button class="w-[18px] h-[18px] flex items-center justify-center
+                                       text-[11px] font-bold rounded
+                                       border border-[#1a2d4a] text-gray-600
+                                       hover:text-[#00aaff] hover:border-[#00aaff]/50
+                                       transition-colors cursor-pointer focus:outline-none"
+                                hx-post="{{.LevelDownURL}}"
+                                hx-target="#{{$.CardID}}"
+                                hx-swap="outerHTML"
+                                title="Refund point">−</button>
+                        {{else}}
+                        <span class="w-[18px] h-[18px]"></span>
+                        {{end}}
+
+                        {{if .CanLevelUp}}
+                        <button class="w-[18px] h-[18px] flex items-center justify-center
+                                       text-[11px] font-bold rounded
+                                       border border-[#1a2d4a] text-[#00aaff]/60
+                                       hover:text-[#00aaff] hover:border-[#00aaff]/50 hover:bg-[#0d1829]
+                                       transition-colors cursor-pointer focus:outline-none"
+                                hx-post="{{.LevelUpURL}}"
+                                hx-target="#{{$.CardID}}"
+                                hx-swap="outerHTML"
+                                title="Spend point">+</button>
+                        {{else}}
+                        <span class="w-[18px] h-[18px]"></span>
+                        {{end}}
+                    </div>
+
+                </div>
+                {{end}}
+            </div>
+
+        </div><!-- /section B skills -->
+
+        <!-- ╔══════════════════════════════╗
+             ║  SECTION C — POWERS          ║
              ╚══════════════════════════════╝ -->
         <div class="flex flex-col">
 

@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strconv"
 	"strings"
 
+	"sfswebserver/controllers"
 	"sfswebserver/model"
 
 	bolt "go.etcd.io/bbolt"
@@ -268,6 +270,90 @@ func flattenValue(prefix string, v interface{}, sb *strings.Builder) {
 	}
 }
 
+// flattenSpectreOrdered writes a spectre's flat key:value lines in the order:
+//  1. Identity & appearance: id, name, characterId, appearanceCharId,
+//     appearanceHelmet, appearanceHeadgear, appearancePawnType
+//  2. Progression: level, xp, shieldType, skillLevels.*, skillPoints
+//  3. Powers
+//  4. Weapons
+//  5. Consumables: armorConsumableId, weaponConsumableId, ammoConsumableId, gearConsumableId
+//
+// Any keys not listed explicitly are emitted last, sorted alphabetically.
+func flattenSpectreOrdered(s *model.Spectre, w http.ResponseWriter, status int) {
+	b, err := json.Marshal(s)
+	if err != nil {
+		http.Error(w, "marshal error", http.StatusInternalServerError)
+		return
+	}
+	var m map[string]interface{}
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.UseNumber()
+	if err := dec.Decode(&m); err != nil {
+		http.Error(w, "decode error", http.StatusInternalServerError)
+		return
+	}
+
+	var sb strings.Builder
+
+	emitKey := func(k string) {
+		if v, ok := m[k]; ok {
+			flattenValue(k, v, &sb)
+		}
+	}
+
+	// 1. Identity & appearance.
+	for _, k := range []string{
+		"id", "name", "active",
+		"characterId", "appearanceCharId", "appearancePawnType",
+		"appearanceHelmet", "appearanceHeadgear",
+	} {
+		emitKey(k)
+	}
+
+	// 2. Progression.
+	for _, k := range []string{"level", "xp", "shieldType", "skillLevels", "skillPoints"} {
+		emitKey(k)
+	}
+
+	// 3. Powers.
+	emitKey("powers")
+
+	// 4. Weapons.
+	emitKey("weapons")
+
+	// 5. Consumables.
+	for _, k := range []string{
+		"armorConsumableId", "weaponConsumableId", "ammoConsumableId", "gearConsumableId",
+	} {
+		emitKey(k)
+	}
+
+	// Remaining keys not covered above, sorted.
+	known := map[string]bool{
+		"id": true, "name": true, "active": true,
+		"characterId": true, "appearanceCharId": true, "appearancePawnType": true,
+		"appearanceHelmet": true, "appearanceHeadgear": true,
+		"level": true, "xp": true, "shieldType": true, "skillLevels": true, "skillPoints": true,
+		"powers": true, "weapons": true,
+		"armorConsumableId": true, "weaponConsumableId": true,
+		"ammoConsumableId": true, "gearConsumableId": true,
+	}
+	var rest []string
+	for k := range m {
+		if !known[k] {
+			rest = append(rest, k)
+		}
+	}
+	sort.Strings(rest)
+	for _, k := range rest {
+		flattenValue(k, m[k], &sb)
+	}
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(status)
+	_, _ = fmt.Fprint(w, sb.String())
+}
+
 func respondNotFound(w http.ResponseWriter, msg string) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(http.StatusNotFound)
@@ -291,8 +377,14 @@ func (c *Me3IntegrationController) Register() {
 		}
 		spectre.AppearancePawnType = model.PawnType(appearancePawnType(spectre))
 		qualifySpectre(spectre)
+		// Remove skill levels that are 0 — they add noise without meaning.
+		for k, v := range spectre.SkillLevels {
+			if v == 0 {
+				delete(spectre.SkillLevels, k)
+			}
+		}
 		if r.URL.Query().Get("simpleJson") == "true" {
-			respondSimpleJSON(w, http.StatusOK, spectre)
+			flattenSpectreOrdered(spectre, w, http.StatusOK)
 			return
 		}
 		respondJSON(w, http.StatusOK, spectre)
@@ -320,5 +412,38 @@ func (c *Me3IntegrationController) Register() {
 			return
 		}
 		respondJSON(w, http.StatusOK, team)
+	})
+
+	// GET /grantXP?XP=<amount>
+	// Awards XP to the currently active spectre, advancing their level (and
+	// granting skill points) as warranted by the XP curve.
+	// Returns a JSON object with the updated spectre and levels gained.
+	http.HandleFunc("GET /grantXP", func(w http.ResponseWriter, r *http.Request) {
+		xpStr := r.URL.Query().Get("XP")
+		if xpStr == "" {
+			respondJSON(w, http.StatusBadRequest, map[string]string{"error": "XP parameter is required"})
+			return
+		}
+		xpAmount, err := strconv.Atoi(xpStr)
+		if err != nil || xpAmount <= 0 {
+			respondJSON(w, http.StatusBadRequest, map[string]string{"error": "XP must be a positive integer"})
+			return
+		}
+		result, err := controllers.GrantXPToActive(c.db, xpAmount)
+		if err != nil {
+			status := http.StatusInternalServerError
+			if err.Error() == "no active spectre" {
+				status = http.StatusNotFound
+			}
+			respondJSON(w, status, map[string]string{"error": err.Error()})
+			return
+		}
+		respondJSON(w, http.StatusOK, map[string]any{
+			"xp":            result.Spectre.XP,
+			"level":         result.Spectre.Level,
+			"levelsGained":  result.LevelsGained,
+			"skillPoints":   result.Spectre.SkillPoints,
+			"xpToNextLevel": model.XPForLevel(result.Spectre.Level + 1),
+		})
 	})
 }

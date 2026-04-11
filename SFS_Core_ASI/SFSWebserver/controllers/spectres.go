@@ -100,6 +100,10 @@ type SpectreView struct {
 	AmmoConsumableDef   *model.ConsumableDef // equipped ammo consumable; nil when slot is empty
 	GearConsumableDef   *model.ConsumableDef // equipped gear consumable; nil when slot is empty
 	PowerViews          []PowerSlotView
+	SkillViews          []SkillView
+	XPProgressPct        int    // 0-100, progress toward next level threshold
+	XPDisplay            string // formatted total XP, e.g. "12,345"
+	XPNextLevelDisplay   string // formatted XP threshold for next level, e.g. "350,000"
 	CardURLs
 }
 
@@ -268,6 +272,7 @@ func listSpectres(db *bolt.DB) ([]model.Spectre, error) {
 				return err
 			}
 			s.MigrateWeapons()
+			s.MigrateSkills()
 			spectres = append(spectres, s)
 			return nil
 		})
@@ -290,6 +295,7 @@ func listSpectresForTeam(db *bolt.DB, teamID string) ([]model.Spectre, error) {
 				return err
 			}
 			s.MigrateWeapons()
+			s.MigrateSkills()
 			if s.TeamID == teamID {
 				spectres = append(spectres, s)
 			}
@@ -318,6 +324,7 @@ func getSpectre(db *bolt.DB, spectreID string) (model.Spectre, error) {
 			return err
 		}
 		s.MigrateWeapons()
+		s.MigrateSkills()
 		return nil
 	})
 	return s, err
@@ -332,6 +339,9 @@ func createSpectre(db *bolt.DB, name string) (model.Spectre, error) {
 		Name:        name,
 		CharacterID: defaultChar,
 		Powers:      []model.PowerSlot{{}, {}, {}, {}, {}},
+		SkillLevels: make(map[string]int),
+		SkillPoints: model.InitialSkillPoints,
+		Level:       1,
 	}
 	data, err := json.Marshal(s)
 	if err != nil {
@@ -412,6 +422,9 @@ func createTeamSpectre(db *bolt.DB, teamID, charID string) (model.Spectre, error
 		TeamID:      teamID,
 		SortOrder:   time.Now().UnixNano(),
 		Powers:      defaultPowersForChar(charID),
+		SkillLevels: make(map[string]int),
+		SkillPoints: model.InitialSkillPoints,
+		Level:       1,
 	}
 	data, err := json.Marshal(s)
 	if err != nil {
@@ -1075,6 +1088,65 @@ func updateSpectreShieldType(db *bolt.DB, spectreID, shieldType string) (model.S
 		return b.Put([]byte(spectreID), data)
 	})
 	return s, err
+}
+
+// GrantXPResult reports what changed when XP is awarded.
+type GrantXPResult struct {
+	Spectre      model.Spectre
+	LevelsGained int // number of levels gained in this grant (0 = no level-up)
+}
+
+// GrantXPToActive finds the active spectre, adds xpAmount, advances its level
+// as many times as the new total warrants, and awards one skill point per level
+// gained. Returns the updated spectre and how many levels were gained.
+func GrantXPToActive(db *bolt.DB, xpAmount int) (GrantXPResult, error) {
+	var result GrantXPResult
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		if b == nil {
+			return fmt.Errorf("no spectres bucket")
+		}
+		// Find the active spectre's key and value.
+		var key []byte
+		var s model.Spectre
+		if err := b.ForEach(func(k, v []byte) error {
+			var tmp model.Spectre
+			if err := json.Unmarshal(v, &tmp); err != nil {
+				return err
+			}
+			if tmp.Active {
+				key = append([]byte{}, k...)
+				s = tmp
+			}
+			return nil
+		}); err != nil {
+			return err
+		}
+		if key == nil {
+			return fmt.Errorf("no active spectre")
+		}
+		s.MigrateWeapons()
+		s.MigrateSkills()
+
+		oldLevel := model.LevelForXP(s.XP)
+		s.XP += xpAmount
+		newLevel := model.LevelForXP(s.XP)
+
+		levelsGained := newLevel - oldLevel
+		if levelsGained < 0 {
+			levelsGained = 0
+		}
+		s.Level = newLevel
+		s.SkillPoints += levelsGained
+
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		result = GrantXPResult{Spectre: s, LevelsGained: levelsGained}
+		return b.Put(key, data)
+	})
+	return result, err
 }
 
 // isPassivePower reports whether a PowerDef is passive-typed (Passive or MeleePassive).
