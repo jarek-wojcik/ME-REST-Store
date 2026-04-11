@@ -101,9 +101,9 @@ type SpectreView struct {
 	GearConsumableDef   *model.ConsumableDef // equipped gear consumable; nil when slot is empty
 	PowerViews          []PowerSlotView
 	SkillViews          []SkillView
-	XPProgressPct        int    // 0-100, progress toward next level threshold
-	XPDisplay            string // formatted total XP, e.g. "12,345"
-	XPNextLevelDisplay   string // formatted XP threshold for next level, e.g. "350,000"
+	XPProgressPct       int    // 0-100, progress toward next level threshold
+	XPDisplay           string // formatted total XP, e.g. "12,345"
+	XPNextLevelDisplay  string // formatted XP threshold for next level, e.g. "350,000"
 	CardURLs
 }
 

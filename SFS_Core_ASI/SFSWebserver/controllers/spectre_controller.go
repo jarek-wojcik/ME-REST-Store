@@ -108,10 +108,10 @@ func (c *SpectreController) renderCardSheet(w http.ResponseWriter, s model.Spect
 		GearConsumableDef:   model.ConsumableByID(s.GearConsumableID),
 		PowerViews:          spectrePowerViews(s, urls),
 		SkillViews:          spectreSkillViews(s, s.ID),
-		XPProgressPct:        xpProgressPct(s.Level, s.XP),
-		XPDisplay:            formatXP(s.XP),
-		XPNextLevelDisplay:   formatXP(model.XPForLevel(s.Level + 1)),
-		CardURLs:             urls,
+		XPProgressPct:       xpProgressPct(s.Level, s.XP),
+		XPDisplay:           formatXP(s.XP),
+		XPNextLevelDisplay:  formatXP(model.XPForLevel(s.Level + 1)),
+		CardURLs:            urls,
 	})
 }
 
