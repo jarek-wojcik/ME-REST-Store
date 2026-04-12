@@ -332,10 +332,10 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Vorcha ------------------------------------------------------------
 	{ID: "SoldierVorcha", IDLook: "VorchaDefault", Name: "Vorcha Soldier", SubClass: "Soldier", Species: []Species{SpeciesVorcha}, PictureFile: "MP_Vorcha.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Bloodlust", "SFXPowerCustomActionMP_Flamer", "SFXPowerCustomActionMP_Carnage", "SFXPowerCustomActionMP_VorchaPassive", "SFXPowerCustomActionMP_VorchaMeleePassive"},
-		RootPath: "BioChar_DLC_MP2_MPPlayers.Archetypes", HasUniqueHeavyMelee: true, HasUniqueDodge: true},
+		RootPath: "BioChar_DLC_MP2_MPPlayers.Archetypes"},
 	{ID: "EngineerVorcha", IDLook: "VorchaDefault", Name: "Vorcha Engineer", SubClass: "Engineer", Species: []Species{SpeciesVorcha}, PictureFile: "MP_VorchaENG.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BatarianNet", "SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_Bloodlust", "SFXPowerCustomActionMP_VorchaPassive", "SFXPowerCustomActionMP_VorchaMeleePassive"},
-		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Engineer_Vorcha"},
+		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Engineer_Vorcha", HasUniqueHeavyMelee: true, HasUniqueDodge: true},
 	{ID: "SentinelVorcha", IDLook: "VorchaDefault", Name: "Vorcha Sentinel", SubClass: "Sentinel", Species: []Species{SpeciesVorcha}, PictureFile: "MP_VorchaENG.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Bloodlust", "SFXPowerCustomActionMP_Flamer", "SFXPowerCustomActionMP_BioticGrenade", "SFXPowerCustomActionMP_VorchaPassive", "SFXPowerCustomActionMP_VorchaMeleePassive"},
 		RootPath: "BioChar_DLC_MP2_MPPlayers.Archetypes"},
