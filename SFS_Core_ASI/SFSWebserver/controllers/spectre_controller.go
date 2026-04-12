@@ -393,14 +393,23 @@ func (c *SpectreController) Register() {
 	// POST /api/spectres/{id}/heavy-melee/{charId}
 	// Sets the heavy melee archetype override, stored as RootPath.ArchetypeID.
 	// Only characters with HasUniqueHeavyMelee are valid; other fields are unchanged.
+	// When the chosen character has BuggedHeavyMelee set, a warning is shown first;
+	// the player can still confirm the assignment via ?force=1.
 	http.HandleFunc("POST /api/spectres/{id}/heavy-melee/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
 		charID := r.PathValue("charId")
 		def := model.CharacterByID(charID)
 		if def == nil || !def.HasUniqueHeavyMelee {
 			respondText(w, 400, "unknown or ineligible character\n")
 			return
 		}
-		s, err := updateSpectreHeavyMelee(c.db, r.PathValue("id"), charID)
+		if def.BuggedHeavyMelee && r.URL.Query().Get("force") != "1" {
+			respondBuggedOverride(w, c.tmpl, def.Name+" Heavy Melee", def.BuggedCustomActionMessage,
+				"/api/spectres/"+spectreID+"/heavy-melee/"+charID+"?force=1",
+				"spectre-card-"+spectreID)
+			return
+		}
+		s, err := updateSpectreHeavyMelee(c.db, spectreID, charID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
@@ -411,14 +420,23 @@ func (c *SpectreController) Register() {
 	// POST /api/spectres/{id}/light-melee/{charId}
 	// Sets the light melee archetype override, stored as RootPath.ArchetypeID.
 	// Only characters with HasUniqueLightMelee are valid; other fields are unchanged.
+	// When the chosen character has BuggedLightMelee set, a warning is shown first;
+	// the player can still confirm the assignment via ?force=1.
 	http.HandleFunc("POST /api/spectres/{id}/light-melee/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
 		charID := r.PathValue("charId")
 		def := model.CharacterByID(charID)
 		if def == nil || !def.HasUniqueLightMelee {
 			respondText(w, 400, "unknown or ineligible character\n")
 			return
 		}
-		s, err := updateSpectreLightMelee(c.db, r.PathValue("id"), charID)
+		if def.BuggedLightMelee && r.URL.Query().Get("force") != "1" {
+			respondBuggedOverride(w, c.tmpl, def.Name+" Light Melee", def.BuggedCustomActionMessage,
+				"/api/spectres/"+spectreID+"/light-melee/"+charID+"?force=1",
+				"spectre-card-"+spectreID)
+			return
+		}
+		s, err := updateSpectreLightMelee(c.db, spectreID, charID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
@@ -429,11 +447,20 @@ func (c *SpectreController) Register() {
 	// POST /api/spectres/{id}/dodge/{charId}
 	// Sets the dodge archetype override, stored as RootPath.ArchetypeID.
 	// Only characters with HasUniqueDodge are valid; other fields are unchanged.
+	// When the chosen character has BuggedDodge set, a warning is shown first;
+	// the player can still confirm the assignment via ?force=1.
 	http.HandleFunc("POST /api/spectres/{id}/dodge/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		spectreID := r.PathValue("id")
 		charID := r.PathValue("charId")
 		def := model.CharacterByID(charID)
 		if def == nil || !def.HasUniqueDodge {
 			respondText(w, 400, "unknown or ineligible character\n")
+			return
+		}
+		if def.BuggedDodge && r.URL.Query().Get("force") != "1" {
+			respondBuggedOverride(w, c.tmpl, def.Name+" Dodge", def.BuggedCustomActionMessage,
+				"/api/spectres/"+spectreID+"/dodge/"+charID+"?force=1",
+				"spectre-card-"+spectreID)
 			return
 		}
 		s, err := updateSpectreDodge(c.db, r.PathValue("id"), charID)

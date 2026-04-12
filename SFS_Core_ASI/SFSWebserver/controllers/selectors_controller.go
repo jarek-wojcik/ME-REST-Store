@@ -85,6 +85,7 @@ func (c *SelectorsController) Register() {
 				"TargetSwap":      targetSwap,
 				"Characters":      model.HeavyMeleeCharacters(),
 				"ShowSubclass":    true,
+				"BuggedKind":      "heavy-melee",
 			})
 		} else if kind == "spectre-light-melee" {
 			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{
@@ -94,6 +95,7 @@ func (c *SelectorsController) Register() {
 				"TargetSwap":      targetSwap,
 				"Characters":      model.LightMeleeCharacters(),
 				"ShowSubclass":    true,
+				"BuggedKind":      "light-melee",
 			})
 		} else if kind == "spectre-dodge" {
 			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{
@@ -103,6 +105,7 @@ func (c *SelectorsController) Register() {
 				"TargetSwap":      targetSwap,
 				"Characters":      model.DodgeCharacters(),
 				"ShowSubclass":    true,
+				"BuggedKind":      "dodge",
 			})
 		} else {
 			_ = c.tmpl.ExecuteTemplate(w, "character_selector", map[string]any{

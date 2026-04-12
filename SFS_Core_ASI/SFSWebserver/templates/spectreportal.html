@@ -202,6 +202,7 @@
       }"
       @sp-notify.window="notify($event.detail.message, $event.detail.type)"
       @sp-confirm.window="openConfirm($event.detail.message, $event.detail.issueRequest)"
+      @sp-reopen-modal.window="modalOpen=true"
       @keydown.escape.window="if (confirmDialog.open) { resolveConfirm(false) } else { modalOpen=false }">
 
     <!-- Zoom root: dimensions shrink to (100/scale)vw × (100/scale)vh so that after

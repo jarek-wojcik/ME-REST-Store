@@ -12,6 +12,7 @@ var SFSPortalAsyncLoader asyncLoader;
 public event simulated function HandlePostAdd()
 {
     asyncLoader = Outer.GetModule(Class'SFSPortalAsyncLoader');
+    default.bDebug = TRUE;
 }
 public function MigrateCustomActions(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
@@ -61,6 +62,7 @@ function OnDodgePawnLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         {
             log(Self.Name, "  Slot " $ i $ " <- " $ SourceMP.PlayerClass.CustomActionClasses[i], Outer);
             TargetMP.CustomActionClasses[i] = SourceMP.PlayerClass.CustomActionClasses[i];
+            HandleVorchaDodge(TargetMP.CustomActionClasses[i]);
             TargetMP.VerifyCAHasBeenInstanced(i);
         }
     }
@@ -133,6 +135,36 @@ function OnLightMeleePawnLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         }
     }
     log(Self.Name, "OnLightMeleePawnLoaded: Done", Outer);
+}
+public function HandleVorchaDodge(Class<BioCustomAction> vorchaDodge)
+{
+    local Class<SFXCustomAction_VorchaEvadeBackwards_Shared> vorchaBackwards;
+    local Class<SFXCustomAction_VorchaEvadeForward_Shared> vorchaForward;
+    local Class<SFXCustomAction_VorchaEvadeLeft_Shared> vorchaLeft;
+    local Class<SFXCustomAction_VorchaEvadeRight_Shared> vorchaRight;
+    local SFXAnimSetCookSpec AnimInfo;
+    
+    if (Class<SFXCustomAction_VorchaEvadeBackwards_Shared>(vorchaDodge) != None)
+    {
+        AnimInfo = Class<SFXCustomAction_VorchaEvadeBackwards_Shared>(vorchaDodge).default.AnimInfo;
+    }
+    else if (Class<SFXCustomAction_VorchaEvadeForward_Shared>(vorchaDodge) != None)
+    {
+        AnimInfo = Class<SFXCustomAction_VorchaEvadeForward_Shared>(vorchaDodge).default.AnimInfo;
+    }
+    else if (Class<SFXCustomAction_VorchaEvadeLeft_Shared>(vorchaDodge) != None)
+    {
+        AnimInfo = Class<SFXCustomAction_VorchaEvadeLeft_Shared>(vorchaDodge).default.AnimInfo;
+    }
+    else if (Class<SFXCustomAction_VorchaEvadeRight_Shared>(vorchaDodge) != None)
+    {
+        AnimInfo = Class<SFXCustomAction_VorchaEvadeRight_Shared>(vorchaDodge).default.AnimInfo;
+    }
+    if (AnimInfo != None && AnimInfo.AnimSet.Sequences.Length > 0)
+    {
+        log(Self.Name, "Handling a Vorcha Dodge", Outer);
+        AnimInfo.AnimSet.Sequences[0].Notifies.Remove(0, AnimInfo.AnimSet.Sequences[0].Notifies.Length);
+    }
 }
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

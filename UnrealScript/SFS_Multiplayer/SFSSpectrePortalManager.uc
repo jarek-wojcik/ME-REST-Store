@@ -83,6 +83,7 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         PowerManager.LoadPowers(Character, Outer);
         LoadConsumables(Character, Outer);
         CustomActionsManager.MigrateCustomActions(Character, Outer);
+        ChangeShields(Character, Outer);
     }
 }
 public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
@@ -250,6 +251,9 @@ private final function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Chara
         Pawn.InvManager.RemoveFromInventory(weaponsToRemove[i]);
         weaponsToRemove[i].Destroy();
     }
+}
+private final function ChangeShields(SFSCharacterModelStruct Character, SFXPawn Pawn)
+{
 }
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.
