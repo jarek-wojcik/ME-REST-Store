@@ -31,28 +31,44 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
     if (bSuccess)
     {
         log(Self.Name, "=== Character Retrieved ===", Outer);
-        log(Self.Name, "Character ID: " $ Character.Id, Outer);
-        log(Self.Name, "Character Name: " $ Character.Name, Outer);
-        log(Self.Name, "Character base class: " $ Character.CharacterID, Outer);
-        log(Self.Name, "Character Appearance class: " $ Character.AppearanceCharID, Outer);
-        log(Self.Name, "Character Uses Helmet: " $ Character.bUseHelmet, Outer);
-        log(Self.Name, "Character Uses Headgear: " $ Character.bUseHeadgear, Outer);
+        log(Self.Name, "Id: " $ Character.Id, Outer);
+        log(Self.Name, "SortOrder: " $ Character.SortOrder, Outer);
+        log(Self.Name, "TeamId: " $ Character.TeamId, Outer);
+        log(Self.Name, "Active: " $ Character.bActive, Outer);
+        log(Self.Name, "Name: " $ Character.Name, Outer);
+        log(Self.Name, "PreferredSpecies: " $ Character.PreferredSpecies, Outer);
+        log(Self.Name, "VoiceCharId: " $ Character.VoiceCharId, Outer);
+        log(Self.Name, "CharacterID: " $ Character.CharacterID, Outer);
+        log(Self.Name, "AppearanceCharID: " $ Character.AppearanceCharID, Outer);
+        log(Self.Name, "AppearancePawnType: " $ Character.AppearancePawnType, Outer);
+        log(Self.Name, "UseHelmet: " $ Character.bUseHelmet $ ", UseHeadgear: " $ Character.bUseHeadgear, Outer);
+        log(Self.Name, "DodgeCharId: " $ Character.DodgeCharId, Outer);
+        log(Self.Name, "HeavyMeleeCharId: " $ Character.HeavyMeleeCharId, Outer);
+        log(Self.Name, "LightMeleeCharId: " $ Character.LightMeleeCharId, Outer);
+        log(Self.Name, "Level: " $ Character.Level $ ", XP: " $ Character.XP, Outer);
+        log(Self.Name, "ShieldType: " $ Character.ShieldType, Outer);
+        log(Self.Name, "SkillPoints: " $ Character.SkillPoints, Outer);
+        log(Self.Name, "--- Skill Levels ---", Outer);
+        log(Self.Name, "  Pistols: " $ Character.SkillLevel_Pistols $ ", SMGs: " $ Character.SkillLevel_SMGs $ ", AssaultRifles: " $ Character.SkillLevel_AssaultRifles, Outer);
+        log(Self.Name, "  Shotguns: " $ Character.SkillLevel_Shotguns $ ", SniperRifles: " $ Character.SkillLevel_SniperRifles $ ", MeleeCombat: " $ Character.SkillLevel_MeleeCombat, Outer);
+        log(Self.Name, "  Gadgets: " $ Character.SkillLevel_Gadgets $ ", Tech: " $ Character.SkillLevel_Tech $ ", Biotics: " $ Character.SkillLevel_Biotics, Outer);
+        log(Self.Name, "  Barrier: " $ Character.SkillLevel_Barrier $ ", Shielding: " $ Character.SkillLevel_Shielding $ ", SpectreTraining: " $ Character.SkillLevel_SpectreTraining, Outer);
         log(Self.Name, "--- Weapons (Count: " $ Character.WeaponCount $ ") ---", Outer);
         for (i = 0; i < Character.WeaponCount; i++)
         {
             log(Self.Name, "  Weapon " $ i $ " - WeaponID: " $ Character.Weapons[i].WeaponID, Outer);
-            log(Self.Name, "    Mod1ID: " $ Character.Weapons[i].Mod1ID $ ", Mod2ID: " $ Character.Weapons[i].Mod2ID, Outer);
+            log(Self.Name, "    Mod1ID: " $ Character.Weapons[i].Mod1ID $ ", Mod2ID: " $ Character.Weapons[i].Mod2ID $ ", FireMode: " $ Character.Weapons[i].FireMode, Outer);
         }
         log(Self.Name, "--- Powers (Count: " $ Character.PowerCount $ ") ---", Outer);
         for (i = 0; i < Character.PowerCount; i++)
         {
-            log(Self.Name, "  Power " $ i $ " - ID: " $ Character.Powers[i].PowerID $ ", Rank: " $ Character.Powers[i].Rank, Outer);
+            log(Self.Name, "  Power " $ i $ " - ID: " $ Character.Powers[i].PowerID $ ", Rank: " $ Character.Powers[i].Rank $ ", KitID: " $ Character.Powers[i].KitID, Outer);
             log(Self.Name, "    Evo0: " $ Character.Powers[i].Evo0 $ ", Evo1: " $ Character.Powers[i].Evo1 $ ", Evo2: " $ Character.Powers[i].Evo2, Outer);
         }
         if (Character.bHasBorrowedPower)
         {
             log(Self.Name, "--- Borrowed Power ---", Outer);
-            log(Self.Name, "  PowerID: " $ Character.BorrowedPower.PowerID $ ", Rank: " $ Character.BorrowedPower.Rank, Outer);
+            log(Self.Name, "  PowerID: " $ Character.BorrowedPower.PowerID $ ", Rank: " $ Character.BorrowedPower.Rank $ ", KitID: " $ Character.BorrowedPower.KitID, Outer);
             log(Self.Name, "  Evo0: " $ Character.BorrowedPower.Evo0 $ ", Evo1: " $ Character.BorrowedPower.Evo1 $ ", Evo2: " $ Character.BorrowedPower.Evo2, Outer);
         }
         log(Self.Name, "--- Inventory ---", Outer);

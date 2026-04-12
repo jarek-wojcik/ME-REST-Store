@@ -30,38 +30,44 @@ static function string ExtractJsonField(string JsonText, string key)
 static function bool FromSimpleJson(string JsonText, out SFSCharacterModelStruct Model)
 {
     local string Id;
-    local string CharacterName;
-    local string CharacterID;
-    local string AppearanceCharID;
-    local string AppearancePawnType;
-    local bool bUseHelmet;
-    local bool bUseHeadgear;
-    local string Active;
-    local string TeamId;
-    local string SortOrder;
     local int i;
     
     Id = ExtractJsonField(JsonText, "id");
-    CharacterName = ExtractJsonField(JsonText, "name");
-    CharacterID = ExtractJsonField(JsonText, "characterId");
-    AppearanceCharID = ExtractJsonField(JsonText, "appearanceCharId");
-    AppearancePawnType = ExtractJsonField(JsonText, "appearancePawnType");
-    bUseHelmet = ExtractJsonField(JsonText, "appearanceHelmet") == "true";
-    bUseHeadgear = ExtractJsonField(JsonText, "appearanceHeadgear") == "true";
-    Active = ExtractJsonField(JsonText, "active");
-    TeamId = ExtractJsonField(JsonText, "teamId");
-    SortOrder = ExtractJsonField(JsonText, "sortOrder");
     if (Id == "")
     {
         return FALSE;
     }
     Model.Id = Id;
-    Model.Name = CharacterName;
-    Model.CharacterID = CharacterID;
-    Model.AppearanceCharID = AppearanceCharID;
-    Model.AppearancePawnType = AppearancePawnType;
-    Model.bUseHelmet = bUseHelmet;
-    Model.bUseHeadgear = bUseHeadgear;
+    Model.SortOrder = ExtractJsonField(JsonText, "sortOrder");
+    Model.TeamId = ExtractJsonField(JsonText, "teamId");
+    Model.bActive = ExtractJsonField(JsonText, "active") == "true";
+    Model.Name = ExtractJsonField(JsonText, "name");
+    Model.PreferredSpecies = ExtractJsonField(JsonText, "preferredSpecies");
+    Model.VoiceCharId = ExtractJsonField(JsonText, "voiceCharId");
+    Model.CharacterID = ExtractJsonField(JsonText, "characterId");
+    Model.AppearanceCharID = ExtractJsonField(JsonText, "appearanceCharId");
+    Model.AppearancePawnType = ExtractJsonField(JsonText, "appearancePawnType");
+    Model.bUseHelmet = ExtractJsonField(JsonText, "appearanceHelmet") == "true";
+    Model.bUseHeadgear = ExtractJsonField(JsonText, "appearanceHeadgear") == "true";
+    Model.DodgeCharId = ExtractJsonField(JsonText, "dodgeCharId");
+    Model.HeavyMeleeCharId = ExtractJsonField(JsonText, "heavyMeleeCharId");
+    Model.LightMeleeCharId = ExtractJsonField(JsonText, "lightMeleeCharId");
+    Model.Level = int(ExtractJsonField(JsonText, "level"));
+    Model.XP = int(ExtractJsonField(JsonText, "xp"));
+    Model.ShieldType = ExtractJsonField(JsonText, "shieldType");
+    Model.SkillPoints = int(ExtractJsonField(JsonText, "skillPoints"));
+    Model.SkillLevel_Pistols = int(ExtractJsonField(JsonText, "skillLevels.Pistols"));
+    Model.SkillLevel_SMGs = int(ExtractJsonField(JsonText, "skillLevels.SMGs"));
+    Model.SkillLevel_AssaultRifles = int(ExtractJsonField(JsonText, "skillLevels.AssaultRifles"));
+    Model.SkillLevel_Shotguns = int(ExtractJsonField(JsonText, "skillLevels.Shotguns"));
+    Model.SkillLevel_SniperRifles = int(ExtractJsonField(JsonText, "skillLevels.SniperRifles"));
+    Model.SkillLevel_MeleeCombat = int(ExtractJsonField(JsonText, "skillLevels.MeleeCombat"));
+    Model.SkillLevel_Gadgets = int(ExtractJsonField(JsonText, "skillLevels.Gadgets"));
+    Model.SkillLevel_Tech = int(ExtractJsonField(JsonText, "skillLevels.Tech"));
+    Model.SkillLevel_Biotics = int(ExtractJsonField(JsonText, "skillLevels.Biotics"));
+    Model.SkillLevel_Barrier = int(ExtractJsonField(JsonText, "skillLevels.Barrier"));
+    Model.SkillLevel_Shielding = int(ExtractJsonField(JsonText, "skillLevels.Shielding"));
+    Model.SkillLevel_SpectreTraining = int(ExtractJsonField(JsonText, "skillLevels.SpectreTraining"));
     // Powers
     Model.PowerCount = 0;
     for (i = 0; i < 5; i++)
