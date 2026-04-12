@@ -23,7 +23,7 @@ func NewSelectorsController(db *bolt.DB, tmpl *template.Template) *SelectorsCont
 
 // Register wires all selector routes onto the default mux.
 func (c *SelectorsController) Register() {
-	// GET /api/characters/selector?entityId={id}&kind={spectre|spectre-appearance}
+	// GET /api/characters/selector?entityId={id}&kind={spectre|spectre-appearance|spectre-voice}
 	// Returns the character selector grid partial for use in the modal.
 	http.HandleFunc("GET /api/characters/selector", func(w http.ResponseWriter, r *http.Request) {
 		entityID := r.URL.Query().Get("entityId")
@@ -38,18 +38,41 @@ func (c *SelectorsController) Register() {
 			charPostURLBase = "/api/spectres/" + entityID + "/appearance"
 			targetID = "spectre-card-" + entityID
 			targetSwap = "outerHTML"
+		case "spectre-voice":
+			charPostURLBase = "/api/spectres/" + entityID + "/voice"
+			targetID = "spectre-card-" + entityID
+			targetSwap = "outerHTML"
 		default: // "spectre"
 			charPostURLBase = "/api/spectres/" + entityID + "/character"
 			targetID = "spectre-card-" + entityID
 			targetSwap = "outerHTML"
 		}
+		species := r.URL.Query().Get("species")
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		_ = c.tmpl.ExecuteTemplate(w, "character_selector", map[string]any{
-			"CharPostURLBase": charPostURLBase,
-			"TargetID":        targetID,
-			"TargetSwap":      targetSwap,
-			"Groups":          model.GroupedCharacters(),
-		})
+		if kind == "spectre-appearance" {
+			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{
+				"Title":           "Select Appearance",
+				"CharPostURLBase": charPostURLBase,
+				"TargetID":        targetID,
+				"TargetSwap":      targetSwap,
+				"Characters":      model.AppearanceCharacters(species),
+			})
+		} else if kind == "spectre-voice" {
+			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{
+				"Title":           "Select Voice",
+				"CharPostURLBase": charPostURLBase,
+				"TargetID":        targetID,
+				"TargetSwap":      targetSwap,
+				"Characters":      model.AppearanceCharacters(""), // no species filter for voices
+			})
+		} else {
+			_ = c.tmpl.ExecuteTemplate(w, "character_selector", map[string]any{
+				"CharPostURLBase": charPostURLBase,
+				"TargetID":        targetID,
+				"TargetSwap":      targetSwap,
+				"Groups":          model.GroupedCharactersBySpecies(species),
+			})
+		}
 	})
 
 	// GET /api/weapons/selector?entityId={id}&kind={spectre-add|spectre-weapon}&weaponIdx={n}

@@ -1,0 +1,50 @@
+{{define "appearance_selector"}}
+<div class="flex flex-col h-full">
+
+    <!-- Header -->
+    <div class="flex-shrink-0 mb-3">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-base font-semibold text-gray-100 tracking-wide">{{if .Title}}{{.Title}}{{else}}Select Appearance{{end}}</h2>
+            <button class="p-1.5 rounded hover:bg-[#1e3a5f] text-gray-500 hover:text-gray-200
+                           transition-colors"
+                    @click="modalOpen=false"
+                    title="Close">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        
+    </div>
+
+    <!-- Flat character grid -->
+    <div id="char-scroll" class="overflow-y-auto flex-1 min-h-0 pr-1">
+        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-3">
+            {{range .Characters}}
+            <button class="group relative flex flex-col items-center rounded-lg overflow-hidden
+                           border border-[#1e3a5f] bg-[#080c18]
+                           hover:border-[#00aaff]/60 hover:bg-[#0d1829]
+                           transition-all duration-150 cursor-pointer focus:outline-none
+                           focus:border-[#00aaff]"
+                    hx-post="{{$.CharPostURLBase}}/{{.ID}}"
+                    hx-target="#{{$.TargetID}}"
+                    hx-swap="{{$.TargetSwap}}"
+                    @click="modalOpen=false"
+                    title="{{.Name}}">
+
+                <!-- Portrait -->
+                <div class="w-full aspect-[3/5] bg-gradient-to-b from-[#0d1829] to-[#060a12]
+                            overflow-hidden">
+                    <img src="{{.PictureURL}}"
+                         alt="{{.Name}}"
+                         class="w-full h-full object-contain object-bottom
+                                scale-100 group-hover:scale-105 transition-transform duration-200"/>
+                </div>
+
+            </button>
+            {{end}}
+        </div>
+    </div>
+
+</div>
+{{end}}

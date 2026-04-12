@@ -93,12 +93,17 @@ func (c *SpectreController) renderCardSheet(w http.ResponseWriter, s model.Spect
 	urls := spectreURLs(s.ID)
 	urls.HasBorrowedPower = s.BorrowedPower != nil
 	urls.IsActive = s.Active
+	if s.PreferredSpecies != "" {
+		urls.AppearanceSelectorURL += "&species=" + s.PreferredSpecies
+	}
 	appearanceDef := model.CharacterByID(s.AppearanceCharacterID)
+	voiceDef := model.CharacterByQualifiedPath(s.VoiceCharacterID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "character_card_sheet", SpectreView{
 		Spectre:             s,
 		CharDef:             def,
 		AppearanceCharDef:   appearanceDef,
+		VoiceCharDef:        voiceDef,
 		ShowHelmetToggle:    def.HasHelmet || (appearanceDef != nil && appearanceDef.HasHelmet),
 		ShowHeadgearToggle:  def.HasHeadgear || (appearanceDef != nil && appearanceDef.HasHeadgear),
 		WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
@@ -355,6 +360,23 @@ func (c *SpectreController) Register() {
 			return
 		}
 		s, err := updateSpectreAppearance(c.db, r.PathValue("id"), charID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/voice/{charId}
+	// Sets the voice archetype for the spectre, stored as RootPath.ArchetypeID.
+	// The portrait/character class are not affected.
+	http.HandleFunc("POST /api/spectres/{id}/voice/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		charID := r.PathValue("charId")
+		if model.CharacterByID(charID) == nil {
+			respondText(w, 400, "unknown character\n")
+			return
+		}
+		s, err := updateSpectreVoice(c.db, r.PathValue("id"), charID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return
@@ -898,6 +920,22 @@ func (c *SpectreController) Register() {
 			return
 		}
 		s, err := updateSpectreShieldType(c.db, r.PathValue("id"), shieldType)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/species
+	// Sets the PreferredSpecies filter used by the appearance selector.
+	// Form field: species = species name, or empty string for "Any".
+	http.HandleFunc("POST /api/spectres/{id}/species", func(w http.ResponseWriter, r *http.Request) {
+		if err := r.ParseForm(); err != nil {
+			respondText(w, 400, "bad form\n")
+			return
+		}
+		s, err := updateSpectrePreferredSpecies(c.db, r.PathValue("id"), r.FormValue("species"))
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return

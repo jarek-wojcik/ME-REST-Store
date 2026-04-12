@@ -33,6 +33,7 @@ type CardURLs struct {
 	AddPowerURL                 string // GET: opens the borrow-power character picker
 	ClearBorrowedPowerURL       string // DELETE: removes the borrowed power slot
 	AppearanceSelectorURL       string // GET: opens character selector for appearance-only change
+	VoiceSelectorURL            string // GET: opens character selector for voice selection
 	RenameURL                   string // POST: renames the entity; form field "name"
 	AddWeaponURL                string // GET: opens weapon selector for a new (appended) weapon slot
 	ArmorConsumableClearURL     string // POST: clears armor consumable
@@ -92,6 +93,7 @@ type SpectreView struct {
 	model.Spectre
 	CharDef             *model.CharacterDef
 	AppearanceCharDef   *model.CharacterDef // visual override portrait; nil means use CharDef image
+	VoiceCharDef        *model.CharacterDef // voice archetype; nil means no voice override
 	ShowHelmetToggle    bool                // true when base or appearance class has HasHelmet
 	ShowHeadgearToggle  bool                // true when base or appearance class has HasHeadgear
 	WeaponViews         []WeaponSlotView
@@ -120,6 +122,7 @@ func spectreURLs(spectreID string) CardURLs {
 		AddPowerURL:                 base + "/borrowed-power/selector",
 		ClearBorrowedPowerURL:       base + "/borrowed-power",
 		AppearanceSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
+		VoiceSelectorURL:            "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-voice",
 		RenameURL:                   base + "/rename",
 		AddWeaponURL:                "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-add",
 		ArmorConsumableClearURL:     base + "/consumable/armor/none",
@@ -153,6 +156,7 @@ func teamSpectreURLs(spectreID string) CardURLs {
 		AddPowerURL:                 base + "/borrowed-power/selector",
 		ClearBorrowedPowerURL:       base + "/borrowed-power",
 		AppearanceSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
+		VoiceSelectorURL:            "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-voice",
 		RenameURL:                   base + "/rename",
 		AddWeaponURL:                "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-add",
 		ArmorConsumableClearURL:     base + "/consumable/armor/none",
@@ -718,6 +722,34 @@ func updateSpectreName(db *bolt.DB, spectreID, name string) (model.Spectre, erro
 	return s, err
 }
 
+// updateSpectreVoice sets the voice archetype for a spectre, stored as the
+// fully-qualified RootPath.ArchetypeID path so the game can use it directly.
+func updateSpectreVoice(db *bolt.DB, spectreID, charID string) (model.Spectre, error) {
+	def := model.CharacterByID(charID)
+	qualifiedID := charID
+	if def != nil {
+		qualifiedID = def.KitQualifiedPath()
+	}
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.VoiceCharacterID = qualifiedID
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
 // updateSpectreAppearance sets the appearance character override without
 // changing the base class, powers, or any other loadout data.
 func updateSpectreAppearance(db *bolt.DB, spectreID, charID string) (model.Spectre, error) {
@@ -1081,6 +1113,29 @@ func updateSpectreShieldType(db *bolt.DB, spectreID, shieldType string) (model.S
 			return err
 		}
 		s.ShieldType = shieldType
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// updateSpectrePreferredSpecies sets the PreferredSpecies field used to filter
+// the appearance character selector.
+func updateSpectrePreferredSpecies(db *bolt.DB, spectreID, species string) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.PreferredSpecies = species
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err

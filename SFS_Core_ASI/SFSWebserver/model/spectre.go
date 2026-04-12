@@ -35,6 +35,7 @@ type Spectre struct {
 	CharacterID           string       `json:"characterId"`
 	AppearanceCharacterID string       `json:"appearanceCharId,omitempty"`   // visual override; base class unchanged
 	AppearancePawnType    PawnType     `json:"appearancePawnType,omitempty"` // pawn type derived from the character class
+	VoiceCharacterID      string       `json:"voiceCharId,omitempty"`        // fully-qualified voice archetype path (RootPath.ArchetypeID)
 	ShieldType            string       `json:"shieldType,omitempty"`         // "Shield" or "Barrier"; empty defaults to "Shield"
 	Weapons               []WeaponSlot `json:"weapons,omitempty"`            // up to 5 weapon slots
 	ArmorConsumableID     string       `json:"armorConsumableId,omitempty"`  // equipped armor consumable
@@ -42,10 +43,11 @@ type Spectre struct {
 	AmmoConsumableID      string       `json:"ammoConsumableId,omitempty"`   // equipped ammo consumable
 	GearConsumableID      string       `json:"gearConsumableId,omitempty"`   // equipped gear consumable
 	Powers                []PowerSlot  `json:"powers"`
-	BorrowedPower         *PowerSlot   `json:"borrowedPower,omitempty"` // one borrowed power from another character class
-	UseHelmet             bool         `json:"appearanceHelmet"`        // render helmet on next spawn
-	UseHeadgear           bool         `json:"appearanceHeadgear"`      // render headgear on next spawn
-	Active                bool         `json:"active,omitempty"`        // whether this spectre is set as active
+	BorrowedPower         *PowerSlot   `json:"borrowedPower,omitempty"`    // one borrowed power from another character class
+	UseHelmet             bool         `json:"appearanceHelmet"`           // render helmet on next spawn
+	UseHeadgear           bool         `json:"appearanceHeadgear"`         // render headgear on next spawn
+	PreferredSpecies      string       `json:"preferredSpecies,omitempty"` // species filter for appearance selector
+	Active                bool         `json:"active,omitempty"`           // whether this spectre is set as active
 
 	// Progression
 	XP    int `json:"xp,omitempty"`    // total accumulated XP

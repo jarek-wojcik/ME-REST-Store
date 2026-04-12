@@ -190,6 +190,39 @@
                     </select>
                 </div>
 
+                <!-- Species row (appearance filter) -->
+                <div class="flex items-center justify-between py-1.5
+                            border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase
+                                 text-[#00aaff]/50 select-none">Species</span>
+                    <select name="species"
+                            hx-post="/api/spectres/{{.ID}}/species"
+                            hx-target="#{{.CardID}}"
+                            hx-swap="outerHTML"
+                            hx-trigger="change"
+                            hx-include="this"
+                            class="bg-[#0a0f1c] border border-[#1a2d4a] rounded
+                                   px-2 py-0.5 text-[11px] text-gray-300
+                                   focus:outline-none focus:border-[#00aaff]/60
+                                   cursor-pointer transition-colors">
+                        <option value=""          {{if eq .PreferredSpecies ""}}selected{{end}}>Any</option>
+                        <option value="Android"   {{if eq .PreferredSpecies "Android"}}selected{{end}}>Android</option>
+                        <option value="Asari"     {{if eq .PreferredSpecies "Asari"}}selected{{end}}>Asari</option>
+                        <option value="Batarian"  {{if eq .PreferredSpecies "Batarian"}}selected{{end}}>Batarian</option>
+                        <option value="Collector" {{if eq .PreferredSpecies "Collector"}}selected{{end}}>Collector</option>
+                        <option value="Drell"     {{if eq .PreferredSpecies "Drell"}}selected{{end}}>Drell</option>
+                        <option value="Geth"      {{if eq .PreferredSpecies "Geth"}}selected{{end}}>Geth</option>
+                        <option value="Human"     {{if eq .PreferredSpecies "Human"}}selected{{end}}>Human</option>
+                        <option value="Krogan"    {{if eq .PreferredSpecies "Krogan"}}selected{{end}}>Krogan</option>
+                        <option value="Prothean"  {{if eq .PreferredSpecies "Prothean"}}selected{{end}}>Prothean</option>
+                        <option value="Quarian"   {{if eq .PreferredSpecies "Quarian"}}selected{{end}}>Quarian</option>
+                        <option value="Salarian"  {{if eq .PreferredSpecies "Salarian"}}selected{{end}}>Salarian</option>
+                        <option value="Turian"    {{if eq .PreferredSpecies "Turian"}}selected{{end}}>Turian</option>
+                        <option value="Volus"     {{if eq .PreferredSpecies "Volus"}}selected{{end}}>Volus</option>
+                        <option value="Vorcha"    {{if eq .PreferredSpecies "Vorcha"}}selected{{end}}>Vorcha</option>
+                    </select>
+                </div>
+
                 <!-- Dodge Power row -->
                 <div class="flex items-center justify-between py-1.5
                             border-b border-[#1a2d4a]/60">
@@ -213,6 +246,26 @@
                                  text-[#00aaff]/50 select-none">Heavy Melee</span>
                     <span class="text-[11px] text-gray-600 italic">—</span>
                 </div>
+
+                <!-- Voice row -->
+                {{if .VoiceSelectorURL}}
+                <div class="flex items-center justify-between py-1.5
+                            border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase
+                                 text-[#00aaff]/50 select-none">Voice</span>
+                    <button class="text-[10px] font-semibold px-2 py-0.5 rounded border
+                                   border-[#1a2d4a] text-gray-500 hover:border-[#00aaff]/50
+                                   hover:text-[#00aaff] transition-colors cursor-pointer
+                                   focus:outline-none truncate max-w-[140px]"
+                            hx-get="{{.VoiceSelectorURL}}"
+                            hx-target="#modal-body"
+                            hx-swap="innerHTML"
+                            @click="modalOpen=true"
+                            title="{{if .VoiceCharDef}}{{.VoiceCharDef.Name}}{{else}}Select voice{{end}}">
+                        {{if .VoiceCharDef}}{{.VoiceCharDef.Name}}{{else}}<span class="italic text-gray-600">Select…</span>{{end}}
+                    </button>
+                </div>
+                {{end}}
 
                 <!-- Helmet toggle (only shown when character supports it) -->
                 {{if .ShowHelmetToggle}}
