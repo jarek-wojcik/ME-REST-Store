@@ -23,7 +23,7 @@ func NewSelectorsController(db *bolt.DB, tmpl *template.Template) *SelectorsCont
 
 // Register wires all selector routes onto the default mux.
 func (c *SelectorsController) Register() {
-	// GET /api/characters/selector?entityId={id}&kind={spectre|spectre-appearance|spectre-voice}
+	// GET /api/characters/selector?entityId={id}&kind={spectre|spectre-appearance|spectre-voice|spectre-heavy-melee|spectre-light-melee|spectre-dodge}
 	// Returns the character selector grid partial for use in the modal.
 	http.HandleFunc("GET /api/characters/selector", func(w http.ResponseWriter, r *http.Request) {
 		entityID := r.URL.Query().Get("entityId")
@@ -40,6 +40,18 @@ func (c *SelectorsController) Register() {
 			targetSwap = "outerHTML"
 		case "spectre-voice":
 			charPostURLBase = "/api/spectres/" + entityID + "/voice"
+			targetID = "spectre-card-" + entityID
+			targetSwap = "outerHTML"
+		case "spectre-heavy-melee":
+			charPostURLBase = "/api/spectres/" + entityID + "/heavy-melee"
+			targetID = "spectre-card-" + entityID
+			targetSwap = "outerHTML"
+		case "spectre-light-melee":
+			charPostURLBase = "/api/spectres/" + entityID + "/light-melee"
+			targetID = "spectre-card-" + entityID
+			targetSwap = "outerHTML"
+		case "spectre-dodge":
+			charPostURLBase = "/api/spectres/" + entityID + "/dodge"
 			targetID = "spectre-card-" + entityID
 			targetSwap = "outerHTML"
 		default: // "spectre"
@@ -64,6 +76,33 @@ func (c *SelectorsController) Register() {
 				"TargetID":        targetID,
 				"TargetSwap":      targetSwap,
 				"Characters":      model.AppearanceCharacters(""), // no species filter for voices
+			})
+		} else if kind == "spectre-heavy-melee" {
+			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{
+				"Title":           "Select Heavy Melee",
+				"CharPostURLBase": charPostURLBase,
+				"TargetID":        targetID,
+				"TargetSwap":      targetSwap,
+				"Characters":      model.HeavyMeleeCharacters(),
+				"ShowSubclass":    true,
+			})
+		} else if kind == "spectre-light-melee" {
+			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{
+				"Title":           "Select Light Melee",
+				"CharPostURLBase": charPostURLBase,
+				"TargetID":        targetID,
+				"TargetSwap":      targetSwap,
+				"Characters":      model.LightMeleeCharacters(),
+				"ShowSubclass":    true,
+			})
+		} else if kind == "spectre-dodge" {
+			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{
+				"Title":           "Select Dodge",
+				"CharPostURLBase": charPostURLBase,
+				"TargetID":        targetID,
+				"TargetSwap":      targetSwap,
+				"Characters":      model.DodgeCharacters(),
+				"ShowSubclass":    true,
 			})
 		} else {
 			_ = c.tmpl.ExecuteTemplate(w, "character_selector", map[string]any{

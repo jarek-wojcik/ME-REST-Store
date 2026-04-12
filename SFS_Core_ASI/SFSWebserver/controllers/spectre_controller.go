@@ -98,12 +98,18 @@ func (c *SpectreController) renderCardSheet(w http.ResponseWriter, s model.Spect
 	}
 	appearanceDef := model.CharacterByID(s.AppearanceCharacterID)
 	voiceDef := model.CharacterByQualifiedPath(s.VoiceCharacterID)
+	heavyMeleeDef := model.CharacterByQualifiedPath(s.HeavyMeleeCharID)
+	lightMeleeDef := model.CharacterByQualifiedPath(s.LightMeleeCharID)
+	dodgeDef := model.CharacterByQualifiedPath(s.DodgeCharID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "character_card_sheet", SpectreView{
 		Spectre:             s,
 		CharDef:             def,
 		AppearanceCharDef:   appearanceDef,
 		VoiceCharDef:        voiceDef,
+		HeavyMeleeCharDef:   heavyMeleeDef,
+		LightMeleeCharDef:   lightMeleeDef,
+		DodgeCharDef:        dodgeDef,
 		ShowHelmetToggle:    def.HasHelmet || (appearanceDef != nil && appearanceDef.HasHelmet),
 		ShowHeadgearToggle:  def.HasHeadgear || (appearanceDef != nil && appearanceDef.HasHeadgear),
 		WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
@@ -377,6 +383,60 @@ func (c *SpectreController) Register() {
 			return
 		}
 		s, err := updateSpectreVoice(c.db, r.PathValue("id"), charID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/heavy-melee/{charId}
+	// Sets the heavy melee archetype override, stored as RootPath.ArchetypeID.
+	// Only characters with HasUniqueHeavyMelee are valid; other fields are unchanged.
+	http.HandleFunc("POST /api/spectres/{id}/heavy-melee/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		charID := r.PathValue("charId")
+		def := model.CharacterByID(charID)
+		if def == nil || !def.HasUniqueHeavyMelee {
+			respondText(w, 400, "unknown or ineligible character\n")
+			return
+		}
+		s, err := updateSpectreHeavyMelee(c.db, r.PathValue("id"), charID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/light-melee/{charId}
+	// Sets the light melee archetype override, stored as RootPath.ArchetypeID.
+	// Only characters with HasUniqueLightMelee are valid; other fields are unchanged.
+	http.HandleFunc("POST /api/spectres/{id}/light-melee/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		charID := r.PathValue("charId")
+		def := model.CharacterByID(charID)
+		if def == nil || !def.HasUniqueLightMelee {
+			respondText(w, 400, "unknown or ineligible character\n")
+			return
+		}
+		s, err := updateSpectreLightMelee(c.db, r.PathValue("id"), charID)
+		if err != nil {
+			respondText(w, 500, "update failed\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/dodge/{charId}
+	// Sets the dodge archetype override, stored as RootPath.ArchetypeID.
+	// Only characters with HasUniqueDodge are valid; other fields are unchanged.
+	http.HandleFunc("POST /api/spectres/{id}/dodge/{charId}", func(w http.ResponseWriter, r *http.Request) {
+		charID := r.PathValue("charId")
+		def := model.CharacterByID(charID)
+		if def == nil || !def.HasUniqueDodge {
+			respondText(w, 400, "unknown or ineligible character\n")
+			return
+		}
+		s, err := updateSpectreDodge(c.db, r.PathValue("id"), charID)
 		if err != nil {
 			respondText(w, 500, "update failed\n")
 			return

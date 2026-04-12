@@ -303,9 +303,9 @@ func flattenSpectreOrdered(s *model.Spectre, w http.ResponseWriter, status int) 
 
 	// 1. Identity & appearance.
 	for _, k := range []string{
-		"id", "name", "active",
+		"id", "sortOrder", "teamId", "active", "name", "preferredSpecies", "voiceCharId",
 		"characterId", "appearanceCharId", "appearancePawnType",
-		"appearanceHelmet", "appearanceHeadgear",
+		"appearanceHelmet", "appearanceHeadgear", "dodgeCharId", "heavyMeleeCharId", "lightMeleeCharId",
 	} {
 		emitKey(k)
 	}
@@ -317,6 +317,7 @@ func flattenSpectreOrdered(s *model.Spectre, w http.ResponseWriter, status int) 
 
 	// 3. Powers.
 	emitKey("powers")
+	emitKey("borrowedPower")
 
 	// 4. Weapons.
 	emitKey("weapons")
@@ -336,7 +337,8 @@ func flattenSpectreOrdered(s *model.Spectre, w http.ResponseWriter, status int) 
 		"level": true, "xp": true, "shieldType": true, "skillLevels": true, "skillPoints": true,
 		"powers": true, "weapons": true,
 		"armorConsumableId": true, "weaponConsumableId": true,
-		"ammoConsumableId": true, "gearConsumableId": true,
+		"ammoConsumableId": true, "gearConsumableId": true, "preferredSpecies": true, "voiceCharId": true, "sortOrder": true, "teamId": true,
+		"borrowedPower": true, "dodgeCharId": true, "heavyMeleeCharId": true, "lightMeleeCharId": true,
 	}
 	var rest []string
 	for k := range m {

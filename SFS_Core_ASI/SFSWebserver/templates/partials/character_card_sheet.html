@@ -223,12 +223,26 @@
                     </select>
                 </div>
 
-                <!-- Dodge Power row -->
+                <!-- Dodge row -->
                 <div class="flex items-center justify-between py-1.5
                             border-b border-[#1a2d4a]/60">
                     <span class="text-[8px] font-bold tracking-[0.2em] uppercase
                                  text-[#00aaff]/50 select-none">Dodge</span>
+                    {{if .DodgeSelectorURL}}
+                    <button class="text-[10px] font-semibold px-2 py-0.5 rounded border
+                                   border-[#1a2d4a] text-gray-500 hover:border-[#00aaff]/50
+                                   hover:text-[#00aaff] transition-colors cursor-pointer
+                                   focus:outline-none truncate max-w-[140px]"
+                            hx-get="{{.DodgeSelectorURL}}"
+                            hx-target="#modal-body"
+                            hx-swap="innerHTML"
+                            @click="modalOpen=true"
+                            title="{{if .DodgeCharDef}}{{.DodgeCharDef.Name}}{{else}}Select dodge{{end}}">
+                        {{if .DodgeCharDef}}{{.DodgeCharDef.Name}}{{else}}<span class="italic text-gray-600">Select…</span>{{end}}
+                    </button>
+                    {{else}}
                     <span class="text-[11px] text-gray-600 italic">—</span>
+                    {{end}}
                 </div>
 
                 <!-- Light Melee row -->
@@ -236,7 +250,21 @@
                             border-b border-[#1a2d4a]/60">
                     <span class="text-[8px] font-bold tracking-[0.2em] uppercase
                                  text-[#00aaff]/50 select-none">Light Melee</span>
+                    {{if .LightMeleeSelectorURL}}
+                    <button class="text-[10px] font-semibold px-2 py-0.5 rounded border
+                                   border-[#1a2d4a] text-gray-500 hover:border-[#00aaff]/50
+                                   hover:text-[#00aaff] transition-colors cursor-pointer
+                                   focus:outline-none truncate max-w-[140px]"
+                            hx-get="{{.LightMeleeSelectorURL}}"
+                            hx-target="#modal-body"
+                            hx-swap="innerHTML"
+                            @click="modalOpen=true"
+                            title="{{if .LightMeleeCharDef}}{{.LightMeleeCharDef.Name}}{{else}}Select light melee{{end}}">
+                        {{if .LightMeleeCharDef}}{{.LightMeleeCharDef.Name}}{{else}}<span class="italic text-gray-600">Select…</span>{{end}}
+                    </button>
+                    {{else}}
                     <span class="text-[11px] text-gray-600 italic">—</span>
+                    {{end}}
                 </div>
 
                 <!-- Heavy Melee row -->
@@ -244,7 +272,21 @@
                             border-b border-[#1a2d4a]/60">
                     <span class="text-[8px] font-bold tracking-[0.2em] uppercase
                                  text-[#00aaff]/50 select-none">Heavy Melee</span>
+                    {{if .HeavyMeleeSelectorURL}}
+                    <button class="text-[10px] font-semibold px-2 py-0.5 rounded border
+                                   border-[#1a2d4a] text-gray-500 hover:border-[#00aaff]/50
+                                   hover:text-[#00aaff] transition-colors cursor-pointer
+                                   focus:outline-none truncate max-w-[140px]"
+                            hx-get="{{.HeavyMeleeSelectorURL}}"
+                            hx-target="#modal-body"
+                            hx-swap="innerHTML"
+                            @click="modalOpen=true"
+                            title="{{if .HeavyMeleeCharDef}}{{.HeavyMeleeCharDef.Name}}{{else}}Select heavy melee{{end}}">
+                        {{if .HeavyMeleeCharDef}}{{.HeavyMeleeCharDef.Name}}{{else}}<span class="italic text-gray-600">Select…</span>{{end}}
+                    </button>
+                    {{else}}
                     <span class="text-[11px] text-gray-600 italic">—</span>
+                    {{end}}
                 </div>
 
                 <!-- Voice row -->

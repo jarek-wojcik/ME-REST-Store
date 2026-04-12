@@ -63,7 +63,7 @@ public function CopyAppearance(SFXPawn src, SFXPawn trg, string Id, bool b_useHe
             copyAppearanceBasic(srcSkel, dstSkel);
         }
         dstSkel.bForceRefpose = srcSkel.bForceRefpose;
-        applyTinting(trg);
+        ApplyTinting(trg);
     }
 }
 public function CopyAppearanceWithVisuals(SFXPawn src, SFXPawn trg, bool b_useHeadgear, bool b_useHelmet)
@@ -121,7 +121,7 @@ public function CopyAppearanceWithVisuals(SFXPawn src, SFXPawn trg, bool b_useHe
             copyAppearanceBasic(srcSkel, dstSkel);
         }
         dstSkel.bForceRefpose = srcSkel.bForceRefpose;
-        applyTinting(trg);
+        ApplyTinting(trg);
     }
 }
 function bool headgearIsHelmet(int Id)
@@ -348,10 +348,10 @@ public function CopyHeadgearMaterials(SFXPawn SourcePawn, SFXPawn_PlayerMP Targe
     }
     log(Self.Name, "CopyHeadgearMaterials: Copied materials from source headgear", Outer);
 }
-private function applyTinting(SFXPawn trg)
+private final function ApplyTinting(SFXPawn trg)
 {
     local SFXPawn_PlayerMP trgMP;
-
+    
     trgMP = SFXPawn_PlayerMP(trg);
     if (trgMP != None && trgMP.CustomizationMP != None)
     {

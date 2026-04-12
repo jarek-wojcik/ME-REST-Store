@@ -7,6 +7,7 @@ var SFSPortalAsyncLoader asyncLoader;
 var SFSWeaponManager weaponManager;
 var SFSPowerManager PowerManager;
 var SFSConsumableManager ConsumableManager;
+var SFSCustomActionsManager CustomActionsManager;
 
 public event simulated function HandlePostAdd()
 {
@@ -17,6 +18,7 @@ public event simulated function HandlePostAdd()
     weaponManager = Outer.GetModule(Class'SFSWeaponManager');
     PowerManager = Outer.GetModule(Class'SFSPowerManager');
     ConsumableManager = Outer.GetModule(Class'SFSConsumableManager');
+    CustomActionsManager = Outer.GetModule(Class'SFSCustomActionsManager');
     if (asyncLoader != None)
     {
         spectreService.RetrieveActiveCharacter(OnCharacterRetrieved);

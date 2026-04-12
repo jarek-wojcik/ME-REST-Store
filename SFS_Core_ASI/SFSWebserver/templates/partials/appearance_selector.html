@@ -41,6 +41,13 @@
                                 scale-100 group-hover:scale-105 transition-transform duration-200"/>
                 </div>
 
+                {{if $.ShowSubclass}}
+                <!-- Subclass label -->
+                <div class="w-full px-1 py-0.5 text-center">
+                    <span class="text-[8px] font-bold tracking-[0.15em] uppercase text-[#00aaff]/60">{{.SubClass}}</span>
+                </div>
+                {{end}}
+
             </button>
             {{end}}
         </div>

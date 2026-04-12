@@ -56,18 +56,21 @@ const (
 // PowerIDs[0-2] are the three active powers; PowerIDs[3] = MPPassive,
 // PowerIDs[4] = MPMeleePassive.  An empty string means the slot is unused.
 type CharacterDef struct {
-	ID          string    // matches the asset filename stem, e.g. "MP_Turian0"
-	IDLook      string    // optional appearance look identifier; empty string means no override
-	Name        string    // human-readable display name
-	SubClass    string    // one of: Soldier, Adept, Sentinel, Engineer, Vanguard, Infiltrator
-	Species     []Species // biological or synthetic species
-	PictureFile string    // filename inside /static/assets/characters/
-	PowerIDs    [5]string // default power IDs for this character class
-	RootPath    string    // UE3 archetype package path prefix (e.g. "BioChar_MPPlayers.Archetypes.Adept"); empty when ID already encodes the full path
-	ArchetypeID string    // last segment of the UE3 archetype path (e.g. "HumanFemale_Adept"); empty when it matches ID
-	PawnType    PawnType  // how the character is spawned; defaults to PlayerMP when unset
-	HasHeadgear bool
-	HasHelmet   bool
+	ID                  string    // matches the asset filename stem, e.g. "MP_Turian0"
+	IDLook              string    // optional appearance look identifier; empty string means no override
+	Name                string    // human-readable display name
+	SubClass            string    // one of: Soldier, Adept, Sentinel, Engineer, Vanguard, Infiltrator
+	Species             []Species // biological or synthetic species
+	PictureFile         string    // filename inside /static/assets/characters/
+	PowerIDs            [5]string // default power IDs for this character class
+	RootPath            string    // UE3 archetype package path prefix (e.g. "BioChar_MPPlayers.Archetypes.Adept"); empty when ID already encodes the full path
+	ArchetypeID         string    // last segment of the UE3 archetype path (e.g. "HumanFemale_Adept"); empty when it matches ID
+	PawnType            PawnType  // how the character is spawned; defaults to PlayerMP when unset
+	HasHeadgear         bool
+	HasHelmet           bool
+	HasUniqueLightMelee bool
+	HasUniqueHeavyMelee bool
+	HasUniqueDodge      bool
 }
 
 // GetPawnType returns the PawnType for this character, defaulting to PawnTypePlayerMP.
@@ -109,37 +112,37 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Human base classes ------------------------------------------------
 	{ID: "AdeptHumanFemale", IDLook: "HumanFemaleRecon", Name: "Human Adept (Female)", SubClass: "Adept", Species: []Species{SpeciesHuman}, PictureFile: "AdeptHumanFemale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Singularity", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Adept"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Adept"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Adept", HasUniqueHeavyMelee: true, HasUniqueDodge: true, HasUniqueLightMelee: true},
 	{ID: "AdeptHumanMale", IDLook: "HumanMaleRecon", Name: "Human Adept (Male)", SubClass: "Adept", Species: []Species{SpeciesHuman}, PictureFile: "AdeptHumanMale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Singularity", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Adept"},
 		RootPath: "BioChar_MPPlayers.Archetypes.Adept"},
 	{ID: "EngineerHumanFemale", IDLook: "HumanFemaleDefault", Name: "Human Engineer (Female)", SubClass: "Engineer", Species: []Species{SpeciesHuman}, PictureFile: "EngineerHumanFemale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_CombatDrone", "SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_Overload", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Engineer"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Engineer"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Engineer", HasUniqueHeavyMelee: true},
 	{ID: "EngineerHumanMale", IDLook: "HumanMaleDefault", Name: "Human Engineer (Male)", SubClass: "Engineer", Species: []Species{SpeciesHuman}, PictureFile: "EngineerHumanMale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_CombatDrone", "SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_Overload", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Engineer"},
 		RootPath: "BioChar_MPPlayers.Archetypes.Engineer"},
 	{ID: "InfiltratorHumanFemale", IDLook: "HumanFemaleDefault", Name: "Human Infiltrator (Female)", SubClass: "Infiltrator", Species: []Species{SpeciesHuman}, PictureFile: "InfiltratorHumanFemale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Cloak", "SFXPowerCustomActionMP_CryoBlast", "SFXPowerCustomActionMP_StickyGrenade", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Infiltrator"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Infiltrator"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Infiltrator", HasUniqueHeavyMelee: true},
 	{ID: "InfiltratorHumanMale", IDLook: "HumanMaleDefault", Name: "Human Infiltrator (Male)", SubClass: "Infiltrator", Species: []Species{SpeciesHuman}, PictureFile: "InfiltratorHumanMale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Cloak", "SFXPowerCustomActionMP_CryoBlast", "SFXPowerCustomActionMP_StickyGrenade", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Infiltrator"},
 		RootPath: "BioChar_MPPlayers.Archetypes.Infiltrator"},
 	{ID: "SentinelHumanFemale", IDLook: "HumanFemaleRecon", Name: "Human Sentinel (Female)", SubClass: "Sentinel", Species: []Species{SpeciesHuman}, PictureFile: "SentinelHumanFemale.png",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_TechArmor", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_Throw", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Sentinel"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Sentinel"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Sentinel", HasUniqueHeavyMelee: true},
 	{ID: "SentinelHumanMale", IDLook: "HumanMaleRecon", Name: "Human Sentinel (Male)", SubClass: "Sentinel", Species: []Species{SpeciesHuman}, PictureFile: "SentinelHumanMale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_TechArmor", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_Throw", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Sentinel"},
 		RootPath: "BioChar_MPPlayers.Archetypes.Sentinel"},
 	{ID: "SoldierHumanFemale", IDLook: "HumanFemaleDeathmask", Name: "Human Soldier (Female)", SubClass: "Soldier", Species: []Species{SpeciesHuman}, PictureFile: "SoldierHumanFemale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_AdrenalineRush", "SFXPowerCustomActionMP_ConcussiveShot", "SFXPowerCustomActionMP_FragGrenade", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Soldier"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Soldier"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Soldier", HasUniqueHeavyMelee: true},
 	{ID: "SoldierHumanMale", IDLook: "HumanMaleDeathmask", Name: "Human Soldier (Male)", SubClass: "Soldier", Species: []Species{SpeciesHuman}, PictureFile: "SoldierHumanMale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_AdrenalineRush", "SFXPowerCustomActionMP_ConcussiveShot", "SFXPowerCustomActionMP_FragGrenade", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Soldier"},
 		RootPath: "BioChar_MPPlayers.Archetypes.Soldier"},
 	{ID: "VanguardHumanFemale", IDLook: "HumanFemaleDeathmask", Name: "Human Vanguard (Female)", SubClass: "Vanguard", Species: []Species{SpeciesHuman, SpeciesAsari}, PictureFile: "VanguardHumanFemale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BioticCharge", "SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Discharge", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Vanguard"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Vanguard"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Vanguard", HasUniqueHeavyMelee: true},
 	{ID: "VanguardHumanMale", IDLook: "HumanMaleDeathmask", Name: "Human Vanguard (Male)", SubClass: "Vanguard", Species: []Species{SpeciesHuman, SpeciesBatarian}, PictureFile: "VanguardHumanMale.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BioticCharge", "SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_Discharge", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Vanguard"},
 		RootPath: "BioChar_MPPlayers.Archetypes.Vanguard"},
@@ -147,27 +150,27 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Alliance N7 classes -----------------------------------------------
 	{ID: "AdeptN7", IDLook: "", Name: "N7 Fury", SubClass: "Adept", Species: []Species{SpeciesHuman}, PictureFile: "MP_AllianceADP.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_AnnihilationSphere", "SFXPowerCustomActionMP_DarkChannel2", "SFXPowerCustomActionMP_Throw_N7", "SFXPowerCustomActionMP_N7AdeptPassive", "SFXPowerCustomActionMP_N7AdeptMeleePassive"},
-		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Adept_N7"},
+		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Adept_N7", HasUniqueHeavyMelee: true, HasUniqueDodge: true, HasUniqueLightMelee: true},
 	{ID: "EngineerN7", IDLook: "", Name: "N7 Demolisher", SubClass: "Engineer", Species: []Species{SpeciesHuman}, PictureFile: "MP_AllianceENG.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_SupplyTurret", "SFXPowerCustomActionMP_EMPGrenade2", "SFXPowerCustomActionMP_HomingGrenade", "SFXPowerCustomActionMP_N7EngineerPassive", "SFXPowerCustomActionMP_N7EngineerMeleePassive"},
-		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Engineer_N7"},
+		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Engineer_N7", HasUniqueHeavyMelee: true},
 	{ID: "InfiltratorN7", IDLook: "", Name: "N7 Shadow", SubClass: "Infiltrator", Species: []Species{SpeciesHuman}, PictureFile: "MP_AllianceINF.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Cloak_N7Infiltrator", "SFXPowerCustomActionMP_ElectricSlash", "SFXPowerCustomActionMP_ShadowStrike", "SFXPowerCustomActionMP_N7InfiltratorPassive", "SFXPowerCustomActionMP_N7InfiltratorMeleePassive"},
-		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Infiltrator_N7"},
+		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Infiltrator_N7", HasUniqueHeavyMelee: true, HasUniqueDodge: true, HasUniqueLightMelee: true},
 	{ID: "SentinelN7", IDLook: "", Name: "N7 Paladin", SubClass: "Sentinel", Species: []Species{SpeciesHuman}, PictureFile: "MP_AllianceSEN.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_EnergyDrain", "SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_CryoCone", "SFXPowerCustomActionMP_N7SentinelPassive", "SFXPowerCustomActionMP_N7SentinelMeleePassive"},
-		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Sentinel_N7"},
+		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Sentinel_N7", HasUniqueHeavyMelee: true, HasUniqueLightMelee: true},
 	{ID: "SoldierN7", IDLook: "", Name: "N7 Destroyer", SubClass: "Soldier", Species: []Species{SpeciesHuman}, PictureFile: "MP_AllianceSOL.webp",
 		PowerIDs: [5]string{"SFXPowerCustomAction_DevestatorMode", "SFXPowerCustomAction_MissileLauncher", "SFXPowerCustomAction_MultiFragGrenade", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Soldier"},
-		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Soldier_N7"},
+		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Soldier_N7", HasUniqueHeavyMelee: true, HasUniqueLightMelee: true},
 	{ID: "VanguardN7", IDLook: "", Name: "N7 Slayer", SubClass: "Vanguard", Species: []Species{SpeciesHuman}, PictureFile: "MP_AllianceVAN.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BioticCharge", "SFXPowerCustomActionMP_PalmBlaster", "SFXPowerCustomActionMP_SonicSlash", "SFXPowerCustomActionMP_N7VanguardPassive", "SFXPowerCustomActionMP_N7VanguardMeleePassive"},
-		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Vanguard_N7"},
+		RootPath: "BioChar_DLC_MP3_MPPlayers", ArchetypeID: "Vanguard_N7", HasUniqueHeavyMelee: true, HasUniqueDodge: true, HasUniqueLightMelee: true},
 
 	// ---- Asari -------------------------------------------------------------
 	{ID: "AdeptAsari", IDLook: "AsariDefault", Name: "Asari Adept", SubClass: "Adept", Species: []Species{SpeciesAsari}, PictureFile: "MP_Asari0.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Stasis", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_Throw", "SFXPowerCustomActionMP_AsariPassive", "SFXPowerCustomActionMP_AsariMeleePassive"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Adept"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Adept", HasUniqueHeavyMelee: true, HasUniqueDodge: true},
 	{ID: "AdeptAsariCommando", IDLook: "AsariCommando", Name: "Asari Justicar", SubClass: "Adept", Species: []Species{SpeciesAsari}, PictureFile: "MP_AsariComm.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BubbleShield", "SFXPowerCustomActionMP_Reave_Asari", "SFXPowerCustomActionMP_Pull_Asari", "SFXPowerCustomActionMP_AsariCommandoPassive", "SFXPowerCustomActionMP_AsariMeleePassive_Commando"},
 		RootPath: "BioChar_DLC_MP1_MPPlayers.Archetypes", ArchetypeID: "AsariCommando_Adept"},
@@ -184,7 +187,7 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Batarian ----------------------------------------------------------
 	{ID: "SoldierBatarian", IDLook: "BatarianDefault", Name: "Batarian Soldier", SubClass: "Soldier", Species: []Species{SpeciesBatarian}, PictureFile: "MP_Batarian.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BatarianAttack", "SFXPowerCustomActionMP_BatarianArmor", "SFXPowerCustomActionMP_InfernoGrenade_Batarian", "SFXPowerCustomActionMP_BatarianPassive", "SFXPowerCustomActionMP_BatarianMeleePassive"},
-		RootPath: "BioChar_DLC_MP1_MPPlayers.Archetypes"},
+		RootPath: "BioChar_DLC_MP1_MPPlayers.Archetypes", HasUniqueHeavyMelee: true},
 	{ID: "AdeptBatarian", IDLook: "BatarianDefault", Name: "Batarian Adept", SubClass: "Adept", Species: []Species{SpeciesBatarian}, PictureFile: "MP_BatarianADP.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Lash", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_BioticGrenade", "SFXPowerCustomActionMP_BatarianPassive", "SFXPowerCustomActionMP_BatarianMeleePassive"},
 		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Adept_Batarian"},
@@ -208,17 +211,17 @@ var CharacterCatalog = []CharacterDef{
 		RootPath: "BioChar_DLC_MP2_MPPlayers.Archetypes", ArchetypeID: "CerberusMale_Adept"},
 	{ID: "VanguardHumanMaleCerberus", IDLook: "HumanCerberus", Name: "Cerberus Vanguard", SubClass: "Vanguard", Species: []Species{SpeciesHuman}, PictureFile: "MP_Cerberus.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BioticCharge", "SFXPowerCustomAction_WhipSmash", "SFXPowerCustomActionMP_Lash", "SFXPowerCustomActionMP_WhipManPassive", "SFXPowerCustomActionMP_WhipManMeleePassive"},
-		RootPath: "BioChar_DLC_MP2_MPPlayers.Archetypes", ArchetypeID: "CerberusMale_Vanguard"},
+		RootPath: "BioChar_DLC_MP2_MPPlayers.Archetypes", ArchetypeID: "CerberusMale_Vanguard", HasUniqueHeavyMelee: true, HasUniqueLightMelee: true},
 
 	// ---- Collectors --------------------------------------------------------
 	{ID: "AdeptCollector", IDLook: "", Name: "Collector Adept", SubClass: "Adept", Species: []Species{SpeciesCollector}, PictureFile: "MP_CollectADP.webp",
 		PowerIDs: [5]string{"SFXPowerCustomAction_DarkSingularity", "SFXPowerCustomActionMP_SeekerSwarm", "SFXPowerCustomActionMP_DarkChannelProthean", "SFXPowerCustomActionMP_CollectorPassive", "SFXPowerCustomActionMP_ProtheanMeleePassive"},
-		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Adept_Collector"},
+		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Adept_Collector", HasUniqueHeavyMelee: true, HasUniqueDodge: true, HasUniqueLightMelee: true},
 
 	// ---- Drell -------------------------------------------------------------
 	{ID: "AdeptDrell", IDLook: "DrellDefault", Name: "Drell Adept", SubClass: "Adept", Species: []Species{SpeciesDrell}, PictureFile: "MP_Drell0.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Reave", "SFXPowerCustomActionMP_Pull", "SFXPowerCustomActionMP_BioticGrenade", "SFXPowerCustomActionMP_DrellPassive", "SFXPowerCustomActionMP_DrellMeleePassive"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Adept"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Adept", HasUniqueHeavyMelee: true, HasUniqueDodge: true, HasUniqueLightMelee: true},
 	{ID: "InfiltratorDrell", IDLook: "DrellDefault", Name: "Drell Assassin", SubClass: "Infiltrator", Species: []Species{SpeciesDrell}, PictureFile: "MP_DrellINF.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Cloak", "SFXPowerCustomActionMP_HomingGrenade", "SFXPowerCustomActionMP_ReconMine", "SFXPowerCustomActionMP_DrellPassive", "SFXPowerCustomActionMP_DrellMeleePassive"},
 		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Infiltrator_Drell"},
@@ -229,26 +232,26 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Female Bot --------------------------------------------------------
 	{ID: "InfiltratorFembot", IDLook: "", Name: "Infiltrator Bot", SubClass: "Infiltrator", Species: []Species{SpeciesAndroid}, PictureFile: "MP_FBotINF.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_FembotCloak", "SFXPowerCustomActionMP_SnapFreeze", "SFXPowerCustomActionMP_RepairMatrix", "SFXPowerCustomActionMP_FembotPassive", "SFXPowerCustomActionMP_FembotMeleePassive"},
-		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Infiltrator_Fembot"},
+		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Infiltrator_Fembot", HasUniqueHeavyMelee: true, HasUniqueDodge: true, HasUniqueLightMelee: true},
 
 	// ---- Geth --------------------------------------------------------------
 	{ID: "EngineerGeth", IDLook: "GethEnginer", Name: "Geth Engineer", SubClass: "Engineer", Species: []Species{SpeciesGeth}, PictureFile: "MP_GethEngineer.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_GethSentryTurret", "SFXPowerCustomActionMP_Supercharge", "SFXPowerCustomActionMP_Overload_Geth", "SFXPowerCustomActionMP_GethPassive", "SFXPowerCustomActionMP_GethMeleePassive"},
-		RootPath: "BioChar_DLC_MP1_MPPlayers.Archetypes", ArchetypeID: "Geth_Engineer"},
+		RootPath: "BioChar_DLC_MP1_MPPlayers.Archetypes", ArchetypeID: "Geth_Engineer", HasUniqueDodge: true, HasUniqueLightMelee: true},
 	{ID: "InfiltratorGeth", IDLook: "GethDefault", Name: "Geth Infiltrator", SubClass: "Infiltrator", Species: []Species{SpeciesGeth}, PictureFile: "MP_GethInfiltrator.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Cloak_Geth", "SFXPowerCustomActionMP_ProximityMine_Geth", "SFXPowerCustomActionMP_Supercharge", "SFXPowerCustomActionMP_GethPassive", "SFXPowerCustomActionMP_GethMeleePassive"},
 		RootPath: "BioChar_DLC_MP1_MPPlayers.Archetypes", ArchetypeID: "Geth_Infiltrator"},
 	{ID: "SoldierGethDestroyer", IDLook: "GethJuggernaut", Name: "Geth Juggernaut", SubClass: "Soldier", Species: []Species{SpeciesGeth}, PictureFile: "MP_GethPSLD.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_HexShield", "SFXPowerCustomActionMP_SiegePulse", "SFXPowerCustomActionMP_GethSentryTurret_MP5", "SFXPowerCustomActionMP_GethDestroyerPassive", "SFXPowerCustomActionMP_GethDestroyerMeleePassive"},
-		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Soldier_GethDestroyer"},
+		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Soldier_GethDestroyer", HasUniqueHeavyMelee: true, HasUniqueLightMelee: true},
 	{ID: "SoldierGeth", IDLook: "GethDefault", Name: "Geth Soldier", SubClass: "Soldier", Species: []Species{SpeciesGeth}, PictureFile: "MP_GethSLD.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Flamer", "SFXPowerCustomActionMP_Fortification", "SFXPowerCustomActionMP_Supercharge", "SFXPowerCustomActionMP_GethPassive", "SFXPowerCustomActionMP_GethMeleePassive"},
-		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Soldier_Geth"},
+		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Soldier_Geth", HasUniqueHeavyMelee: true},
 
 	// ---- Krogan ------------------------------------------------------------
 	{ID: "SoldierKrogan", IDLook: "KroganDefault", Name: "Krogan Soldier", SubClass: "Soldier", Species: []Species{SpeciesKrogan}, PictureFile: "MP_Krogan0.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Fortification", "SFXPowerCustomActionMP_Carnage", "SFXPowerCustomActionMP_InfernoGrenade", "SFXPowerCustomActionMP_KroganPassive", "SFXPowerCustomActionMP_KroganMeleePassive"},
-		RootPath: "BioChar_MPPlayers.Archetypes.Soldier"},
+		RootPath: "BioChar_MPPlayers.Archetypes.Soldier", HasUniqueHeavyMelee: true, HasUniqueLightMelee: true},
 	{ID: "AdeptKrogan", IDLook: "KroganArmored", Name: "Krogan Adept", SubClass: "Adept", Species: []Species{SpeciesKrogan}, PictureFile: "MP_KroganADP.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Barrier", "SFXPowerCustomActionMP_Warp", "SFXPowerCustomActionMP_Shockwave", "SFXPowerCustomActionMP_KroganPassive", "SFXPowerCustomActionMP_KroganMeleePassive"},
 		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Adept_Krogan"},
@@ -260,12 +263,12 @@ var CharacterCatalog = []CharacterDef{
 		RootPath: "BioChar_DLC_MP1_MPPlayers.Archetypes", ArchetypeID: "Krogan_Vanguard"},
 	{ID: "SentinelKroganWarlord", IDLook: "KroganWarlord", Name: "Krogan Warlord", SubClass: "Sentinel", Species: []Species{SpeciesKrogan}, PictureFile: "MP_BloodSEN.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_TechArmor_Warlord", "SFXPowerCustomActionMP_BioticHammerModal", "SFXPowerCustomActionMP_TechHammerModal", "SFXPowerCustomActionMP_WarlordPassive", "SFXPowerCustomActionMP_WarlordMeleePassive"},
-		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Sentinel_KroganWarlord"},
+		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Sentinel_KroganWarlord", HasUniqueHeavyMelee: true, HasUniqueLightMelee: true},
 
 	// ---- Mercenary ---------------------------------------------------------
 	{ID: "EngineerMerc", IDLook: "", Name: "Blue Suns Engineer", SubClass: "Engineer", Species: []Species{SpeciesHuman}, PictureFile: "MP_MercENG.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_CainMine", "SFXPowerCustomActionMP_MercBowModalOne", "SFXPowerCustomActionMP_MercBowModalTwo", "SFXPowerCustomActionMP_MercPassive", "SFXPowerCustomActionMP_MercMeleePassive"},
-		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Engineer_Merc"},
+		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Engineer_Merc", HasUniqueHeavyMelee: true, HasUniqueLightMelee: true},
 
 	// ---- Quarian -----------------------------------------------------------
 	{ID: "EngineerQuarian", IDLook: "QuarianFemaleDefault", Name: "Quarian Engineer", SubClass: "Engineer", Species: []Species{SpeciesQuarian}, PictureFile: "MP_Quarian0.webp",
@@ -307,7 +310,7 @@ var CharacterCatalog = []CharacterDef{
 		RootPath: "BioChar_MPPlayers.Archetypes.Sentinel"},
 	{ID: "N7SoldierTurian", IDLook: "TurianArmiger", Name: "Turian Havoc", SubClass: "Soldier", Species: []Species{SpeciesTurian}, PictureFile: "MP_TurianSLD.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_JetPackCharge", "SFXPowerCustomActionMP_StimPack", "SFXPowerCustomActionMP_CryoBlast", "SFXPowerCustomActionMP_N7TurianPassive", "SFXPowerCustomActionMP_N7TurianMeleePassive"},
-		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Soldier_N7_Turian"},
+		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Soldier_N7_Turian", HasUniqueHeavyMelee: true, HasUniqueDodge: true},
 	{ID: "VanguardTurianFemale", IDLook: "TurianFemale", Name: "Cabal Vanguard", SubClass: "Vanguard", Species: []Species{SpeciesTurian}, PictureFile: "MP_TurianVAN.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_LineStrike", "SFXPowerCustomActionMP_VenomTippedBlades", "SFXPowerCustomActionMP_BioticFocus", "SFXPowerCustomActionMP_FemTurianPassive", "SFXPowerCustomActionMP_FemTurianMeleePassive"},
 		RootPath: "BioChar_DLC_MP5_MPPlayers", ArchetypeID: "Vanguard_TurianFemale"},
@@ -315,7 +318,7 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Volus -------------------------------------------------------------
 	{ID: "AdeptVolus", IDLook: "VolusDefault", Name: "Volus Adept", SubClass: "Adept", Species: []Species{SpeciesVolus}, PictureFile: "MP_VolusADP.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Stasis", "SFXPowerCustomActionMP_BioticOrbs", "SFXPowerCustomActionMP_ShieldBoost", "SFXPowerCustomActionMP_VolusPassive", "SFXPowerCustomActionMP_VolusMeleePassive"},
-		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Adept2_Volus"},
+		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Adept2_Volus", HasUniqueHeavyMelee: true, HasUniqueLightMelee: true},
 	{ID: "EngineerVolus", IDLook: "VolusDefault", Name: "Volus Engineer", SubClass: "Engineer", Species: []Species{SpeciesVolus}, PictureFile: "MP_VolusENG.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_ReconMine", "SFXPowerCustomActionMP_ProximityMine", "SFXPowerCustomActionMP_ShieldBoost", "SFXPowerCustomActionMP_VolusPassive", "SFXPowerCustomActionMP_VolusMeleePassive"},
 		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Engineer_Volus"},
@@ -329,7 +332,7 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Vorcha ------------------------------------------------------------
 	{ID: "SoldierVorcha", IDLook: "VorchaDefault", Name: "Vorcha Soldier", SubClass: "Soldier", Species: []Species{SpeciesVorcha}, PictureFile: "MP_Vorcha.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_Bloodlust", "SFXPowerCustomActionMP_Flamer", "SFXPowerCustomActionMP_Carnage", "SFXPowerCustomActionMP_VorchaPassive", "SFXPowerCustomActionMP_VorchaMeleePassive"},
-		RootPath: "BioChar_DLC_MP2_MPPlayers.Archetypes"},
+		RootPath: "BioChar_DLC_MP2_MPPlayers.Archetypes", HasUniqueHeavyMelee: true, HasUniqueDodge: true},
 	{ID: "EngineerVorcha", IDLook: "VorchaDefault", Name: "Vorcha Engineer", SubClass: "Engineer", Species: []Species{SpeciesVorcha}, PictureFile: "MP_VorchaENG.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_BatarianNet", "SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_Bloodlust", "SFXPowerCustomActionMP_VorchaPassive", "SFXPowerCustomActionMP_VorchaMeleePassive"},
 		RootPath: "BioChar_DLC_MP4_MPPlayers", ArchetypeID: "Engineer_Vorcha"},
@@ -501,6 +504,42 @@ func AppearanceCharacters(species string) []CharacterDef {
 		}
 		if !seen[c.IDLook] {
 			seen[c.IDLook] = true
+			result = append(result, c)
+		}
+	}
+	return result
+}
+
+// HeavyMeleeCharacters returns all characters with HasUniqueHeavyMelee == true,
+// suitable for the heavy melee selector. No deduplication is applied.
+func HeavyMeleeCharacters() []CharacterDef {
+	var result []CharacterDef
+	for _, c := range CharacterCatalog {
+		if c.HasUniqueHeavyMelee {
+			result = append(result, c)
+		}
+	}
+	return result
+}
+
+// LightMeleeCharacters returns all characters with HasUniqueLightMelee == true,
+// suitable for the light melee selector. No deduplication is applied.
+func LightMeleeCharacters() []CharacterDef {
+	var result []CharacterDef
+	for _, c := range CharacterCatalog {
+		if c.HasUniqueLightMelee {
+			result = append(result, c)
+		}
+	}
+	return result
+}
+
+// DodgeCharacters returns all characters with HasUniqueDodge == true,
+// suitable for the dodge selector. No deduplication is applied.
+func DodgeCharacters() []CharacterDef {
+	var result []CharacterDef
+	for _, c := range CharacterCatalog {
+		if c.HasUniqueDodge {
 			result = append(result, c)
 		}
 	}

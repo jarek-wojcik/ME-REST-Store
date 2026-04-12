@@ -34,6 +34,9 @@ type CardURLs struct {
 	ClearBorrowedPowerURL       string // DELETE: removes the borrowed power slot
 	AppearanceSelectorURL       string // GET: opens character selector for appearance-only change
 	VoiceSelectorURL            string // GET: opens character selector for voice selection
+	HeavyMeleeSelectorURL       string // GET: opens character selector for heavy melee override
+	LightMeleeSelectorURL       string // GET: opens character selector for light melee override
+	DodgeSelectorURL            string // GET: opens character selector for dodge override
 	RenameURL                   string // POST: renames the entity; form field "name"
 	AddWeaponURL                string // GET: opens weapon selector for a new (appended) weapon slot
 	ArmorConsumableClearURL     string // POST: clears armor consumable
@@ -94,6 +97,9 @@ type SpectreView struct {
 	CharDef             *model.CharacterDef
 	AppearanceCharDef   *model.CharacterDef // visual override portrait; nil means use CharDef image
 	VoiceCharDef        *model.CharacterDef // voice archetype; nil means no voice override
+	HeavyMeleeCharDef   *model.CharacterDef // heavy melee archetype override; nil means no override
+	LightMeleeCharDef   *model.CharacterDef // light melee archetype override; nil means no override
+	DodgeCharDef        *model.CharacterDef // dodge archetype override; nil means no override
 	ShowHelmetToggle    bool                // true when base or appearance class has HasHelmet
 	ShowHeadgearToggle  bool                // true when base or appearance class has HasHeadgear
 	WeaponViews         []WeaponSlotView
@@ -123,6 +129,9 @@ func spectreURLs(spectreID string) CardURLs {
 		ClearBorrowedPowerURL:       base + "/borrowed-power",
 		AppearanceSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
 		VoiceSelectorURL:            "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-voice",
+		HeavyMeleeSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-heavy-melee",
+		LightMeleeSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-light-melee",
+		DodgeSelectorURL:            "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-dodge",
 		RenameURL:                   base + "/rename",
 		AddWeaponURL:                "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-add",
 		ArmorConsumableClearURL:     base + "/consumable/armor/none",
@@ -157,6 +166,9 @@ func teamSpectreURLs(spectreID string) CardURLs {
 		ClearBorrowedPowerURL:       base + "/borrowed-power",
 		AppearanceSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-appearance",
 		VoiceSelectorURL:            "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-voice",
+		HeavyMeleeSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-heavy-melee",
+		LightMeleeSelectorURL:       "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-light-melee",
+		DodgeSelectorURL:            "/api/characters/selector?entityId=" + spectreID + "&kind=spectre-dodge",
 		RenameURL:                   base + "/rename",
 		AddWeaponURL:                "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-add",
 		ArmorConsumableClearURL:     base + "/consumable/armor/none",
@@ -741,6 +753,90 @@ func updateSpectreVoice(db *bolt.DB, spectreID, charID string) (model.Spectre, e
 			return err
 		}
 		s.VoiceCharacterID = qualifiedID
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// updateSpectreHeavyMelee sets the heavy melee archetype override for a spectre,
+// stored as the fully-qualified RootPath.ArchetypeID path.
+func updateSpectreHeavyMelee(db *bolt.DB, spectreID, charID string) (model.Spectre, error) {
+	def := model.CharacterByID(charID)
+	qualifiedID := charID
+	if def != nil {
+		qualifiedID = def.KitQualifiedPath()
+	}
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.HeavyMeleeCharID = qualifiedID
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// updateSpectreLightMelee sets the light melee archetype override for a spectre,
+// stored as the fully-qualified RootPath.ArchetypeID path.
+func updateSpectreLightMelee(db *bolt.DB, spectreID, charID string) (model.Spectre, error) {
+	def := model.CharacterByID(charID)
+	qualifiedID := charID
+	if def != nil {
+		qualifiedID = def.KitQualifiedPath()
+	}
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.LightMeleeCharID = qualifiedID
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// updateSpectreDodge sets the dodge archetype override for a spectre,
+// stored as the fully-qualified RootPath.ArchetypeID path.
+func updateSpectreDodge(db *bolt.DB, spectreID, charID string) (model.Spectre, error) {
+	def := model.CharacterByID(charID)
+	qualifiedID := charID
+	if def != nil {
+		qualifiedID = def.KitQualifiedPath()
+	}
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.DodgeCharID = qualifiedID
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err

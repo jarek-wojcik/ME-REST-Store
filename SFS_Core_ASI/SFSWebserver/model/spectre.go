@@ -36,6 +36,9 @@ type Spectre struct {
 	AppearanceCharacterID string       `json:"appearanceCharId,omitempty"`   // visual override; base class unchanged
 	AppearancePawnType    PawnType     `json:"appearancePawnType,omitempty"` // pawn type derived from the character class
 	VoiceCharacterID      string       `json:"voiceCharId,omitempty"`        // fully-qualified voice archetype path (RootPath.ArchetypeID)
+	HeavyMeleeCharID      string       `json:"heavyMeleeCharId,omitempty"`   // fully-qualified heavy melee archetype path (RootPath.ArchetypeID)
+	LightMeleeCharID      string       `json:"lightMeleeCharId,omitempty"`   // fully-qualified light melee archetype path (RootPath.ArchetypeID)
+	DodgeCharID           string       `json:"dodgeCharId,omitempty"`        // fully-qualified dodge archetype path (RootPath.ArchetypeID)
 	ShieldType            string       `json:"shieldType,omitempty"`         // "Shield" or "Barrier"; empty defaults to "Shield"
 	Weapons               []WeaponSlot `json:"weapons,omitempty"`            // up to 5 weapon slots
 	ArmorConsumableID     string       `json:"armorConsumableId,omitempty"`  // equipped armor consumable
