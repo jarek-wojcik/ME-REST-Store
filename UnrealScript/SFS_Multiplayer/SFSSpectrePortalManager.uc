@@ -82,6 +82,7 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         LoadWeapons(Character, Outer);
         PowerManager.LoadPowers(Character, Outer);
         LoadConsumables(Character, Outer);
+        CustomActionsManager.MigrateCustomActions(Character, Outer);
     }
 }
 public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)

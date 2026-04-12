@@ -37,13 +37,11 @@ public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
         {
             continue;
         }
-        //asyncLoader.LoadPowerClassAsync(Character.Powers[i].PowerID, Character.Powers[i], i, FALSE, OnPowerLoaded);
         asyncLoader.LoadPowerClassBlocking(Character.Powers[i].PowerID, Character.Powers[i], i, FALSE, OnPowerLoaded);
         log(Self.Name, "Queued power: " $ Character.Powers[i].PowerID $ " at slot " $ i, Outer);
     }
     if (Character.bHasBorrowedPower && Character.BorrowedPower.PowerID != "")
     {
-        //asyncLoader.LoadPowerClassAsync(Character.BorrowedPower.PowerID, Character.BorrowedPower, 3, TRUE, OnBorrowedPowerLoaded);
         asyncLoader.LoadPowerClassBlocking(Character.BorrowedPower.PowerID, Character.BorrowedPower, 3, TRUE, OnBorrowedPowerLoaded);
         log(Self.Name, "Queued borrowed power: " $ Character.BorrowedPower.PowerID, Outer);
     }
