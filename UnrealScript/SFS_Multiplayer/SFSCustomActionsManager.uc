@@ -12,7 +12,6 @@ var SFSPortalAsyncLoader asyncLoader;
 public event simulated function HandlePostAdd()
 {
     asyncLoader = Outer.GetModule(Class'SFSPortalAsyncLoader');
-    default.bDebug = TRUE;
 }
 public function MigrateCustomActions(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
