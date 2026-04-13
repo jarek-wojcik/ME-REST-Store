@@ -251,6 +251,64 @@ private final function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Chara
         weaponsToRemove[i].Destroy();
     }
 }
+private final function ChangeShields(SFSCharacterModelStruct Character, SFXPawn Pawn)
+{
+    local SFXShield_Base existingShield;
+    local SFXShield_Base newShield;
+    local float savedMaxShields;
+    local Class<SFXShield_Base> desiredShieldClass;
+    
+    if (Pawn == None || Pawn.InvManager == None)
+    {
+        log(Self.Name, "ChangeShields: Pawn or InvManager is None, skipping", Outer);
+        return;
+    }
+    if (Character.ShieldType == "Barrier")
+    {
+        //desiredShieldClass = Class'SFXShield_Biotic_Player'; //Need to add these two classes to the package.
+    }
+    else
+    {
+        //Remove this one classes added.
+        desiredShieldClass = None;
+        //desiredShieldClass = Class'SFXShield_Energy_Player';
+    }
+    if (desiredShieldClass == None)
+    {
+        return;
+    }
+    log(Self.Name, "ChangeShields: ShieldType=" $ Character.ShieldType $ ", desiredClass=" $ desiredShieldClass.Name, Outer);
+    existingShield = SFXShield_Base(Pawn.InvManager.FindInventoryType(Class'SFXShield_Base', TRUE));
+    if (existingShield != None)
+    {
+        if (existingShield.Class == desiredShieldClass)
+        {
+            log(Self.Name, "ChangeShields: Correct shield already equipped, no change needed", Outer);
+            return;
+        }
+        savedMaxShields = existingShield.GetMaxShields();
+        log(Self.Name, "ChangeShields: Removing existing shield " $ existingShield.Class.Name $ ", savedMaxShields=" $ savedMaxShields, Outer);
+        Pawn.InvManager.RemoveFromInventory(existingShield);
+        existingShield.Destroy();
+    }
+    else
+    {
+        log(Self.Name, "ChangeShields: No existing shield found, creating fresh", Outer);
+    }
+    newShield = SFXShield_Base(Pawn.CreateInventory(desiredShieldClass));
+    if (newShield != None)
+    {
+        if (savedMaxShields > 0.0)
+        {
+            newShield.InitializeMaxShields(savedMaxShields);
+        }
+        log(Self.Name, "ChangeShields: New shield created: " $ newShield.Class.Name, Outer);
+    }
+    else
+    {
+        log(Self.Name, "ChangeShields: ERROR - Failed to create shield of class " $ desiredShieldClass.Name, Outer);
+    }
+}
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.
 defaultproperties

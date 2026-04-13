@@ -20,6 +20,8 @@ defaultproperties
                       Class'SFSRESTStoreManager', 
                       Class'SFSStrikeTeamIntegrationService', 
                       Class'SFSSpectreIntegrationService', 
+                      Class'SFSMissionSettingsService', 
+                      Class'SFSMissionParamsManager', 
                       Class'SFSSpectrePortalManager'
                      )
 }
