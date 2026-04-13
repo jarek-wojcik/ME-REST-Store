@@ -23,7 +23,6 @@ public event simulated function HandlePostAdd()
     {
         log(Self.Name, "SFSMissionSettingsService not found ? mission params inactive", Outer);
     }
-    default.bDebug = TRUE;
 }
 function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
 {
@@ -141,12 +140,19 @@ function OnWaveCompleted(int CompletedWaveNumber)
     // Grant credits via the local player's cheat manager ? same path as GrantMPCredits.
     foreach Outer.WorldInfo.AllControllers(Class'SFXPlayerController', PC)
     {
+        if (PC.PlayerReplicationInfo != None)
+        {
+            SFXPRI(PC.PlayerReplicationInfo).AddCredits(BaseReward);
+        }
+    }
+    foreach Outer.WorldInfo.AllControllers(Class'SFXPlayerController', PC)
+    {
         if (PC.IsLocalPlayerController())
         {
             CheatManager = BioCheatManagerNonNative(PC.CheatManager);
             if (CheatManager != None)
             {
-                CheatManager.GrantMPCredits(int(BaseReward));
+                //CheatManager.GrantMPCredits(int(BaseReward));
             }
             PC.HintSystem.AddNotification_CreditRecovery(int(BaseReward));
             ScoreManager = SFXGRI(Outer.WorldInfo.GRI).GetScoreManager();
