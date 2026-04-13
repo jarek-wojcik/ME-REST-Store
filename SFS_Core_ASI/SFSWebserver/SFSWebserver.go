@@ -210,9 +210,11 @@ func main() {
 	controllers.NewTeamsController(db, tmpl).Register()
 	controllers.NewSpectreController(db, tmpl).Register()
 	controllers.NewSelectorsController(db, tmpl).Register()
-	controllers.NewMissionParamsController().Register()
+	controllers.NewMissionParamsController(db, tmpl).Register()
 	controllers.NewSettingsController(db).Register()
 	me3integration.NewMe3IntegrationController(db).Register()
+	me3integration.NewMe3SquadController(db).Register()
+	me3integration.NewMe3MissionSettingsController(db).Register()
 
 	// GET /health
 	// Simple health endpoint for checking whether the server is running.

@@ -281,7 +281,11 @@
 
         <!-- Mission Parameters tab -->
         <div x-show="activeTab === 'missionparams'" x-cloak class="tab-panel">
-            <div class="text-gray-500 text-sm">— Content coming soon —</div>
+            <div hx-get="/api/missionParams"
+                 hx-trigger="load"
+                 hx-swap="outerHTML">
+                <div class="text-gray-600 text-xs text-center py-10 select-none">Loading…</div>
+            </div>
         </div>
 
         <!-- Portal Settings tab -->

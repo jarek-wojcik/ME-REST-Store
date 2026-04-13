@@ -1,0 +1,50 @@
+{{define "mission_params"}}
+<div id="mission-params-panel" class="max-w-xl flex flex-col gap-6">
+
+    <!-- Wave Settings card -->
+    <div class="flex flex-col gap-4 p-5 rounded-xl border border-me-border bg-me-panel">
+
+        <div class="text-xs font-semibold tracking-widest uppercase text-me-blue/70 pb-1 border-b border-me-border">
+            Wave Settings
+        </div>
+
+        <!-- Disable Objective Waves toggle -->
+        <form hx-post="/api/missionParams"
+              hx-target="#mission-params-panel"
+              hx-swap="outerHTML"
+              hx-on::after-request="if(event.detail.successful) spNotify('Mission parameters saved', 'success')">
+
+            <div class="flex items-center justify-between gap-6">
+                <div>
+                    <div class="text-sm font-semibold text-gray-200">Disable Objective Waves</div>
+                    <div class="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                        Prevents standard objective waves from spawning.<br>
+                        You will still be granted the rewards for completing them.<br>
+                        Sometimes- all you want to do is just kill stuff, and that's ok.
+                    </div>
+                </div>
+
+                <!-- Toggle switch -->
+                <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                    <input type="checkbox"
+                           name="disableObjectiveWaves"
+                           value="on"
+                           {{if .DisableObjectiveWaves}}checked{{end}}
+                           class="sr-only peer"
+                           onchange="this.form.requestSubmit()">
+                    <div class="w-11 h-6 rounded-full border border-[#1e3a5f]
+                                bg-[#0a0e1a] peer-checked:bg-[#00aaff]/20
+                                peer-checked:border-[#00aaff]/60
+                                after:content-[''] after:absolute after:top-[3px] after:left-[3px]
+                                after:w-[18px] after:h-[18px] after:rounded-full
+                                after:bg-gray-500 after:transition-all
+                                peer-checked:after:translate-x-5 peer-checked:after:bg-[#00aaff]
+                                transition-all duration-200"></div>
+                </label>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+{{end}}
