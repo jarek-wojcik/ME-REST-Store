@@ -6,7 +6,7 @@ struct SFSMissionSettingsStruct
     var int StartWave;
     var int MaxEnemies;
     var int MaxEnemiesPerSpawnPoint;
-    var array<string> BlockedEnemyArchetypes;
+    var array<string> EnabledEnemyArchetypes;
 };
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

@@ -16,7 +16,8 @@ type MissionSettings struct {
 	// MaxEnemiesPerSpawnPoint overrides the per-spawn-point enemy cap.
 	// 0 means use the game default (5).
 	MaxEnemiesPerSpawnPoint int `json:"maxEnemiesPerSpawnPoint"`
-	// BlockedEnemies is a list of enemy archetype names to suppress from spawning.
-	// e.g. "Char_Enemies.Archetypes.Cerberus.Banshee"
-	BlockedEnemies []string `json:"blockedEnemies"`
+	// EnabledEnemies is a whitelist of enemy archetype names allowed to spawn.
+	// If empty, all enemies are allowed (no restriction).
+	// e.g. "Char_Enemies.Archetypes.Cerberus.Centurion"
+	EnabledEnemies []string `json:"enabledEnemies"`
 }

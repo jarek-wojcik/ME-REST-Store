@@ -47,15 +47,15 @@ static function bool FromSimpleJson(string JsonText, out SFSMissionSettingsStruc
     Settings.StartWave = ExtractInt(JsonText, "startWave");
     Settings.MaxEnemies = ExtractInt(JsonText, "maxEnemies");
     Settings.MaxEnemiesPerSpawnPoint = ExtractInt(JsonText, "maxEnemiesPerSpawnPoint");
-    Settings.BlockedEnemyArchetypes.Length = 0;
+    Settings.EnabledEnemyArchetypes.Length = 0;
     for (i = 0; i < 30; i++)
     {
-        ArchEntry = ExtractString(JsonText, "blockedEnemies[" $ i $ "]");
+        ArchEntry = ExtractString(JsonText, "enabledEnemies[" $ i $ "]");
         if (ArchEntry == "")
         {
             break;
         }
-        Settings.BlockedEnemyArchetypes.AddItem(ArchEntry);
+        Settings.EnabledEnemyArchetypes.AddItem(ArchEntry);
     }
     return TRUE;
 }

@@ -119,10 +119,10 @@
         <div class="flex flex-col gap-4 p-5 rounded-xl border border-me-border bg-me-panel">
 
             <div class="text-xs font-semibold tracking-widest uppercase text-me-blue/70 pb-1 border-b border-me-border">
-                Enemy Blocklist
+                Enemy Filter
             </div>
             <div class="text-xs text-gray-500 -mt-1">
-                Checked enemies will not spawn during horde waves.
+                Check enemies to restrict spawning to the selected set. Leave all unchecked to allow all enemies.
             </div>
 
             {{/* Helper macro — each row is: checkbox + label */}}
@@ -172,9 +172,9 @@
 {{$d := index . 0}}{{$arch := index . 1}}{{$label := index . 2}}
 <label class="flex items-center gap-2 cursor-pointer select-none">
     <input type="checkbox"
-           name="blockedEnemies"
+           name="enabledEnemies"
            value="{{$arch}}"
-           {{if index $d.BlockedEnemiesMap $arch}}checked{{end}}
+           {{if index $d.EnabledEnemiesMap $arch}}checked{{end}}
            class="w-4 h-4 rounded border border-[#1e3a5f] bg-[#0a0e1a] accent-[#00aaff]"
            onchange="this.form.requestSubmit()">
     <span class="text-xs text-gray-300">{{$label}}</span>

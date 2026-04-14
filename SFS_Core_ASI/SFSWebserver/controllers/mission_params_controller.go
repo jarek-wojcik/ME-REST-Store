@@ -15,11 +15,11 @@ const missionParamsBucket = "missionSettings"
 const missionParamsKey = "config"
 
 // missionParamsViewData is the template data model for the mission_params partial.
-// BlockedEnemiesMap is a set derived from MissionSettings.BlockedEnemies so the
-// template can check membership with {{index .BlockedEnemiesMap "archetype"}}.
+// EnabledEnemiesMap is a set derived from MissionSettings.EnabledEnemies so the
+// template can check membership with {{index .EnabledEnemiesMap "archetype"}}.
 type missionParamsViewData struct {
 	model.MissionSettings
-	BlockedEnemiesMap map[string]bool
+	EnabledEnemiesMap map[string]bool
 }
 
 // MissionParamsController handles HTTP routes for configuring match
@@ -65,11 +65,11 @@ func (c *MissionParamsController) save(ms model.MissionSettings) error {
 
 func (c *MissionParamsController) render(w http.ResponseWriter, ms model.MissionSettings) {
 	vm := missionParamsViewData{
-		MissionSettings:   ms,
-		BlockedEnemiesMap: make(map[string]bool, len(ms.BlockedEnemies)),
+		MissionSettings:  ms,
+		EnabledEnemiesMap: make(map[string]bool, len(ms.EnabledEnemies)),
 	}
-	for _, e := range ms.BlockedEnemies {
-		vm.BlockedEnemiesMap[e] = true
+	for _, e := range ms.EnabledEnemies {
+		vm.EnabledEnemiesMap[e] = true
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "mission_params", vm)
@@ -117,9 +117,9 @@ func (c *MissionParamsController) Register() {
 		} else {
 			ms.MaxEnemiesPerSpawnPoint = 0
 		}
-		ms.BlockedEnemies = r.Form["blockedEnemies"]
-		if ms.BlockedEnemies == nil {
-			ms.BlockedEnemies = []string{}
+		ms.EnabledEnemies = r.Form["enabledEnemies"]
+		if ms.EnabledEnemies == nil {
+			ms.EnabledEnemies = []string{}
 		}
 		if err := c.save(ms); err != nil {
 			respondText(w, http.StatusInternalServerError, "db error\n")

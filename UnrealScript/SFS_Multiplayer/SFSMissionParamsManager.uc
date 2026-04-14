@@ -14,7 +14,7 @@ var bool bBypassActive;
 var int PendingMaxEnemies;
 var int PendingMaxEnemiesPerSpawnPoint;
 var int PendingStartWave;
-var array<string> PendingBlockedEnemyArchetypes;
+var array<string> PendingEnabledEnemyArchetypes;
 
 public event simulated function HandlePostAdd()
 {
@@ -40,12 +40,12 @@ function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
     {
         ApplyObjectiveWaveBypass();
     }
-    if (Settings.MaxEnemies > 0 || Settings.MaxEnemiesPerSpawnPoint > 0 || Settings.StartWave > 1 || Settings.BlockedEnemyArchetypes.Length > 0)
+    if (Settings.MaxEnemies > 0 || Settings.MaxEnemiesPerSpawnPoint > 0 || Settings.StartWave > 1 || Settings.EnabledEnemyArchetypes.Length > 0)
     {
         PendingMaxEnemies = Settings.MaxEnemies;
         PendingMaxEnemiesPerSpawnPoint = Settings.MaxEnemiesPerSpawnPoint;
         PendingStartWave = Settings.StartWave;
-        PendingBlockedEnemyArchetypes = Settings.BlockedEnemyArchetypes;
+        PendingEnabledEnemyArchetypes = Settings.EnabledEnemyArchetypes;
         ApplyHordeWaveSettings();
     }
     // Add handlers for future flags here.
@@ -64,7 +64,9 @@ function ApplyHordeWaveSettings()
     local int SquadIdx;
     local int TypeIdx;
     local SFXWave_Horde HordeWave;
-    local Name BlockedType;
+    local bool bIsEnabled;
+    local bool bFound;
+    local EnemyWaveInfo InjectedEnemy;
     
     if (WaveCoordinator == None)
     {
@@ -108,53 +110,76 @@ function ApplyHordeWaveSettings()
         {
             HordeWave.MaxEnemiesPerSpawnPoint = PendingMaxEnemiesPerSpawnPoint;
         }
-        // --- Enemy blocklist ---
-        for (ArchIdx = 0; ArchIdx < PendingBlockedEnemyArchetypes.Length; ArchIdx++)
+        // --- Enemy filter (enabled whitelist) ---
+        // If non-empty, only the listed types may spawn; everything else is removed.
+        // Enabled types not already in a wave's difficulty array are injected.
+        if (PendingEnabledEnemyArchetypes.Length > 0)
         {
-            // Resolve the EnemyType Name from the archetype string.
-            // Compare only the last dot-segment (e.g. "Centurion" from "Char_Enemies.Archetypes.Cerberus.Centurion").
-            BlockedType = 'None';
             for (ListIdx = 0; ListIdx < HordeWave.EnemyList.Length; ListIdx++)
             {
-                if (GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == GetLastDotSegment(PendingBlockedEnemyArchetypes[ArchIdx]))
+                bIsEnabled = FALSE;
+                for (ArchIdx = 0; ArchIdx < PendingEnabledEnemyArchetypes.Length; ArchIdx++)
                 {
-                    BlockedType = HordeWave.EnemyList[ListIdx].EnemyType;
-                    break;
-                }
-            }
-            if (BlockedType == 'None')
-            {
-                // This archetype doesn't exist in this wave's faction - skip.
-                continue;
-            }
-            // Remove from all per-difficulty enemy arrays (main random selection path).
-            for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
-            {
-                for (EnemyIdx = HordeWave.Enemies[DiffIdx].Enemies.Length - 1; EnemyIdx >= 0; EnemyIdx--)
-                {
-                    if (HordeWave.Enemies[DiffIdx].Enemies[EnemyIdx].EnemyType == BlockedType)
+                    if (GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
                     {
-                        HordeWave.Enemies[DiffIdx].Enemies.Remove(EnemyIdx, 1);
+                        bIsEnabled = TRUE;
+                        break;
+                    }
+                }
+                if (!bIsEnabled)
+                {
+                    // Not in the enabled list - remove from all difficulty arrays.
+                    for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
+                    {
+                        for (EnemyIdx = HordeWave.Enemies[DiffIdx].Enemies.Length - 1; EnemyIdx >= 0; EnemyIdx--)
+                        {
+                            if (HordeWave.Enemies[DiffIdx].Enemies[EnemyIdx].EnemyType == HordeWave.EnemyList[ListIdx].EnemyType)
+                            {
+                                HordeWave.Enemies[DiffIdx].Enemies.Remove(EnemyIdx, 1);
+                            }
+                        }
+                    }
+                    // Remove from squad type lists; disable fully-empty squads.
+                    for (SquadIdx = 0; SquadIdx < HordeWave.EnemySquadList.Length; SquadIdx++)
+                    {
+                        for (TypeIdx = HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Length - 1; TypeIdx >= 0; TypeIdx--)
+                        {
+                            if (HordeWave.EnemySquadList[SquadIdx].EnemyTypes[TypeIdx] == HordeWave.EnemyList[ListIdx].EnemyType)
+                            {
+                                HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Remove(TypeIdx, 1);
+                            }
+                        }
+                        if (HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Length == 0)
+                        {
+                            HordeWave.EnemySquadList[SquadIdx].WaveCost = 999999;
+                        }
+                    }
+                    log(Self.Name, "Removed type=" $ HordeWave.EnemyList[ListIdx].EnemyType $ " (not enabled) from wave " $ WaveIdx, Outer);
+                    continue;
+                }
+                // Ensure the enabled type is present in every difficulty array.
+                for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
+                {
+                    bFound = FALSE;
+                    for (EnemyIdx = 0; EnemyIdx < HordeWave.Enemies[DiffIdx].Enemies.Length; EnemyIdx++)
+                    {
+                        if (HordeWave.Enemies[DiffIdx].Enemies[EnemyIdx].EnemyType == HordeWave.EnemyList[ListIdx].EnemyType)
+                        {
+                            bFound = TRUE;
+                            break;
+                        }
+                    }
+                    if (!bFound)
+                    {
+                        InjectedEnemy.EnemyType = HordeWave.EnemyList[ListIdx].EnemyType;
+                        InjectedEnemy.MinCount = 0;
+                        InjectedEnemy.MaxCount = 0;
+                        InjectedEnemy.MaxPerWave = 0;
+                        HordeWave.Enemies[DiffIdx].Enemies.AddItem(InjectedEnemy);
+                        log(Self.Name, "Injected type=" $ InjectedEnemy.EnemyType $ " into wave " $ WaveIdx $ " diff " $ DiffIdx, Outer);
                     }
                 }
             }
-            // Remove from squad type lists; disable squads that become fully empty.
-            for (SquadIdx = 0; SquadIdx < HordeWave.EnemySquadList.Length; SquadIdx++)
-            {
-                for (TypeIdx = HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Length - 1; TypeIdx >= 0; TypeIdx--)
-                {
-                    if (HordeWave.EnemySquadList[SquadIdx].EnemyTypes[TypeIdx] == BlockedType)
-                    {
-                        HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Remove(TypeIdx, 1);
-                    }
-                }
-                if (HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Length == 0)
-                {
-                    // Budget check WavePointsRemaining >= 999999 will never pass.
-                    HordeWave.EnemySquadList[SquadIdx].WaveCost = 999999;
-                }
-            }
-            log(Self.Name, "Blocked enemy type=" $ BlockedType $ " from wave " $ WaveIdx, Outer);
         }
     }
     // --- Start wave ---
