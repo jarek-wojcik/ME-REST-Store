@@ -15,6 +15,7 @@ var int PendingMaxEnemies;
 var int PendingMaxEnemiesPerSpawnPoint;
 var int PendingStartWave;
 var array<string> PendingEnabledEnemyArchetypes;
+var bool PendingCrossFactionEnemies;
 
 public event simulated function HandlePostAdd()
 {
@@ -46,6 +47,7 @@ function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
         PendingMaxEnemiesPerSpawnPoint = Settings.MaxEnemiesPerSpawnPoint;
         PendingStartWave = Settings.StartWave;
         PendingEnabledEnemyArchetypes = Settings.EnabledEnemyArchetypes;
+        PendingCrossFactionEnemies = Settings.bCrossFactionEnemies;
         ApplyHordeWaveSettings();
     }
     // Add handlers for future flags here.
@@ -113,8 +115,35 @@ function ApplyHordeWaveSettings()
         // --- Enemy filter (enabled whitelist) ---
         // If non-empty, only the listed types may spawn; everything else is removed.
         // Enabled types not already in a wave's difficulty array are injected.
+        // When cross-faction is disabled, skip waves whose pool shares no overlap
+        // with the enabled list (i.e. off-faction waves are left untouched).
         if (PendingEnabledEnemyArchetypes.Length > 0)
         {
+            if (!PendingCrossFactionEnemies)
+            {
+                bIsEnabled = FALSE;
+                for (ListIdx = 0; ListIdx < HordeWave.EnemyList.Length; ListIdx++)
+                {
+                    for (ArchIdx = 0; ArchIdx < PendingEnabledEnemyArchetypes.Length; ArchIdx++)
+                    {
+                        if (GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
+                        {
+                            bIsEnabled = TRUE;
+                            break;
+                        }
+                    }
+                    if (bIsEnabled)
+                    {
+                        break;
+                    }
+                }
+                if (!bIsEnabled)
+                {
+                    // No enabled enemy belongs to this wave's faction pool - skip it.
+                    log(Self.Name, "Skipping off-faction wave " $ WaveIdx $ " (cross-faction disabled)", Outer);
+                    continue;
+                }
+            }
             for (ListIdx = 0; ListIdx < HordeWave.EnemyList.Length; ListIdx++)
             {
                 bIsEnabled = FALSE;

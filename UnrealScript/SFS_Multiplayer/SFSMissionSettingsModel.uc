@@ -7,6 +7,7 @@ struct SFSMissionSettingsStruct
     var int MaxEnemies;
     var int MaxEnemiesPerSpawnPoint;
     var array<string> EnabledEnemyArchetypes;
+    var bool bCrossFactionEnemies;
 };
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

@@ -20,4 +20,9 @@ type MissionSettings struct {
 	// If empty, all enemies are allowed (no restriction).
 	// e.g. "Char_Enemies.Archetypes.Cerberus.Centurion"
 	EnabledEnemies []string `json:"enabledEnemies"`
+	// CrossFactionEnemies allows the enabled enemy list to pull in enemy types
+	// from factions other than the one selected in the lobby.
+	// When false (default), only waves whose pool contains at least one enabled
+	// type are modified — off-faction waves are left untouched.
+	CrossFactionEnemies bool `json:"crossFactionEnemies"`
 }

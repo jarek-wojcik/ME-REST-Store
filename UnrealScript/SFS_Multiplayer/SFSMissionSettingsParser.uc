@@ -57,6 +57,7 @@ static function bool FromSimpleJson(string JsonText, out SFSMissionSettingsStruc
         }
         Settings.EnabledEnemyArchetypes.AddItem(ArchEntry);
     }
+    Settings.bCrossFactionEnemies = ExtractBool(JsonText, "crossFactionEnemies");
     return TRUE;
 }
 

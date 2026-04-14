@@ -121,6 +121,7 @@ func (c *MissionParamsController) Register() {
 		if ms.EnabledEnemies == nil {
 			ms.EnabledEnemies = []string{}
 		}
+		ms.CrossFactionEnemies = r.FormValue("crossFactionEnemies") == "on"
 		if err := c.save(ms); err != nil {
 			respondText(w, http.StatusInternalServerError, "db error\n")
 			return
