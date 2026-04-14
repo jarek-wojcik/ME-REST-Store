@@ -65,7 +65,7 @@ function ApplyHordeWaveSettings()
     local int TypeIdx;
     local SFXWave_Horde HordeWave;
     local Name BlockedType;
-
+    
     if (WaveCoordinator == None)
     {
         World = Class'SFXEngine'.static.GetSFXEngine().GetRealWorldInfo();
@@ -92,7 +92,6 @@ function ApplyHordeWaveSettings()
         Outer.SetTimer(1.0, FALSE, 'ApplyHordeWaveSettings', Self);
         return;
     }
-
     for (WaveIdx = 0; WaveIdx < WaveCoordinator.HordeManager.PotentialWaves.Length; WaveIdx++)
     {
         HordeWave = SFXWave_Horde(WaveCoordinator.HordeManager.PotentialWaves[WaveIdx]);
@@ -100,7 +99,6 @@ function ApplyHordeWaveSettings()
         {
             continue;
         }
-
         // --- Spawn limits ---
         if (PendingMaxEnemies > 0)
         {
@@ -110,13 +108,12 @@ function ApplyHordeWaveSettings()
         {
             HordeWave.MaxEnemiesPerSpawnPoint = PendingMaxEnemiesPerSpawnPoint;
         }
-
         // --- Enemy blocklist ---
         for (ArchIdx = 0; ArchIdx < PendingBlockedEnemyArchetypes.Length; ArchIdx++)
         {
             // Resolve the EnemyType Name from the archetype string.
             // Compare only the last dot-segment (e.g. "Centurion" from "Char_Enemies.Archetypes.Cerberus.Centurion").
-            BlockedType = '';
+            BlockedType = 'None';
             for (ListIdx = 0; ListIdx < HordeWave.EnemyList.Length; ListIdx++)
             {
                 if (GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == GetLastDotSegment(PendingBlockedEnemyArchetypes[ArchIdx]))
@@ -125,12 +122,11 @@ function ApplyHordeWaveSettings()
                     break;
                 }
             }
-            if (BlockedType == '')
+            if (BlockedType == 'None')
             {
                 // This archetype doesn't exist in this wave's faction - skip.
                 continue;
             }
-
             // Remove from all per-difficulty enemy arrays (main random selection path).
             for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
             {
@@ -142,7 +138,6 @@ function ApplyHordeWaveSettings()
                     }
                 }
             }
-
             // Remove from squad type lists; disable squads that become fully empty.
             for (SquadIdx = 0; SquadIdx < HordeWave.EnemySquadList.Length; SquadIdx++)
             {
@@ -159,29 +154,26 @@ function ApplyHordeWaveSettings()
                     HordeWave.EnemySquadList[SquadIdx].WaveCost = 999999;
                 }
             }
-
             log(Self.Name, "Blocked enemy type=" $ BlockedType $ " from wave " $ WaveIdx, Outer);
         }
     }
-
     // --- Start wave ---
     // StartWave is 1-based (UI); GoToWave expects 0-based. Only act when > 1.
     if (PendingStartWave > 1)
     {
         WaveCoordinator.GoToWave(PendingStartWave - 1);
-        log(Self.Name, "GoToWave(" $ (PendingStartWave - 1) $ ") called for StartWave=" $ PendingStartWave, Outer);
+        log(Self.Name, "GoToWave(" $ PendingStartWave - 1 $ ") called for StartWave=" $ PendingStartWave, Outer);
     }
-
     log(Self.Name, "Horde wave settings applied.", Outer);
 }
-private function string GetLastDotSegment(string S)
+private final function string GetLastDotSegment(string S)
 {
     local int DotPos;
     
-    DotPos = InStr(S, ".", TRUE);
+    DotPos = InStr(S, ".", TRUE, , );
     if (DotPos >= 0)
     {
-        return Mid(S, DotPos + 1);
+        return Mid(S, DotPos + 1, );
     }
     return S;
 }

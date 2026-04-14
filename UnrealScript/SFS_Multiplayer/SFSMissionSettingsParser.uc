@@ -42,13 +42,13 @@ static function bool FromSimpleJson(string JsonText, out SFSMissionSettingsStruc
 {
     local int i;
     local string ArchEntry;
-
+    
     Settings.bDisableObjectiveWaves = ExtractBool(JsonText, "disableObjectiveWaves");
     Settings.StartWave = ExtractInt(JsonText, "startWave");
     Settings.MaxEnemies = ExtractInt(JsonText, "maxEnemies");
     Settings.MaxEnemiesPerSpawnPoint = ExtractInt(JsonText, "maxEnemiesPerSpawnPoint");
     Settings.BlockedEnemyArchetypes.Length = 0;
-    for (i = 0; i < 20; i++)
+    for (i = 0; i < 30; i++)
     {
         ArchEntry = ExtractString(JsonText, "blockedEnemies[" $ i $ "]");
         if (ArchEntry == "")

@@ -65,7 +65,7 @@ func (c *MissionParamsController) save(ms model.MissionSettings) error {
 
 func (c *MissionParamsController) render(w http.ResponseWriter, ms model.MissionSettings) {
 	vm := missionParamsViewData{
-		MissionSettings:  ms,
+		MissionSettings:   ms,
 		BlockedEnemiesMap: make(map[string]bool, len(ms.BlockedEnemies)),
 	}
 	for _, e := range ms.BlockedEnemies {
