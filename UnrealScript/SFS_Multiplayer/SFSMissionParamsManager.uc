@@ -11,6 +11,8 @@ var SFXWaveCoordinator_HordeOperation WaveCoordinator;
 var array<SavedOperationWave> SavedOperationWaves;
 var int LastKnownWaveNumber;
 var bool bBypassActive;
+var int PendingMaxEnemies;
+var int PendingMaxEnemiesPerSpawnPoint;
 
 public event simulated function HandlePostAdd()
 {
@@ -36,8 +38,65 @@ function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
     {
         ApplyObjectiveWaveBypass();
     }
-    // Add handlers for future flags here, e.g.:
-    //   if (Settings.bDisableHazards) { ApplyHazardBypass(); }
+    if (Settings.MaxEnemies > 0 || Settings.MaxEnemiesPerSpawnPoint > 0)
+    {
+        PendingMaxEnemies = Settings.MaxEnemies;
+        PendingMaxEnemiesPerSpawnPoint = Settings.MaxEnemiesPerSpawnPoint;
+        ApplySpawnLimits();
+    }
+    // Add handlers for future flags here.
+}
+function ApplySpawnLimits()
+{
+    local BioWorldInfo World;
+    local array<Actor> Coordinators;
+    local Actor CoordActor;
+    local SFXWaveCoordinator_HordeOperation Coord;
+    local int i;
+    local SFXWave_Horde HordeWave;
+    
+    if (WaveCoordinator == None)
+    {
+        World = Class'SFXEngine'.static.GetSFXEngine().GetRealWorldInfo();
+        World.FindActorsOfClass(Class'SFXWaveCoordinator_HordeOperation', Coordinators);
+        foreach Coordinators(CoordActor, )
+        {
+            Coord = SFXWaveCoordinator_HordeOperation(CoordActor);
+            if (Coord != None)
+            {
+                WaveCoordinator = Coord;
+                break;
+            }
+        }
+    }
+    if (WaveCoordinator == None)
+    {
+        log(Self.Name, "WaveCoordinator not found yet - retrying in 1s", Outer);
+        Outer.SetTimer(1.0, FALSE, 'ApplySpawnLimits', Self);
+        return;
+    }
+    if (WaveCoordinator.HordeManager == None || WaveCoordinator.HordeManager.PotentialWaves.Length == 0)
+    {
+        log(Self.Name, "HordeManager not ready yet - retrying in 1s", Outer);
+        Outer.SetTimer(1.0, FALSE, 'ApplySpawnLimits', Self);
+        return;
+    }
+    for (i = 0; i < WaveCoordinator.HordeManager.PotentialWaves.Length; i++)
+    {
+        HordeWave = SFXWave_Horde(WaveCoordinator.HordeManager.PotentialWaves[i]);
+        if (HordeWave != None)
+        {
+            if (PendingMaxEnemies > 0)
+            {
+                HordeWave.MaxEnemies = PendingMaxEnemies;
+            }
+            if (PendingMaxEnemiesPerSpawnPoint > 0)
+            {
+                HordeWave.MaxEnemiesPerSpawnPoint = PendingMaxEnemiesPerSpawnPoint;
+            }
+        }
+    }
+    log(Self.Name, "Spawn limits applied: MaxEnemies=" $ PendingMaxEnemies $ " MaxEnemiesPerSpawnPoint=" $ PendingMaxEnemiesPerSpawnPoint, Outer);
 }
 function ApplyObjectiveWaveBypass()
 {
@@ -115,7 +174,6 @@ function OnWaveCompleted(int CompletedWaveNumber)
     local float BaseReward;
     local SFXScoreManager ScoreManager;
     local SFXPlayerController PC;
-    local BioCheatManagerNonNative CheatManager;
     
     // Check whether this wave number was scheduled as an operation wave.
     for (i = 0; i < SavedOperationWaves.Length; i++)
@@ -124,11 +182,9 @@ function OnWaveCompleted(int CompletedWaveNumber)
         {
             break;
         }
-        // Not the droids we're looking for ? keep searching / fall through.
         if (i == SavedOperationWaves.Length - 1)
         {
             return;
-            // No matching op-wave credit entry.
         }
     }
     // Replicate SFXWave_Operation.GetCreditsReward() ? DistributeObjectiveScore().
@@ -137,7 +193,6 @@ function OnWaveCompleted(int CompletedWaveNumber)
     // Round down to the nearest 25 (vanilla behaviour).
     BaseReward = float(int(BaseReward) - int(BaseReward) % 25);
     log(Self.Name, "Granting bypass credits for op-wave " $ CompletedWaveNumber $ ": " $ BaseReward $ " credits", Outer);
-    // Grant credits via the local player's cheat manager ? same path as GrantMPCredits.
     foreach Outer.WorldInfo.AllControllers(Class'SFXPlayerController', PC)
     {
         if (PC.PlayerReplicationInfo != None)
@@ -149,11 +204,6 @@ function OnWaveCompleted(int CompletedWaveNumber)
     {
         if (PC.IsLocalPlayerController())
         {
-            CheatManager = BioCheatManagerNonNative(PC.CheatManager);
-            if (CheatManager != None)
-            {
-                //CheatManager.GrantMPCredits(int(BaseReward));
-            }
             PC.HintSystem.AddNotification_CreditRecovery(int(BaseReward));
             ScoreManager = SFXGRI(Outer.WorldInfo.GRI).GetScoreManager();
             if (ScoreManager != None)

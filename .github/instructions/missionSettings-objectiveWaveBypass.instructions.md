@@ -88,8 +88,25 @@ per flag. Follow the existing toggle-switch pattern when adding new flags:
 
 ## UnrealScript Layer
 
-Three new SFS classes implement the bypass. They live in `UnrealScript/SFS_Multiplayer/`
+Four new SFS classes implement the bypass. They live in `UnrealScript/SFS_Multiplayer/`
 and follow the same `SFSManager within SFXPawn` pattern as the rest of the portal.
+
+### `SFSMissionSettingsModel`
+
+A plain (non-`within`) class that declares the shared struct. **Not** an SFSManager.
+
+```unrealscript
+Class SFSMissionSettingsModel;
+
+struct SFSMissionSettingsStruct
+{
+    var bool bDisableObjectiveWaves;
+    // Add new fields here as MissionSettings grows.
+};
+```
+
+All other UC classes reference `SFSMissionSettingsStruct` from this declaration.
+Do **not** re-declare the struct in the service or manager.
 
 ### `SFSMissionSettingsParser`
 
@@ -118,17 +135,14 @@ add a dedicated typed helper rather than inlining the parsing in `FromSimpleJson
 HTTP client. Calls `GET /missionSettings?simpleJson=true` and delegates parsing
 to `SFSMissionSettingsParser.FromSimpleJson`.
 
+Delegate signature:
 ```unrealscript
-struct SFSMissionSettingsStruct
-{
-    var bool bDisableObjectiveWaves;
-    // Add new fields here as MissionSettings grows.
-};
+function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
 ```
 
 In `OnHTTPResponse`:
 ```unrealscript
-bSuccess = Class'SFSMissionSettingsParser'.static.FromSimpleJson(Request.mResultBody, Settings);
+bSuccess = Class'SFSMissionSettingsParser'.static.FromSimpleJson(request.mResultBody, Settings);
 ```
 
 defaultproperties:
@@ -150,26 +164,38 @@ Orchestrator. Retrieved as a module by `SFSSpectrePortalManager`.
 
 **`ApplyObjectiveWaveBypass()`:**
 1. Finds the live `SFXWaveCoordinator_HordeOperation` via `FindActorsOfClass`.
-2. If `OperationManager == None`, self-reschedules with `SetTimer(1.0, FALSE, ...)` and returns.
-3. **Snapshots** `WaveCoordinator.OperationWaves[]` → local `savedOperationWaves[]` (WaveNumber + CreditScale).
-4. **Clears** `WaveCoordinator.OperationManager.PotentialWaves.Length = 0`.
-   - This causes `GetWaveIndex()` to return `-1`, so `StartNewWave()` never adds an operation wave to `ActiveWaves`.
-5. Starts `SetTimer(0.5, TRUE, 'PollWaveNumber')`.
+2. If `WaveCoordinator == None`, self-reschedules with `SetTimer(1.0, FALSE, 'ApplyObjectiveWaveBypass', Self)` and returns.
+3. If `WaveCoordinator.OperationManager == None`, self-reschedules and returns.
+4. **Snapshots** all entries except the last (extraction) from `WaveCoordinator.OperationWaves[]`
+   into `SavedOperationWaves[]` (WaveNumber + CreditScale).
+5. **Truncates** `WaveCoordinator.OperationWaves` to 1 entry via
+   `WaveCoordinator.OperationWaves.Remove(0, WaveCoordinator.OperationWaves.Length - 1)`
+   — the remaining entry is the extraction wave, preserved so end-of-match extraction fires normally.
+   Because `IsCurrentWaveAnOperation()` walks this array, objective wave numbers no longer match
+   and `StartNewWave()` never adds an `SFXWave_Operation` to `ActiveWaves`.
+6. Sets `bBypassActive = TRUE`, records `LastKnownWaveNumber`, starts `SetTimer(0.5, TRUE, 'PollWaveNumber', Self)`.
 
 **`PollWaveNumber()`:**
 - Detects when `WaveCoordinator.CurrentWaveNumber` advances.
 - On advance, calls `OnWaveCompleted(LastKnownWaveNumber)`.
 
 **`OnWaveCompleted(CompletedWaveNumber)`:**
-- Looks up `CompletedWaveNumber` in `savedOperationWaves[]`.
-- If a matching entry with `CreditScale > 0` exists, replicates vanilla credit formula:
+- Looks up `CompletedWaveNumber` in `SavedOperationWaves[]`.
+- If no matching entry with `CreditScale > 0` is found, returns immediately (non-op wave).
+- If a match exists, replicates the vanilla credit formula:
   ```
   BaseReward = DifficultyHandler.GetMinFloat('ObjectiveCreditsReward', 'MPGlobal')
-  BaseReward *= savedOperationWaves[i].CreditScale
-  BaseReward = float(int(BaseReward) - (int(BaseReward) % 25))   // round to nearest 25
+  BaseReward *= SavedOperationWaves[i].CreditScale
+  BaseReward = float(int(BaseReward) - int(BaseReward) % 25)   // round down to nearest 25
   ```
-- Calls `ScoreManager.AddCredits(Player, BaseReward)` for every live player.
-- Calls `HintSystem.AddNotification_CreditRecovery(int(BaseReward))` for local players.
+- **All players:** `SFXPRI(PC.PlayerReplicationInfo).AddCredits(BaseReward)` — updates
+  the replicated in-match `CreditsEarned` field (scoreboard display).
+- **Local player only:**
+  - `BioCheatManagerNonNative(PC.CheatManager).GrantMPCredits(int(BaseReward))` —
+    persists credits to `MPSaveManager` (the permanent wallet).
+  - `PC.HintSystem.AddNotification_CreditRecovery(int(BaseReward))` — wave-end credit notification.
+  - `ScoreManager.LastCreditsEarned = int(BaseReward)` then `ScoreManager.ShowCreditsEarnedMessage()` —
+    plays the `MPCreditsEarned` sound and shows the vanilla credits popup.
 
 ### Wire-up in `SFSSpectrePortalManager`
 
@@ -180,6 +206,17 @@ var SFSMissionParamsManager MissionParamsManager;
 MissionParamsManager = Outer.GetModule(Class'SFSMissionParamsManager');
 ```
 
+### Registration in `SFSContextMP`
+
+The two new classes must be added to `ManagerClasses` **in this order**, before
+`SFSSpectrePortalManager` so the service is resolvable when the manager initialises:
+
+```unrealscript
+Class'SFSMissionSettingsService',
+Class'SFSMissionParamsManager',
+Class'SFSSpectrePortalManager'
+```
+
 ---
 
 ## Credit Schedule (vanilla default config)
@@ -188,12 +225,14 @@ The default `OperationWaves` in `SFXWaveCoordinator_HordeOperation.defaultproper
 
 | Wave # | CreditScale | Notes |
 |--------|-------------|-------|
-| 2      | 0.15        | First op-wave |
-| 5      | 0.25        | Mid op-wave |
-| 9      | 0.60        | Late op-wave |
-| 10     | 0.0         | Extraction — no credits |
+| 2      | 0.15        | First op-wave — snapshotted and suppressed |
+| 5      | 0.25        | Mid op-wave — snapshotted and suppressed |
+| 9      | 0.60        | Late op-wave — snapshotted and suppressed |
+| 10     | 0.0         | Extraction — **preserved** in `OperationWaves[0]`, not snapshotted |
 
-The bypass awards credits on the same wave numbers using the same formula.
+The snapshot loop iterates `Length - 1` entries; `Remove(0, Length - 1)` drops waves 2/5/9
+and leaves the extraction entry at index 0. The bypass awards credits for waves 2, 5, and 9
+only (CreditScale > 0 guard).
 
 ---
 
@@ -208,6 +247,15 @@ The bypass awards credits on the same wave numbers using the same formula.
 ## Future Flags
 
 Add new fields to `MissionSettings` (Go) and `SFSMissionSettingsStruct` (UC) together.
-In the UI partial, add a new row inside the "Wave Settings" card (or a new card for a
-different category). In `SFSMissionParamsManager`, read the new field from
-`SFSMissionSettingsStruct` and add the corresponding behaviour.
+Declare new `var` fields in `SFSMissionSettingsModel.uc`, add corresponding parser calls
+in `SFSMissionSettingsParser.FromSimpleJson`, and add handler branches in
+`SFSMissionParamsManager.OnSettingsRetrieved`. In the UI partial, add a new row inside
+the relevant card (or a new card for a different category).
+
+## Implementation Notes
+
+- `BioCheatManagerNonNative.GrantMPCredits` call in `OnWaveCompleted` is currently
+  commented out pending verification that double-crediting does not occur when combined
+  with `SFXPRI.AddCredits`. Uncomment once confirmed.
+- `SFSMissionSettingsModel` extends nothing (plain class) — do **not** add `within SFXPawn`
+  or `extends SFSManager`; it is a pure data container.

@@ -41,9 +41,9 @@ static function string ExtractString(string JsonText, string key)
 static function bool FromSimpleJson(string JsonText, out SFSMissionSettingsStruct Settings)
 {
     Settings.bDisableObjectiveWaves = ExtractBool(JsonText, "disableObjectiveWaves");
-    // Add new fields here as the MissionSettings model grows, e.g.:
-    //   Settings.bDisableHazards = ExtractBool(JsonText, "disableHazards");
-    //   Settings.MaxEnemies      = ExtractInt (JsonText, "maxEnemies");
+    Settings.MaxEnemies = ExtractInt(JsonText, "maxEnemies");
+    Settings.MaxEnemiesPerSpawnPoint = ExtractInt(JsonText, "maxEnemiesPerSpawnPoint");
+    // Add new fields here as the MissionSettings model grows.
     return TRUE;
 }
 

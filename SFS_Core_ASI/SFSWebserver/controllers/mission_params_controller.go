@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"strconv"
 
 	"sfswebserver/model"
 
@@ -75,8 +76,22 @@ func (c *MissionParamsController) Register() {
 	// POST /api/missionParams
 	// Persists mission parameters from form values and returns the updated partial.
 	http.HandleFunc("POST /api/missionParams", func(w http.ResponseWriter, r *http.Request) {
-		ms := model.MissionSettings{
-			DisableObjectiveWaves: r.FormValue("disableObjectiveWaves") == "on",
+		// Load existing settings so fields absent from the form are preserved.
+		ms, err := c.load()
+		if err != nil {
+			respondText(w, http.StatusInternalServerError, "db error\n")
+			return
+		}
+		ms.DisableObjectiveWaves = r.FormValue("disableObjectiveWaves") == "on"
+		if n, err := strconv.Atoi(r.FormValue("maxEnemies")); err == nil && n >= 0 {
+			ms.MaxEnemies = n
+		} else {
+			ms.MaxEnemies = 0
+		}
+		if n, err := strconv.Atoi(r.FormValue("maxEnemiesPerSpawnPoint")); err == nil && n >= 0 {
+			ms.MaxEnemiesPerSpawnPoint = n
+		} else {
+			ms.MaxEnemiesPerSpawnPoint = 0
 		}
 		if err := c.save(ms); err != nil {
 			respondText(w, http.StatusInternalServerError, "db error\n")

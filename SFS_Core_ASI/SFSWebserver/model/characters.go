@@ -209,7 +209,7 @@ var CharacterCatalog = []CharacterDef{
 	// ---- Battlefield crossover ---------------------------------------------
 	// {ID: "MP_BF3_INF", IDLook: "", Name: "N7 Infiltrator (BF3)", SubClass: "Infiltrator", PictureFile: "MP_BF3_INF.webp",
 	// 	PowerIDs: [5]string{"Cloak", "CryoBlast", "StickyGrenade", "MPPassive", "MPMeleePassive"}},
-	{ID: "SoldierHumanMaleBF3", IDLook: "", Name: "N7 Soldier (BF3)", SubClass: "Soldier", Species: []Species{SpeciesHuman}, PictureFile: "MP_BF_HMM0.webp",
+	{ID: "SoldierHumanMaleBF3", IDLook: "", Name: "Soldier (BF3)", SubClass: "Soldier", Species: []Species{SpeciesHuman}, PictureFile: "MP_BF_HMM0.webp",
 		PowerIDs: [5]string{"SFXPowerCustomActionMP_AdrenalineRush", "SFXPowerCustomActionMP_Carnage", "SFXPowerCustomActionMP_FragGrenade", "SFXPowerCustomActionMP_HumanPassive", "SFXPowerCustomActionMP_HumanMeleePassive_Soldier"},
 		RootPath: "BioChar_MPPlayers.Archetypes.Soldier"},
 
