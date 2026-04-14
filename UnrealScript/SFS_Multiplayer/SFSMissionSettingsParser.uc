@@ -40,10 +40,23 @@ static function string ExtractString(string JsonText, string key)
 }
 static function bool FromSimpleJson(string JsonText, out SFSMissionSettingsStruct Settings)
 {
+    local int i;
+    local string ArchEntry;
+
     Settings.bDisableObjectiveWaves = ExtractBool(JsonText, "disableObjectiveWaves");
+    Settings.StartWave = ExtractInt(JsonText, "startWave");
     Settings.MaxEnemies = ExtractInt(JsonText, "maxEnemies");
     Settings.MaxEnemiesPerSpawnPoint = ExtractInt(JsonText, "maxEnemiesPerSpawnPoint");
-    // Add new fields here as the MissionSettings model grows.
+    Settings.BlockedEnemyArchetypes.Length = 0;
+    for (i = 0; i < 20; i++)
+    {
+        ArchEntry = ExtractString(JsonText, "blockedEnemies[" $ i $ "]");
+        if (ArchEntry == "")
+        {
+            break;
+        }
+        Settings.BlockedEnemyArchetypes.AddItem(ArchEntry);
+    }
     return TRUE;
 }
 

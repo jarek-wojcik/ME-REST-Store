@@ -178,7 +178,11 @@ func main() {
 	// Parse all templates as a single set so partials can call each other
 	// via {{template "name" .}}.
 	log.Printf("[INFO] parsing templates")
-	tmpl, err := template.New("").ParseFS(templateFS,
+	tmpl, err := template.New("").Funcs(template.FuncMap{
+		// list builds a slice from its arguments, used by sub-templates that
+		// need to receive multiple parameters (e.g. enemyRow in mission_params).
+		"list": func(args ...any) []any { return args },
+	}).ParseFS(templateFS,
 		"templates/*.html",
 		"templates/partials/*.html",
 	)

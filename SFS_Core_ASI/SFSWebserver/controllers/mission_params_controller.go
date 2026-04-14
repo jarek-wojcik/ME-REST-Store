@@ -14,6 +14,14 @@ import (
 const missionParamsBucket = "missionSettings"
 const missionParamsKey = "config"
 
+// missionParamsViewData is the template data model for the mission_params partial.
+// BlockedEnemiesMap is a set derived from MissionSettings.BlockedEnemies so the
+// template can check membership with {{index .BlockedEnemiesMap "archetype"}}.
+type missionParamsViewData struct {
+	model.MissionSettings
+	BlockedEnemiesMap map[string]bool
+}
+
 // MissionParamsController handles HTTP routes for configuring match
 // parameters (map, difficulty, wave count, enemy faction, etc.).
 type MissionParamsController struct {
@@ -56,8 +64,15 @@ func (c *MissionParamsController) save(ms model.MissionSettings) error {
 }
 
 func (c *MissionParamsController) render(w http.ResponseWriter, ms model.MissionSettings) {
+	vm := missionParamsViewData{
+		MissionSettings:  ms,
+		BlockedEnemiesMap: make(map[string]bool, len(ms.BlockedEnemies)),
+	}
+	for _, e := range ms.BlockedEnemies {
+		vm.BlockedEnemiesMap[e] = true
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_ = c.tmpl.ExecuteTemplate(w, "mission_params", ms)
+	_ = c.tmpl.ExecuteTemplate(w, "mission_params", vm)
 }
 
 // Register wires mission-parameter routes onto the default mux.
@@ -76,13 +91,22 @@ func (c *MissionParamsController) Register() {
 	// POST /api/missionParams
 	// Persists mission parameters from form values and returns the updated partial.
 	http.HandleFunc("POST /api/missionParams", func(w http.ResponseWriter, r *http.Request) {
-		// Load existing settings so fields absent from the form are preserved.
+		if err := r.ParseForm(); err != nil {
+			respondText(w, http.StatusInternalServerError, "form parse error\n")
+			return
+		}
+		// Load existing settings so unrelated fields are preserved across partial saves.
 		ms, err := c.load()
 		if err != nil {
 			respondText(w, http.StatusInternalServerError, "db error\n")
 			return
 		}
 		ms.DisableObjectiveWaves = r.FormValue("disableObjectiveWaves") == "on"
+		if n, err := strconv.Atoi(r.FormValue("startWave")); err == nil && n >= 1 && n <= 10 {
+			ms.StartWave = n
+		} else {
+			ms.StartWave = 1
+		}
 		if n, err := strconv.Atoi(r.FormValue("maxEnemies")); err == nil && n >= 0 {
 			ms.MaxEnemies = n
 		} else {
@@ -92,6 +116,10 @@ func (c *MissionParamsController) Register() {
 			ms.MaxEnemiesPerSpawnPoint = n
 		} else {
 			ms.MaxEnemiesPerSpawnPoint = 0
+		}
+		ms.BlockedEnemies = r.Form["blockedEnemies"]
+		if ms.BlockedEnemies == nil {
+			ms.BlockedEnemies = []string{}
 		}
 		if err := c.save(ms); err != nil {
 			respondText(w, http.StatusInternalServerError, "db error\n")

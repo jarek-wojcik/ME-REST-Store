@@ -7,6 +7,39 @@
           hx-swap="outerHTML"
           hx-on::after-request="if(event.detail.successful) spNotify('Mission parameters saved', 'success')">
 
+        <!-- Match Start card -->
+        <div class="flex flex-col gap-4 p-5 rounded-xl border border-me-border bg-me-panel">
+
+            <div class="text-xs font-semibold tracking-widest uppercase text-me-blue/70 pb-1 border-b border-me-border">
+                Match Start
+            </div>
+
+            <!-- Start Wave -->
+            <div class="flex items-center justify-between gap-6">
+                <div>
+                    <div class="text-sm font-semibold text-gray-200">Start Wave</div>
+                    <div class="text-xs text-gray-500 mt-0.5 leading-relaxed">
+                        Skip directly to a specific wave when the match begins.
+                    </div>
+                </div>
+                <select name="startWave"
+                        class="bg-[#0a0e1a] border border-[#1e3a5f] rounded-lg px-2 py-1.5 text-sm text-gray-200 focus:outline-none focus:border-[#00aaff]/60"
+                        onchange="this.form.requestSubmit()">
+                    <option value="1"  {{if le .StartWave 1}}selected{{end}}>Wave 1 (Default)</option>
+                    <option value="2"  {{if eq .StartWave 2}}selected{{end}}>Wave 2</option>
+                    <option value="3"  {{if eq .StartWave 3}}selected{{end}}>Wave 3</option>
+                    <option value="4"  {{if eq .StartWave 4}}selected{{end}}>Wave 4</option>
+                    <option value="5"  {{if eq .StartWave 5}}selected{{end}}>Wave 5</option>
+                    <option value="6"  {{if eq .StartWave 6}}selected{{end}}>Wave 6</option>
+                    <option value="7"  {{if eq .StartWave 7}}selected{{end}}>Wave 7</option>
+                    <option value="8"  {{if eq .StartWave 8}}selected{{end}}>Wave 8</option>
+                    <option value="9"  {{if eq .StartWave 9}}selected{{end}}>Wave 9</option>
+                    <option value="10" {{if eq .StartWave 10}}selected{{end}}>Wave 10</option>
+                </select>
+            </div>
+
+        </div>
+
         <!-- Wave Settings card -->
         <div class="flex flex-col gap-4 p-5 rounded-xl border border-me-border bg-me-panel">
 
@@ -20,12 +53,9 @@
                     <div class="text-sm font-semibold text-gray-200">Disable Objective Waves</div>
                     <div class="text-xs text-gray-500 mt-0.5 leading-relaxed">
                         Prevents standard objective waves from spawning.<br>
-                        You will still be granted the rewards for completing them.<br>
-                        Sometimes- all you want to do is just kill stuff, and that's ok.
+                        You will still be granted the rewards for completing them.
                     </div>
                 </div>
-
-                <!-- Toggle switch -->
                 <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
                     <input type="checkbox"
                            name="disableObjectiveWaves"
@@ -58,13 +88,10 @@
                 <div>
                     <div class="text-sm font-semibold text-gray-200">Max Enemies</div>
                     <div class="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                        Maximum enemies alive simultaneously per horde wave.<br>
-                        Set to 0 to use the game default (8).
+                        Maximum enemies alive simultaneously. 0 = game default (8).
                     </div>
                 </div>
-                <input type="number"
-                       name="maxEnemies"
-                       min="0" max="64"
+                <input type="number" name="maxEnemies" min="0" max="64"
                        value="{{if gt .MaxEnemies 0}}{{.MaxEnemies}}{{end}}"
                        placeholder="8"
                        class="w-20 text-center bg-[#0a0e1a] border border-[#1e3a5f] rounded-lg px-2 py-1.5 text-sm text-gray-200 focus:outline-none focus:border-[#00aaff]/60"
@@ -74,15 +101,12 @@
             <!-- Max Enemies Per Spawn Point -->
             <div class="flex items-center justify-between gap-6">
                 <div>
-                    <div class="text-sm font-semibold text-gray-200">Max Enemies Per Spawn Point</div>
+                    <div class="text-sm font-semibold text-gray-200">Max Per Spawn Point</div>
                     <div class="text-xs text-gray-500 mt-0.5 leading-relaxed">
-                        Maximum enemies allowed at each spawn location simultaneously.<br>
-                        Set to 0 to use the game default (5).
+                        Maximum enemies per spawn location. 0 = game default (5).
                     </div>
                 </div>
-                <input type="number"
-                       name="maxEnemiesPerSpawnPoint"
-                       min="0" max="32"
+                <input type="number" name="maxEnemiesPerSpawnPoint" min="0" max="32"
                        value="{{if gt .MaxEnemiesPerSpawnPoint 0}}{{.MaxEnemiesPerSpawnPoint}}{{end}}"
                        placeholder="5"
                        class="w-20 text-center bg-[#0a0e1a] border border-[#1e3a5f] rounded-lg px-2 py-1.5 text-sm text-gray-200 focus:outline-none focus:border-[#00aaff]/60"
@@ -91,7 +115,68 @@
 
         </div>
 
+        <!-- Enemy Blocklist card -->
+        <div class="flex flex-col gap-4 p-5 rounded-xl border border-me-border bg-me-panel">
+
+            <div class="text-xs font-semibold tracking-widest uppercase text-me-blue/70 pb-1 border-b border-me-border">
+                Enemy Blocklist
+            </div>
+            <div class="text-xs text-gray-500 -mt-1">
+                Checked enemies will not spawn during horde waves.
+            </div>
+
+            {{/* Helper macro — each row is: checkbox + label */}}
+            {{/* Cerberus */}}
+            <div class="text-xs font-semibold text-[#00aaff]/80 tracking-wide uppercase mt-1">Cerberus</div>
+            <div class="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Cerberus.AssaultTrooper" "Assault Trooper")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Cerberus.Centurion"      "Centurion")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Cerberus.Engineer"       "Engineer")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Cerberus.Guardian"       "Guardian")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Cerberus.Nemesis"        "Nemesis")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Cerberus.Atlas"          "Atlas")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Cerberus.Phantom"        "Phantom")}}
+                {{template "enemyRow" (list . "Char_Enemies_MP4.Archetypes.Cerberus.Phoenix"     "Dragoon")}}
+            </div>
+
+            {{/* Geth */}}
+            <div class="text-xs font-semibold text-[#00aaff]/80 tracking-wide uppercase mt-2">Geth</div>
+            <div class="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Geth.GethTrooper"       "Trooper")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Geth.GethRocketTrooper" "Rocket Trooper")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Geth.GethPyro"         "Pyro")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Geth.GethHunter"       "Hunter")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Geth.GethPrime"        "Prime")}}
+            </div>
+
+            {{/* Reapers */}}
+            <div class="text-xs font-semibold text-[#00aaff]/80 tracking-wide uppercase mt-2">Reapers</div>
+            <div class="grid grid-cols-2 gap-x-6 gap-y-1.5">
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Reapers.Husk"     "Husk")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Reapers.Cannibal" "Cannibal")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Reapers.Marauder" "Marauder")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Reapers.Brute"   "Brute")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Reapers.Ravager" "Ravager")}}
+                {{template "enemyRow" (list . "Char_Enemies.Archetypes.Reapers.Banshee" "Banshee")}}
+            </div>
+
+        </div>
+
     </form>
 
 </div>
+{{end}}
+
+{{/* enemyRow renders one checkbox row. args: slice [viewData, archetype, label] */}}
+{{define "enemyRow"}}
+{{$d := index . 0}}{{$arch := index . 1}}{{$label := index . 2}}
+<label class="flex items-center gap-2 cursor-pointer select-none">
+    <input type="checkbox"
+           name="blockedEnemies"
+           value="{{$arch}}"
+           {{if index $d.BlockedEnemiesMap $arch}}checked{{end}}
+           class="w-4 h-4 rounded border border-[#1e3a5f] bg-[#0a0e1a] accent-[#00aaff]"
+           onchange="this.form.requestSubmit()">
+    <span class="text-xs text-gray-300">{{$label}}</span>
+</label>
 {{end}}
