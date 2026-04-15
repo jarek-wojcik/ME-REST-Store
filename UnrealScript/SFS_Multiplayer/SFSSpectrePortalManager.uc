@@ -208,7 +208,7 @@ public function LoadWeapons(SFSCharacterModelStruct Character, SFXPawn Pawn)
             existingWeapon.Destroy();
         }
         log(Self.Name, "Requesting async load for weapon: " $ Character.Weapons[i].WeaponID, Outer);
-        weaponManager.loadAndGiveWeaponAsync(Character.Weapons[i].WeaponID, Character.Weapons[i].Mod1ID, Character.Weapons[i].Mod2ID, Character.Weapons[i].FireMode);
+        weaponManager.loadAndGiveWeaponAsync(Character.Weapons[i].WeaponID, Character.Weapons[i].Mod1ID, Character.Weapons[i].Mod2ID, Character.Weapons[i].FireMode, Character.Weapons[i].bRemoveScope);
     }
 }
 private final function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Character, SFXPawn Pawn)

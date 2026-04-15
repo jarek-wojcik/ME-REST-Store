@@ -20,10 +20,11 @@ const (
 
 // WeaponSlot holds one equipped weapon and its two mod slots.
 type WeaponSlot struct {
-	WeaponID string   `json:"weaponId"`
-	Mod1ID   string   `json:"mod1Id,omitempty"`
-	Mod2ID   string   `json:"mod2Id,omitempty"`
-	FireMode FireMode `json:"fireMode,omitempty"`
+	WeaponID    string   `json:"weaponId"`
+	Mod1ID      string   `json:"mod1Id,omitempty"`
+	Mod2ID      string   `json:"mod2Id,omitempty"`
+	FireMode    FireMode `json:"fireMode,omitempty"`
+	RemoveScope bool     `json:"removeScope,omitempty"`
 }
 
 // Spectre is a single N7/Spectre character loadout.

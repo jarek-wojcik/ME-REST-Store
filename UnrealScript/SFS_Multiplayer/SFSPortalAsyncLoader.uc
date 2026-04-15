@@ -24,7 +24,7 @@ public function LoadAppearanceAsync(string AssetPath, bool bUsesHelmet, bool bUs
     AsyncLoads.AddItem(AsyncLoad);
     StartCheckTimer();
 }
-public function LoadWeaponAsync(string AssetPath, string Mod1ID, string Mod2ID, string WeaponFireMode, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
+public function LoadWeaponAsync(string AssetPath, string Mod1ID, string Mod2ID, string WeaponFireMode, bool bRemoveScope, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
     local SFSGenericAsyncLoad AsyncLoad;
     
@@ -32,6 +32,7 @@ public function LoadWeaponAsync(string AssetPath, string Mod1ID, string Mod2ID, 
     AsyncLoad.Mod1ID = Mod1ID;
     AsyncLoad.Mod2ID = Mod2ID;
     AsyncLoad.WeaponFireMode = WeaponFireMode;
+    AsyncLoad.bRemoveScope = bRemoveScope;
     PollLoadStatus(AsyncLoad);
     AsyncLoads.AddItem(AsyncLoad);
     StartCheckTimer();

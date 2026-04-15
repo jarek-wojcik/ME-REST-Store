@@ -84,7 +84,7 @@ function loadAndGiveWeapon(string weaponPath)
     OwnerPawn.SetWeaponImmediately(NewWeapon);
     log(Self.Name, "Successfully gave and equipped weapon: " $ weaponPath, Outer);
 }
-function loadAndGiveWeaponAsync(string weaponPath, string Mod1ID, string Mod2ID, string WeaponFireMode)
+function loadAndGiveWeaponAsync(string weaponPath, string Mod1ID, string Mod2ID, string WeaponFireMode, bool bRemoveScope)
 {
     if (asyncLoader == None)
     {
@@ -92,7 +92,7 @@ function loadAndGiveWeaponAsync(string weaponPath, string Mod1ID, string Mod2ID,
         return;
     }
     log(Self.Name, "Async loading weapon: " $ weaponPath, Outer);
-    asyncLoader.LoadWeaponAsync(weaponPath, Mod1ID, Mod2ID, WeaponFireMode, OnWeaponLoaded);
+    asyncLoader.LoadWeaponAsync(weaponPath, Mod1ID, Mod2ID, WeaponFireMode, bRemoveScope, OnWeaponLoaded);
 }
 function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
@@ -124,6 +124,11 @@ function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     if (SFXWeapon_SniperRifle_Base(NewWeapon) != None)
     {
         SFXWeapon_SniperRifle_Base(NewWeapon).SniperRifleDamagePenalty = 1.0;
+        if (load.bRemoveScope && NewWeapon.AimModes.Length > 0)
+        {
+            NewWeapon.AimModes[0].bScoped = FALSE;
+            log(Self.Name, "Removed scope (bScoped=false) for: " $ load.AssetToLoad, Outer);
+        }
     }
     log(Self.Name, "Successfully gave and equipped weapon (async): " $ load.AssetToLoad $ " at level " $ NewWeapon.WeaponLevel, Outer);
     ModManager = NewWeapon.GetModule(Class'SFXModule_WeaponModManager');

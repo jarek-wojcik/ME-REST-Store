@@ -33,6 +33,7 @@ var int SlotIndex;
 var bool bIsBorrowedPower;
 var bool bUsesHelmet;
 var bool bUsesHeadgear;
+var bool bRemoveScope;
 
 function OnAssetLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {

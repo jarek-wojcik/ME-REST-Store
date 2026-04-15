@@ -7,7 +7,7 @@ struct SFSMissionSettingsStruct
     var int MaxEnemies;
     var int MaxEnemiesPerSpawnPoint;
     var array<string> EnabledEnemyArchetypes;
-    var array<int> EnabledEnemyRatios; // parallel to EnabledEnemyArchetypes; 0/1 = default weight
+    var array<int> EnabledEnemyRatios;
     var bool bCrossFactionEnemies;
 };
 

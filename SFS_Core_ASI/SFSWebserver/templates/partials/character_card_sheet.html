@@ -749,6 +749,14 @@
                                 title="Full auto">Full Auto</button>
                     </div>
 
+                    {{if .IsSniperRifle}}
+                    <button class="text-[13px] px-1.5 py-0.5 rounded border
+                                   transition-colors cursor-pointer focus:outline-none
+                                   {{if .RemoveScope}}bg-[#0d3a5f]/80 text-[#00aaff] border-[#00aaff]/50{{else}}text-gray-700 border-[#1a2d4a] hover:text-[#00aaff]/70{{end}}"
+                            hx-post="{{.ToggleScopeURL}}"
+                            hx-target="#{{$cardID}}" hx-swap="outerHTML"
+                            title="{{if .RemoveScope}}Scope removed (hip-fire only){{else}}Remove scope (enable hip-fire){{end}}">𖦏</button>
+                    {{end}}
 
                     <button class="ml-auto text-[9px] text-red-800 hover:text-red-400
                                    cursor-pointer focus:outline-none transition-colors"

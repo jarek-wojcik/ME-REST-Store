@@ -87,6 +87,8 @@ type WeaponSlotView struct {
 	FireModeSemiURL     string              // POST: sets fire mode to Semi
 	FireModeBurstURL    string              // POST: sets fire mode to Burst
 	FireModeFullAutoURL string              // POST: sets fire mode to FullAuto
+	IsSniperRifle       bool                // true when the weapon category is Sniper Rifle
+	ToggleScopeURL      string              // POST: toggles removeScope for this slot (sniper rifles only)
 }
 
 // SpectreView pairs a persisted Spectre with resolved catalog definitions.
@@ -682,6 +684,32 @@ func removeSpectreWeapon(db *bolt.DB, spectreID string, idx int) (model.Spectre,
 			return err
 		}
 		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+// toggleSpectreWeaponScope flips the RemoveScope flag for the weapon at the given slot index.
+func toggleSpectreWeaponScope(db *bolt.DB, spectreID string, idx int) (model.Spectre, error) {
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.MigrateWeapons()
+		if idx < 0 || idx >= len(s.Weapons) {
+			return fmt.Errorf("invalid weapon index")
+		}
+		s.Weapons[idx].RemoveScope = !s.Weapons[idx].RemoveScope
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(s.ID), data)
 	})
 	return s, err
 }
@@ -1396,10 +1424,12 @@ func weaponSlotViews(spectreID string, weapons []model.WeaponSlot) []WeaponSlotV
 	for i, ws := range weapons {
 		idxStr := strconv.Itoa(i)
 		fmBase := base + "/weapon/" + idxStr + "/firemode/"
+		weaponDef := model.WeaponByID(ws.WeaponID)
+		isSniperRifle := weaponDef != nil && weaponDef.Category == model.WeaponTypeSniperRifle
 		views[i] = WeaponSlotView{
 			WeaponSlot:          ws,
 			SlotIdx:             i,
-			WeaponDef:           model.WeaponByID(ws.WeaponID),
+			WeaponDef:           weaponDef,
 			Mod1Def:             model.WeaponModByID(ws.Mod1ID),
 			Mod2Def:             model.WeaponModByID(ws.Mod2ID),
 			WeaponSelectorURL:   "/api/weapons/selector?entityId=" + spectreID + "&kind=spectre-weapon&weaponIdx=" + idxStr,
@@ -1410,6 +1440,8 @@ func weaponSlotViews(spectreID string, weapons []model.WeaponSlot) []WeaponSlotV
 			FireModeSemiURL:     fmBase + "Semi",
 			FireModeBurstURL:    fmBase + "Burst",
 			FireModeFullAutoURL: fmBase + "FullAuto",
+			IsSniperRifle:       isSniperRifle,
+			ToggleScopeURL:      base + "/weapon/" + idxStr + "/scope/toggle",
 		}
 	}
 	return views
