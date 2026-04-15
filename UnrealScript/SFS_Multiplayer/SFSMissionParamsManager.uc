@@ -15,6 +15,7 @@ var int PendingMaxEnemies;
 var int PendingMaxEnemiesPerSpawnPoint;
 var int PendingStartWave;
 var array<string> PendingEnabledEnemyArchetypes;
+var array<int> PendingEnabledEnemyRatios;
 var bool PendingCrossFactionEnemies;
 
 public event simulated function HandlePostAdd()
@@ -47,6 +48,7 @@ function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
         PendingMaxEnemiesPerSpawnPoint = Settings.MaxEnemiesPerSpawnPoint;
         PendingStartWave = Settings.StartWave;
         PendingEnabledEnemyArchetypes = Settings.EnabledEnemyArchetypes;
+        PendingEnabledEnemyRatios = Settings.EnabledEnemyRatios;
         PendingCrossFactionEnemies = Settings.bCrossFactionEnemies;
         ApplyHordeWaveSettings();
     }
@@ -69,6 +71,8 @@ function ApplyHordeWaveSettings()
     local bool bIsEnabled;
     local bool bFound;
     local EnemyWaveInfo InjectedEnemy;
+    local int RatioVal;
+    local int CopyIdx;
     
     if (WaveCoordinator == None)
     {
@@ -186,28 +190,34 @@ function ApplyHordeWaveSettings()
                     log(Self.Name, "Removed type=" $ HordeWave.EnemyList[ListIdx].EnemyType $ " (not enabled) from wave " $ WaveIdx, Outer);
                     continue;
                 }
-                // Ensure the enabled type is present in every difficulty array.
+                // Enabled: purge ALL existing copies then re-add RatioVal copies
+                // so the selection weight reflects the configured ratio.
+                RatioVal = PendingEnabledEnemyRatios[ArchIdx];
+                if (RatioVal < 1)
+                {
+                    RatioVal = 1;
+                }
                 for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
                 {
-                    bFound = FALSE;
-                    for (EnemyIdx = 0; EnemyIdx < HordeWave.Enemies[DiffIdx].Enemies.Length; EnemyIdx++)
+                    // Remove all existing copies.
+                    for (EnemyIdx = HordeWave.Enemies[DiffIdx].Enemies.Length - 1; EnemyIdx >= 0; EnemyIdx--)
                     {
                         if (HordeWave.Enemies[DiffIdx].Enemies[EnemyIdx].EnemyType == HordeWave.EnemyList[ListIdx].EnemyType)
                         {
-                            bFound = TRUE;
-                            break;
+                            HordeWave.Enemies[DiffIdx].Enemies.Remove(EnemyIdx, 1);
                         }
                     }
-                    if (!bFound)
+                    // Add RatioVal copies.
+                    InjectedEnemy.EnemyType = HordeWave.EnemyList[ListIdx].EnemyType;
+                    InjectedEnemy.MinCount = 0;
+                    InjectedEnemy.MaxCount = 0;
+                    InjectedEnemy.MaxPerWave = 0;
+                    for (CopyIdx = 0; CopyIdx < RatioVal; CopyIdx++)
                     {
-                        InjectedEnemy.EnemyType = HordeWave.EnemyList[ListIdx].EnemyType;
-                        InjectedEnemy.MinCount = 0;
-                        InjectedEnemy.MaxCount = 0;
-                        InjectedEnemy.MaxPerWave = 0;
                         HordeWave.Enemies[DiffIdx].Enemies.AddItem(InjectedEnemy);
-                        log(Self.Name, "Injected type=" $ InjectedEnemy.EnemyType $ " into wave " $ WaveIdx $ " diff " $ DiffIdx, Outer);
                     }
                 }
+                log(Self.Name, "Set type=" $ HordeWave.EnemyList[ListIdx].EnemyType $ " ratio=" $ RatioVal $ " in wave " $ WaveIdx, Outer);
             }
         }
     }

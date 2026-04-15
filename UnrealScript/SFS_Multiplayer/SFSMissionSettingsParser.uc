@@ -42,12 +42,14 @@ static function bool FromSimpleJson(string JsonText, out SFSMissionSettingsStruc
 {
     local int i;
     local string ArchEntry;
+    local int RatioVal;
     
     Settings.bDisableObjectiveWaves = ExtractBool(JsonText, "disableObjectiveWaves");
     Settings.StartWave = ExtractInt(JsonText, "startWave");
     Settings.MaxEnemies = ExtractInt(JsonText, "maxEnemies");
     Settings.MaxEnemiesPerSpawnPoint = ExtractInt(JsonText, "maxEnemiesPerSpawnPoint");
     Settings.EnabledEnemyArchetypes.Length = 0;
+    Settings.EnabledEnemyRatios.Length = 0;
     for (i = 0; i < 30; i++)
     {
         ArchEntry = ExtractString(JsonText, "enabledEnemies[" $ i $ "]");
@@ -56,6 +58,13 @@ static function bool FromSimpleJson(string JsonText, out SFSMissionSettingsStruc
             break;
         }
         Settings.EnabledEnemyArchetypes.AddItem(ArchEntry);
+        // Ratio emitted as enemyRatios.<fullArchetypePath>. Default to 1 if absent/0.
+        RatioVal = ExtractInt(JsonText, "enemyRatios." $ ArchEntry);
+        if (RatioVal < 1)
+        {
+            RatioVal = 1;
+        }
+        Settings.EnabledEnemyRatios.AddItem(RatioVal);
     }
     Settings.bCrossFactionEnemies = ExtractBool(JsonText, "crossFactionEnemies");
     return TRUE;

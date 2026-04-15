@@ -184,16 +184,26 @@
 </div>
 {{end}}
 
-{{/* enemyRow renders one checkbox row. args: slice [viewData, archetype, label] */}}
+{{/* enemyRow renders one checkbox row with a spawn-weight input.
+     args: slice [viewData, archetype, label] */}}
 {{define "enemyRow"}}
 {{$d := index . 0}}{{$arch := index . 1}}{{$label := index . 2}}
-<label class="flex items-center gap-2 cursor-pointer select-none">
-    <input type="checkbox"
-           name="enabledEnemies"
-           value="{{$arch}}"
-           {{if index $d.EnabledEnemiesMap $arch}}checked{{end}}
-           class="w-4 h-4 rounded border border-[#1e3a5f] bg-[#0a0e1a] accent-[#00aaff]"
+{{$ratio := index $d.EnemyRatiosMap $arch}}
+<div class="flex items-center gap-2">
+    <label class="flex items-center gap-2 cursor-pointer select-none flex-1">
+        <input type="checkbox"
+               name="enabledEnemies"
+               value="{{$arch}}"
+               {{if index $d.EnabledEnemiesMap $arch}}checked{{end}}
+               class="w-4 h-4 rounded border border-[#1e3a5f] bg-[#0a0e1a] accent-[#00aaff]"
+               onchange="this.form.requestSubmit()">
+        <span class="text-xs text-gray-300">{{$label}}</span>
+    </label>
+    <input type="number" name="enemyRatio[{{$arch}}]" min="1" max="10"
+           value="{{if $ratio}}{{$ratio}}{{else}}1{{end}}"
+           title="Spawn weight (1&#8211;10)"
+           class="w-10 text-xs text-center bg-[#0a0e1a] border border-[#1e3a5f]
+                  rounded px-1 py-0.5 text-gray-300 focus:border-[#00aaff]/60 focus:outline-none"
            onchange="this.form.requestSubmit()">
-    <span class="text-xs text-gray-300">{{$label}}</span>
-</label>
+</div>
 {{end}}

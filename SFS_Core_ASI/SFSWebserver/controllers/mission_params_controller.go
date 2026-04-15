@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"sfswebserver/model"
 
@@ -20,6 +21,7 @@ const missionParamsKey = "config"
 type missionParamsViewData struct {
 	model.MissionSettings
 	EnabledEnemiesMap map[string]bool
+	EnemyRatiosMap    map[string]int
 }
 
 // MissionParamsController handles HTTP routes for configuring match
@@ -67,6 +69,10 @@ func (c *MissionParamsController) render(w http.ResponseWriter, ms model.Mission
 	vm := missionParamsViewData{
 		MissionSettings:   ms,
 		EnabledEnemiesMap: make(map[string]bool, len(ms.EnabledEnemies)),
+		EnemyRatiosMap:    ms.EnemyRatios,
+	}
+	if vm.EnemyRatiosMap == nil {
+		vm.EnemyRatiosMap = make(map[string]int)
 	}
 	for _, e := range ms.EnabledEnemies {
 		vm.EnabledEnemiesMap[e] = true
@@ -122,6 +128,15 @@ func (c *MissionParamsController) Register() {
 			ms.EnabledEnemies = []string{}
 		}
 		ms.CrossFactionEnemies = r.FormValue("crossFactionEnemies") == "on"
+		ms.EnemyRatios = make(map[string]int)
+		for key, vals := range r.Form {
+			if strings.HasPrefix(key, "enemyRatio[") && strings.HasSuffix(key, "]") {
+				arch := strings.TrimSuffix(strings.TrimPrefix(key, "enemyRatio["), "]")
+				if n, err := strconv.Atoi(vals[0]); err == nil && n >= 1 && n <= 10 {
+					ms.EnemyRatios[arch] = n
+				}
+			}
+		}
 		if err := c.save(ms); err != nil {
 			respondText(w, http.StatusInternalServerError, "db error\n")
 			return
