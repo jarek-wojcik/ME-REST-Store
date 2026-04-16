@@ -127,7 +127,23 @@ function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         if (load.bRemoveScope && NewWeapon.AimModes.Length > 0)
         {
             NewWeapon.AimModes[0].bScoped = FALSE;
-            log(Self.Name, "Removed scope (bScoped=false) for: " $ load.AssetToLoad, Outer);
+            NewWeapon.AimModes[0].ZoomFOV = 39.4300003;
+            NewWeapon.GUIZoomReticleClass = Class'SFXGUI_CrosshairReticle';
+            // CombatTightAim and AimbackTightAim are SFXCameraMode_SniperAim instances
+            // (bFirstPerson = TRUE) which hide the character. Clear that flag so the
+            // camera stays in 3rd-person while zoomed, matching how AR zoom behaves.
+            if (NewWeapon.CameraSetup != None)
+            {
+                if (NewWeapon.CameraSetup.CombatTightAim != None)
+                {
+                    NewWeapon.CameraSetup.CombatTightAim.bFirstPerson = FALSE;
+                }
+                if (NewWeapon.CameraSetup.AimbackTightAim != None)
+                {
+                    NewWeapon.CameraSetup.AimbackTightAim.bFirstPerson = FALSE;
+                }
+            }
+            log(Self.Name, "Removed scope (bScoped=false, ZoomFOV reset, reticle=crosshair, bFirstPerson=false) for: " $ load.AssetToLoad, Outer);
         }
     }
     log(Self.Name, "Successfully gave and equipped weapon (async): " $ load.AssetToLoad $ " at level " $ NewWeapon.WeaponLevel, Outer);
