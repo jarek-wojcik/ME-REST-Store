@@ -619,7 +619,7 @@
 
                 <!-- ── Rank 1 ── toggle: if rank≥1 → clear, else → set rank 1 -->
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                        {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 1}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;"{{end}}
+                        {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 1}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;"{{end}}
                         hx-post="{{$pv.SlotBaseURL}}/rank/{{if ge $pv.Rank 1}}0{{else}}1{{end}}"
                         hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                         data-tooltip-title="{{$pv.PowerDef.Name}}"
@@ -631,7 +631,7 @@
 
                 <!-- ── Rank 2 ── -->
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                        {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 2}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-64px 0px;background-repeat:no-repeat;"{{end}}
+                        {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 2}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-64px 0px;background-repeat:no-repeat;"{{end}}
                         hx-post="{{$pv.SlotBaseURL}}/rank/2"
                         hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                         data-tooltip-title="{{$pv.PowerDef.Name}}"
@@ -643,7 +643,7 @@
 
                 <!-- ── Rank 3 ── -->
                 <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                        {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 3}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-128px 0px;background-repeat:no-repeat;"{{end}}
+                        {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 3}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-128px 0px;background-repeat:no-repeat;"{{end}}
                         hx-post="{{$pv.SlotBaseURL}}/rank/3"
                         hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                         data-tooltip-title="{{$pv.PowerDef.Name}}"
@@ -656,7 +656,7 @@
                 <!-- ── Evo rank 4 (A top / B bottom) ── -->
                 <div class="flex flex-col gap-0.5">
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                            {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 4}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px 0px;background-repeat:no-repeat;"{{end}}
+                            {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 4}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px 0px;background-repeat:no-repeat;"{{end}}
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/4/0/A"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             data-tooltip-title="{{$pv.PowerDef.Name}}"
@@ -666,7 +666,7 @@
                         {{if not (and (ge $pv.Rank 4) (eq $pv.Evo0 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                            {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 5}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px -64px;background-repeat:no-repeat;"{{end}}
+                            {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 5}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-192px -64px;background-repeat:no-repeat;"{{end}}
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/4/0/B"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             data-tooltip-title="{{$pv.PowerDef.Name}}"
@@ -680,7 +680,7 @@
                 <!-- ── Evo rank 5 (A top / B bottom) ── -->
                 <div class="flex flex-col gap-0.5">
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                            {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 6}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px 0px;background-repeat:no-repeat;"{{end}}
+                            {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 6}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px 0px;background-repeat:no-repeat;"{{end}}
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/5/1/A"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             data-tooltip-title="{{$pv.PowerDef.Name}}"
@@ -690,7 +690,7 @@
                         {{if not (and (ge $pv.Rank 5) (eq $pv.Evo1 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                            {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 7}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px -64px;background-repeat:no-repeat;"{{end}}
+                            {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 7}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-256px -64px;background-repeat:no-repeat;"{{end}}
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/5/1/B"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             data-tooltip-title="{{$pv.PowerDef.Name}}"
@@ -704,7 +704,7 @@
                 <!-- ── Evo rank 6 (A top / B bottom) ── -->
                 <div class="flex flex-col gap-0.5">
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                            {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 8}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px 0px;background-repeat:no-repeat;"{{end}}
+                            {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 8}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px 0px;background-repeat:no-repeat;"{{end}}
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/6/2/A"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             data-tooltip-title="{{$pv.PowerDef.Name}}"
@@ -714,7 +714,7 @@
                         {{if not (and (ge $pv.Rank 6) (eq $pv.Evo2 "A"))}}<div class="absolute inset-0 bg-[#0a0e1a]/75 pointer-events-none rounded-sm"></div>{{end}}
                     </button>
                     <button class="relative w-16 h-16 rounded-sm focus:outline-none cursor-pointer hover:brightness-125 transition-all flex-shrink-0"
-                            {{if $pv.PowerDef.IsAmmoPower}}style="background-image:url('{{$pv.PowerDef.AmmoPowerRankURL 9}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px -64px;background-repeat:no-repeat;"{{end}}
+                            {{if $pv.PowerDef.UsesIndividualSprites}}style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 9}}');background-size:contain;background-position:center;background-repeat:no-repeat;"{{else}}style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:384px 128px;background-position:-320px -64px;background-repeat:no-repeat;"{{end}}
                             hx-post="{{$pv.SlotBaseURL}}/rankevo/6/2/B"
                             hx-target="#{{$.CardID}}" hx-swap="outerHTML"
                             data-tooltip-title="{{$pv.PowerDef.Name}}"

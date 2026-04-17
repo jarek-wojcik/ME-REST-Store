@@ -385,7 +385,7 @@ var CharacterCatalog = []CharacterDef{
 		PawnType: PawnTypeHenchman},
 	{ID: "Char_SimHenchmen.SimKaidan", IDLook: "", Name: "Kaidan", SubClass: "Squadmate", Species: []Species{SpeciesHuman}, PictureFile: "/SP/Kaidan0GlowCropped.png",
 		PowerIDs:    [5]string{"SFXPowerCustomActionMP_Barrier", "SFXPowerCustomActionMP_Reave", "SFXPowerCustomActionMP_Overload", "SFXPowerCustomActionMP_CryoBlast", "SFXPowerCustomAction_KaidenPassive"},
-		HasHeadgear: false, HasHelmet: false,
+		HasHeadgear: false, HasHelmet: true,
 		PawnType: PawnTypeHenchman},
 	{ID: "Char_SimHenchmen.SimJacob", IDLook: "", Name: "Jacob", SubClass: "Squadmate", Species: []Species{SpeciesHuman}, PictureFile: "/SP/Jacob.png",
 		PowerIDs:    [5]string{"SFXPowerCustomAction_IncendiaryAmmo", "SFXPowerCustomActionMP_LiftGrenade", "SFXPowerCustomActionMP_Barrier", "SFXPowerCustomAction_Pull", "SFXPowerCustomAction_JacobPassive"},

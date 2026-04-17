@@ -1,9 +1,61 @@
 ﻿package model
 
 import (
+	"io/fs"
 	"strconv"
 	"strings"
+	"sync"
 )
+
+// powersSpriteFS is set at startup via SetStaticFS so that UsesIndividualSprites
+// can check whether the Picture file actually exists in the embedded static assets.
+var powersSpriteFS fs.FS
+
+// spriteDirCountCache caches the number of image files per IndividualSpriteDir
+// so that IndividualSpriteRankURL can reuse a single image for all ranks.
+var (
+	spriteDirCountCache   = map[string]int{}
+	spriteDirCountCacheMu sync.RWMutex
+)
+
+// spriteDirCount returns how many files are in the given sprite directory
+// (relative to "assets/powers/"). The result is cached after the first call.
+func spriteDirCount(dir string) int {
+	spriteDirCountCacheMu.RLock()
+	n, ok := spriteDirCountCache[dir]
+	spriteDirCountCacheMu.RUnlock()
+	if ok {
+		return n
+	}
+
+	spriteDirCountCacheMu.Lock()
+	defer spriteDirCountCacheMu.Unlock()
+	// double-check inside write lock
+	if n, ok = spriteDirCountCache[dir]; ok {
+		return n
+	}
+
+	count := 0
+	if powersSpriteFS != nil {
+		entries, err := fs.ReadDir(powersSpriteFS, "assets/powers/"+dir)
+		if err == nil {
+			for _, e := range entries {
+				if !e.IsDir() {
+					count++
+				}
+			}
+		}
+	}
+	spriteDirCountCache[dir] = count
+	return count
+}
+
+// SetStaticFS provides the model package with the embedded static file system
+// so picture existence can be verified at runtime. Call once from main before
+// serving any requests.
+func SetStaticFS(f fs.FS) {
+	powersSpriteFS = f
+}
 
 // PowerType classifies a power's activation style.
 type PowerType string
@@ -32,13 +84,14 @@ type RankDesc struct {
 // ID is the logical power identifier; Picture is the webp filename under /static/assets/powers/.
 // Both are compiled into the binary and never stored in BoltDB.
 type PowerDef struct {
-	ID                 string
-	RootPath           string
-	Name               string
-	Picture            string     // filename in /static/assets/powers/, e.g. "Warp.webp"
-	RankDescs          []RankDesc // descriptions indexed 1â€“9 (see RankDesc comment for the mapping)
-	AmmoPowerSpriteDir string     // non-empty for ammo powers: path under /static/assets/powers/AmmoPowers/ containing 1.png-9.png
-	Type               PowerType  // Passive, Active, or SpectrePassive
+	ID                  string
+	RootPath            string
+	Name                string
+	Picture             string     // filename in /static/assets/powers/, e.g. "Warp.webp"
+	RankDescs           []RankDesc // descriptions indexed 1â€“9 (see RankDesc comment for the mapping)
+	IndividualSpriteDir string     // non-empty when the power uses per-rank sprites; path under /static/assets/powers/ containing 1-9 image files
+	IndividualSpriteExt string     // file extension for IndividualSpriteDir sprites (e.g. "webp"); defaults to "png" when empty
+	Type                PowerType  // Passive, Active, or SpectrePassive
 }
 
 // IconURL returns the URL for the power's sprite sheet.
@@ -46,16 +99,44 @@ func (p PowerDef) IconURL() string {
 	return "/static/assets/powers/" + p.Picture
 }
 
-// IsAmmoPower reports whether this power uses individual per-rank PNG sprites
+// UsesIndividualSprites reports whether this power uses individual per-rank PNG sprites
 // (under AmmoPowers/) instead of a shared sprite sheet.
-func (p PowerDef) IsAmmoPower() bool {
-	return p.AmmoPowerSpriteDir != ""
+// Also returns true when Picture is empty or the picture file does not exist in
+// the embedded static assets, falling back to placeholder sprites.
+func (p PowerDef) UsesIndividualSprites() bool {
+	if p.IndividualSpriteDir != "" {
+		return true
+	}
+	if p.Picture == "" {
+		return true
+	}
+	if powersSpriteFS != nil {
+		_, err := fs.Stat(powersSpriteFS, "assets/powers/"+p.Picture)
+		if err != nil {
+			return true
+		}
+	}
+	return false
 }
 
-// AmmoPowerRankURL returns the URL for the rank-index PNG sprite (1-9).
-// Only meaningful when IsAmmoPower() is true.
-func (p PowerDef) AmmoPowerRankURL(rank int) string {
-	return "/static/assets/powers/AmmoPowers/" + p.AmmoPowerSpriteDir + "/" + strconv.Itoa(rank) + ".png"
+// IndividualSpriteRankURL returns the URL for the rank-index sprite (1-9).
+// When IndividualSpriteDir is set, returns that sprite using IndividualSpriteExt
+// (defaulting to "png"); otherwise returns the placeholder.
+// If the directory contains only one image file it is reused for every rank.
+// Only meaningful when UsesIndividualSprites() is true.
+func (p PowerDef) IndividualSpriteRankURL(rank int) string {
+	if p.IndividualSpriteDir == "" {
+		return "/static/assets/powers/Placeholders/placeholder-12.png"
+	}
+	ext := p.IndividualSpriteExt
+	if ext == "" {
+		ext = "png"
+	}
+	fileRank := rank
+	if spriteDirCount(p.IndividualSpriteDir) == 1 {
+		fileRank = 1
+	}
+	return "/static/assets/powers/" + p.IndividualSpriteDir + "/" + strconv.Itoa(fileRank) + "." + ext
 }
 
 // DescForRank returns the description for the given index (1â€“9, per the RankDesc scheme).
@@ -2561,7 +2642,9 @@ var PowerCatalog = []PowerDef{
 	},
 	{
 		ID: "SFXPowerCustomAction_ArmorPiercingAmmo", Name: "Armor-Piercing Ammo", Picture: "ArmorPiercingAmmo.webp", Type: PowerTypeActive,
-		RootPath: "SFXGameContent",
+		IndividualSpriteDir: "SPPowers/APAmmo",
+		IndividualSpriteExt: "webp",
+		RootPath:            "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "More weapon damage.\nMore damage to armor.\n\nHealth Damage Bonus: +10%\nArmor Damage Bonus: +10%\nArmor Effectiveness: -50%\nPenetration: 0.50 m"},                                                    // Rank 1
 			{Rank: 2, Description: "Increase ammo's cover penetration by 40%.\n\nPenetration: 0.70 m"},                                                                                                                                     // Rank 2
@@ -2591,167 +2674,176 @@ var PowerCatalog = []PowerDef{
 	},
 	{
 		ID: "SFXPowerCustomAction_IncendiaryAmmo", Name: "Incendiary Ammo", Picture: "IncendiaryAmmo.webp", Type: PowerTypeActive,
-		RootPath: "SFXGameContent",
+		RootPath:            "SFXGameContent",
+		IndividualSpriteDir: "SPPowers/IncendiaryAmmo",
+		IndividualSpriteExt: "webp",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Shoot and your enemies will burst into flames.\n\nMore weapon damage.\nWeaken armor.\nChance to make an enemy panic.\n\nHealth Damage Bonus: +10%\nArmor Damage Bonus: +10%"}, // Rank 1
+			{Rank: 2, Description: "Improve the odds of panicking a target by 15%."},                                                                                                                     // Rank 2
+			{Rank: 3, Description: "Increase health and armor damage bonuses by 4%.\n\nHealth Damage Bonus: +14%\nArmor Damage Bonus: +14%"},                                                             // Rank 3
+			{Rank: 4, Description: "Increase health and armor damage bonuses by 6%.\n\nHealth Damage Bonus: +20%\nArmor Damage Bonus: +20%."},                                                            // Rank 4 - Evolution A
+			{Rank: 5, Description: "Squadmates gain Incendiary Ammo at 50% effectiveness."},                                                                                                              // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increases ammo capacity by 30%."},                                                                                                                                    // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increases headshot damage by 25%."},                                                                                                                                  // Rank 5 - Evolution B
+			{Rank: 8, Description: "Increases health and armor damage bonuses by 10%.\n\nHealth Damage Bonus: +30% (Damage), +24% (Squad Bonus)\nArmor Damage Bonus: +30% (Damage), +24% (Squad Bonus)"}, // Rank 6 - Evolution A
+			{Rank: 9, Description: "Ignites enemies with an intermittent explosion that covers 2.50 meters for 100 damage."},                                                                             // Rank 6 - Evolution B
 		},
 	},
 	{
 		ID: "SFXPowerCustomAction_DisruptorAmmo", Name: "Disruptor Ammo", Picture: "DisruptorAmmo.webp", Type: PowerTypeActive,
-		RootPath: "SFXGameContent",
+		RootPath:            "SFXGameContent",
+		IndividualSpriteDir: "SPPowers/DisruptorAmmo",
+		IndividualSpriteExt: "webp",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Bring down your enemy's barrier and shields.\n\nChance to stun.\nMore weapon damage.\nMore damage to shields and barriers.\n\nHealth Damage Bonus: +5%\nShield & Barrier Damage: +20%"}, // Rank 1
+			{Rank: 2, Description: "Improve the odds of stunning a target by 15%."},                                                                                                       // Rank 2
+			{Rank: 3, Description: "Increase health damage bonus by 2%.\nIncrease shield and barrier damage bonuses by 8%.\n\nHealth Damage Bonus: +7%\nShield & Barrier Damage: +28%"},   // Rank 3
+			{Rank: 4, Description: "Increase health damage bonus by 3%.\nIncrease shield and barrier damage bonuses by 12%.\n\nHealth Damage Bonus: +10%\nShield & Barrier Damage: +40%"}, // Rank 4 - Evolution A
+			{Rank: 5, Description: "Squadmates gain Disruptor Ammo at 50% effectiveness."},                                                                                                // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increases ammo capacity by 30%."},                                                                                                                     // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increases headshot damage by 25%."},                                                                                                                   // Rank 5 - Evolution B
+			{Rank: 8, Description: "Increase health damage by 5%.\nIncrease shield and barrier damage by 20%.\n\nHealth Damage Bonus: +15%\nShield & Barrier Damage: +60%"},               // Rank 6 - Evolution A
+			{Rank: 9, Description: "Disruptor Ammo now also stuns targets."},                                                                                                              // Rank 6 - Evolution B
 		},
 	},
 	{
 		ID: "SFXPowerCustomAction_GethShieldBoost", Name: "Defense Matrix", Picture: "GethShieldBoost.webp", Type: PowerTypeActive,
-		RootPath: "SFXGameContent",
+		RootPath:            "SFXGameContent",
+		IndividualSpriteDir: "SPPowers/DefenseMatrix",
+		IndividualSpriteExt: "webp",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Reinforce armor with protective Foucault currents. Purge the currents to restore shields.\n\nSlows power use by 60%.\n\nRecharge Speed: 10 sec\nDamage Reduction: 15%\nShields Restored: 50%"}, // Rank 1
+			{Rank: 2, Description: "Increase recharge speed by 25%.\n\nRecharge Speed: 8 sec\nDamage Reduction: 15%\nShields Restored: 50%"},                                                                                       // Rank 2
+			{Rank: 3, Description: "Increase shield restoration by 20% when purging armor.\n\nRecharge Speed: 8 sec\nDamage Reduction: 15%\nShields Restored: 70%"},                                                                // Rank 3
+			{Rank: 4, Description: "Increase damage protection by 5%.\n\nRecharge Speed: 8 sec\nDamage Reduction: 20%\nShields Restored: 70%"},                                                                                     // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase shield restoration by 30% when purging armor.\n\nRecharge Speed: 8 sec\nDamage Reduction: 15%\nShields Restored: 100%"},                                                               // Rank 4 - Evolution B
+			{Rank: 6, Description: "Decrease shield-recharge delay by 15%."},                                                                                                                                                       // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increase tech power damage by 25% while Defense Matrix is active."},                                                                                                                            // Rank 5 - Evolution B
+			{Rank: 8, Description: "Reduce power speed penalty by 30%.\n\nRecharge Speed: 8 sec\nDamage Reduction: 30% (Durability), 25% (Shield Bonus)\nShields Restored: 70% (Durability), 100% (Shield Bonus)"},                 // Rank 6 - Evolution A
+			{Rank: 9, Description: "Increase damage protection by 10%.\n\nRecharge Speed: 8 sec\nDamage Reduction: 30% (Durability), 25% (Shield Bonus)\nShields Restored: 70% (Durability), 100% (Shield Bonus)"},                 // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_ProtectorDrone", Name: "Protector Drone", Picture: "ProtectorDrone.webp", Type: PowerTypeActive,
+		ID: "SFXPowerCustomAction_ProtectorDrone", Name: "Defense Drone", Type: PowerTypeActive,
+		IndividualSpriteDir: "SPPowers/DefenseDrone", IndividualSpriteExt: "webp",
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Deploy this holographic drone to electrocute enemies within its firing range.\n\nRecharge Speed: 2.36 sec\nDrone Damage: 25\nRange: 5 m"}, // Rank 1
+			{Rank: 2, Description: "Increase recharge speed by 25%.\n\nRecharge Speed: 2.15 sec\nDrone Damage: 25\nRange: 5 m"},                                               // Rank 2
+			{Rank: 3, Description: "Increase damage by 30%.\n\nRecharge Speed: 2.15 sec\nDamage: 32.50\nRange: 5 m"},                                                          // Rank 3
+			{Rank: 4, Description: "Increase duration by 100%.\n\nRecharge Speed: 2.15 sec\nDamage: 32.50\nRange: 7 m"},                                                       // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase attack range by 40%.\n\nRecharge Speed: 2.15 sec\nDamage: 32.50\nRange: 7 m"},                                                    // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase the drone's attack rate by 50%.\n\nRecharge Speed: 2.15 sec\nDamage: 57.50\nRange: 8 m"},                                         // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increase damage by 100% and increase range by 60%.\n\nRecharge Speed: 2.15 sec\nDamage: 57.50\nRange: 10 m"},                              // Rank 5 - Evolution B
+			{Rank: 8, Description: "Gain a 30% chance to knock down an electrocuted enemy."},                                                                                  // Rank 6 - Evolution A
+			{Rank: 9, Description: "Damage up to 2 additional nearby targets."},                                                                                               // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_Cloak_Kasumi", Name: "Shadow Strike", Picture: "Cloak.webp", Type: PowerTypeActive,
+		ID: "SFXPowerCustomAction_Cloak_Kasumi", Name: "Tactical Cloak (SMG)", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack.\n\nRecharge Speed: 20 sec\nDuration: 8 sec\nDamage Bonus: 50%"},                                                      // Rank 1
+			{Rank: 2, Description: "Decrease recharge speed by 25%.\n\nRecharge Speed: 16 sec\nDuration: 8 sec\nDamage Bonus: 50%"},                                                                                                           // Rank 2
+			{Rank: 3, Description: "Increase power duration by 30%.\n\nRecharge Speed: 16 sec\nDuration: 10.40 sec\nDamage Bonus: 50%"},                                                                                                       // Rank 3
+			{Rank: 4, Description: "Duration\n\nIncrease power duration by 40%.\n\nRecharge Speed: 16 sec\nDuration: 13.60 sec\nDamage Bonus: 50%"},                                                                                           // Rank 4 - Evolution A
+			{Rank: 5, Description: "Damage\n\nIncrease damage bonus by 40%.\n\nRecharge Speed: 16 sec\nDuration: 10.40 sec\nDamage Bonus: 90%"},                                                                                               // Rank 4 - Evolution B
+			{Rank: 6, Description: "Recharge Speed\n\nIncrease recharge speed by 30%.\n\nRecharge Speed: 12.90 sec\nDuration: 13.60 sec (Duration), 10.40 sec (Damage)\nDamage Bonus: 50% (Duration), 90% (Damage)"},                          // Rank 5 - Evolution A
+			{Rank: 7, Description: "Melee Damage\n\nIncrease melee damage by 50% while cloaked."},                                                                                                                                             // Rank 5 - Evolution B
+			{Rank: 8, Description: "Bonus Power\n\nFire one power while cloaked and remain hidden."},                                                                                                                                          // Rank 6 - Evolution A
+			{Rank: 9, Description: "Damage\n\nIncrease damage by 40%.\n\nRecharge Speed: 12.90 sec (Recharge Speed), 16 sec (Melee Damage)\nDuration: 13.60 sec (Duration), 10.40 sec (Damage)\nDamage Bonus: 90% (Duration), 130% (Damage)"}, // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_Slam", Name: "Slam", Picture: "Slam.webp", Type: PowerTypeActive,
-		RootPath: "SFXGameContent",
+		ID: "SFXPowerCustomAction_Slam", Name: "Slam", Type: PowerTypeActive,
+		RootPath:            "SFXGameContent",
+		IndividualSpriteDir: "SPPowers/Slam",
+		IndividualSpriteExt: "webp",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Deal massive damage with a biotic body slam.\n\nRecharge Speed: 4 sec\nForce: 900 N"},                                                                     // Rank 1
+			{Rank: 2, Description: "Increase recharge speed by 25%.\n\nRecharge Speed: 3.20 sec\nForce: 900 N"},                                                                               // Rank 2
+			{Rank: 3, Description: "Increase force by 30%.\n\nRecharge Speed: 3.20 sec\nForce: 1170 N"},                                                                                       // Rank 3
+			{Rank: 4, Description: "Increase force by 40%.\n\nRecharge Speed: 3.20 sec\nForce: 1530 N"},                                                                                       // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase impact radius by 2 meters."},                                                                                                                     // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase damage and force of biotic detonation by 50%."},                                                                                                  // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increase force by 50%.\n\nRecharge Speed: 3.20 sec\nForce: 1980 N"},                                                                                       // Rank 5 - Evolution B
+			{Rank: 8, Description: "Incapacitate a slammed target for 5 seconds."},                                                                                                            // Rank 6 - Evolution A
+			{Rank: 9, Description: "Increase recharge speed by 50%.\n\nRecharge Speed: 2.29 sec\nForce: 1530 N (Force), 1170 N (Radius) [Detonate], 1980 N (Force), 1620 N (Radius) [Force]"}, // Rank 6 - Evolution B
 		},
 	},
 	{
 		ID: "SFXPowerCustomAction_TaliPassive", Name: "Quarian Machinist", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost power recharge speed, shields/barriers, and health.\n\nHealth & Shield Bonus: 10%\nPower Recharge Speed Bonus: 20%"},                         // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 10%.\nIncrease power recharge bonus by 20%.\n\nHealth & Shield Bonus: 20%\nPower Recharge Speed Bonus: 40%"}, // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 10%.\nIncrease power recharge bonus by 20%.\n\nHealth & Shield Bonus: 30%\nPower Recharge Speed Bonus: 60%"}, // Rank 3
+			{Rank: 4, Description: "Recharge Speed\n\nIncrease recharge speed bonus by 40%.\n\nHealth & Shield Bonus: 30%\nPower Recharge Speed Bonus: 100%"},                          // Rank 4 - Evolution A
+			{Rank: 5, Description: "Health/Shields\n\nIncrease health and shield bonuses by 20%.\n\nHealth & Shield Bonus: 50%\nPower Recharge Speed Bonus: 60%"},                      // Rank 4 - Evolution B
+			{Rank: 6, Description: "Weapon Damage\n\nIncrease weapon damage by 20%."},                                                                                                  // Rank 5 - Evolution A
+			{Rank: 7, Description: "Tech Upgrade\n\nIncrease tech power damage by 30%.\nIncrease tech power duration by 30%."},                                                         // Rank 5 - Evolution B
+			{Rank: 8, Description: "Squad Bonus\n\nIncrease recharge speed of squadmate's tech powers by 10%."},                                                                        // Rank 6 - Evolution A
+			{Rank: 9, Description: "Drone Specialist\n\nIncrease recharge speed of drone powers by 50%."},                                                                              // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_WrexPassive", Name: "Warlord", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomAction_WrexPassive", Name: "Krogan Battlemaster (SP)", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost offensive and defensive abilities.\n\nHealth & Shield Bonus: 20%\nWeapon Damage Bonus: 10%"},                                                                                                                         // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 20%.\nIncrease weapon damage bonus by 10%.\n\nHealth & Shield Bonus: 40%\nWeapon Damage Bonus: 20%"},                                                                                 // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 20%.\nIncrease weapon damage bonus by 10%.\n\nHealth & Shield Bonus: 60%\nWeapon Damage Bonus: 30%"},                                                                                 // Rank 3
+			{Rank: 4, Description: "Durability\n\nIncrease health and shield bonuses by 40%.\n\nHealth & Shield Bonus: 100%\nWeapon Damage Bonus: 30%"},                                                                                                        // Rank 4 - Evolution A
+			{Rank: 5, Description: "Weapon Damage\n\nIncrease weapon damage bonus by 20%.\n\nHealth & Shield Bonus: 60%\nWeapon Damage Bonus: 50%"},                                                                                                            // Rank 4 - Evolution B
+			{Rank: 6, Description: "Power Damage\n\nIncrease power damage by 20%."},                                                                                                                                                                            // Rank 5 - Evolution A
+			{Rank: 7, Description: "Shield Recharge\n\nDecrease shield-recharge delay by 20%."},                                                                                                                                                                // Rank 5 - Evolution B
+			{Rank: 8, Description: "Squad Bonus\n\nIncrease squadmate health and shields by 20%.\n\nHealth & Shield Bonus: 120% (Durability), 80% (Weapon Damage)\nWeapon Damage Bonus: 30% (Durability), 50% (Weapon Damage)"},                                // Rank 6 - Evolution A
+			{Rank: 9, Description: "Fortification\n\nIncrease health and shield bonuses by 40%.\nIncrease melee damage by 30%.\n\nHealth & Shield Bonus: 140% (Durability), 100% (Weapon Damage)\nWeapon Damage Bonus: 30% (Durability), 50% (Weapon Damage)"}, // Rank 6 - Evolution B
 		},
 	},
 	{
 		ID: "SFXPowerCustomAction_MirandaPassive", Name: "Operative", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost weapon damage, health, and shields/barriers.\n\nHealth & Shield Bonus: 15%\nPower Damage Bonus: 15%"},                              // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 15%.\nIncrease power damage bonus by 15%.\n\nHealth & Shield Bonus: 30%\nPower Damage Bonus: 30%"}, // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 15%.\nIncrease power damage bonus by 15%.\n\nHealth & Shield Bonus: 45%\nPower Damage Bonus: 45%"}, // Rank 3
+			{Rank: 4, Description: "Weapon Damage\n\nIncrease weapon damage by 20%."},                                                                                        // Rank 4 - Evolution A
+			{Rank: 5, Description: "Durability\n\nIncrease health and shield bonuses by 30%.\n\nHealth & Shield Bonus: 75%\nPower Damage Bonus: 45%"},                        // Rank 4 - Evolution B
+			{Rank: 6, Description: "Biotic Damage\n\nIncrease biotic power damage by 30%."},                                                                                  // Rank 5 - Evolution A
+			{Rank: 7, Description: "Tech Damage\n\nIncrease tech power damage by 30%."},                                                                                      // Rank 5 - Evolution B
+			{Rank: 8, Description: "Squad Bonus\n\nIncrease squadmate tech and biotic power damage by 10%."},                                                                 // Rank 6 - Evolution A
+			{Rank: 9, Description: "Squad Bonus\n\nIncrease recharge speed of squadmate's shields by 15%."},                                                                  // Rank 6 - Evolution B
 		},
 	},
 	{
 		ID: "SFXPowerCustomAction_KaidenPassive", Name: "Alliance Officer", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost weapon damage, health, and shields/barriers.\n\nHealth & Shield Bonus: 15%\nPower Damage Bonus: 15%"},                              // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 15%.\nIncrease power damage bonus by 15%.\n\nHealth & Shield Bonus: 30%\nPower Damage Bonus: 30%"}, // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 15%.\nIncrease power damage bonus by 15%.\n\nHealth & Shield Bonus: 45%\nPower Damage Bonus: 45%"}, // Rank 3
+			{Rank: 4, Description: "Weapon Damage\n\nIncrease weapon damage bonus by 20%."},                                                                                  // Rank 4 - Evolution A
+			{Rank: 5, Description: "Durability\n\nIncrease health and shields by 30%.\n\nHealth & Shield Bonus: 75%\nPower Damage Bonus: 45%"},                               // Rank 4 - Evolution B
+			{Rank: 6, Description: "Biotic Damage\n\nIncrease biotic power damage by 30%."},                                                                                  // Rank 5 - Evolution A
+			{Rank: 7, Description: "Tech Damage\n\nIncrease tech power damage by 30%."},                                                                                      // Rank 5 - Evolution B
+			{Rank: 8, Description: "Squad Bonus\n\nIncrease squadmate tech and biotic power damage by 10%."},                                                                 // Rank 6 - Evolution A
+			{Rank: 9, Description: "Squad Bonus\n\nIncrease recharge speed of squadmate's shields by 15%."},                                                                  // Rank 6 - Evolution B
 		},
 	},
 	{
 		ID: "SFXPowerCustomAction_JacobPassive", Name: "Fitness", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost offensive and defensive abilities.\n\nHealth & Shield Bonus: 20%\nWeapon Damage Bonus: 10%"},                                                                                                                                // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 20%.\nIncrease weapon damage bonus by 10%.\n\nHealth & Shield Bonus: 40%\nWeapon Damage Bonus: 20%"},                                                                                        // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 20%.\nIncrease weapon damage bonus by 10%.\n\nHealth & Shield Bonus: 60%\nWeapon Damage Bonus: 30%"},                                                                                        // Rank 3
+			{Rank: 4, Description: "Durability\n\nIncrease health and shield bonuses by 40%.\n\nHealth & Shield Bonus: 100%\nWeapon Damage Bonus: 30%"},                                                                                                               // Rank 4 - Evolution A
+			{Rank: 5, Description: "Weapon Damage\n\nIncrease weapon damage bonus by 20%.\n\nHealth & Shield Bonus: 60%\nWeapon Damage Bonus: 50%"},                                                                                                                   // Rank 4 - Evolution B
+			{Rank: 6, Description: "Power Damage\n\nIncrease power damage by 20%."},                                                                                                                                                                                   // Rank 5 - Evolution A
+			{Rank: 7, Description: "Shield Recharge\n\nDecrease shield-recharge delay by 20%."},                                                                                                                                                                       // Rank 5 - Evolution B
+			{Rank: 8, Description: "Squad Bonus\n\nIncrease squadmate health and shields by 20%.\n\nHealth & Shield Bonus: 120% (Durability), 80% (Weapon Damage)\nWeapon Damage Bonus: 30% (Durability), 50% (Weapon Damage)"},                                       // Rank 6 - Evolution A
+			{Rank: 9, Description: "Fortification\n\nIncrease health and shield bonuses by 40%.\nIncrease melee damage bonus by 100%.\n\nHealth & Shield Bonus: 140% (Durability), 100% (Weapon Damage)\nWeapon Damage Bonus: 30% (Durability), 50% (Weapon Damage)"}, // Rank 6 - Evolution B
 		},
 	},
 	{
@@ -2770,99 +2862,99 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_EDIPassive", Name: "Cerberus Infiltration", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomAction_EDIPassive", Name: "Unshackled AI", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost power damage, shields/barriers, and health.\n\nHealth & Shield Bonus: 10%\nPower Damage Bonus: 20%"},                               // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 10%.\nIncrease power damage bonus by 20%.\n\nHealth & Shield Bonus: 20%\nPower Damage Bonus: 40%"}, // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 10%.\nIncrease power damage bonus by 20%.\n\nHealth & Shield Bonus: 30%\nPower Damage Bonus: 60%"}, // Rank 3
+			{Rank: 4, Description: "Power Damage\n\nIncrease power damage by 20%.\n\nHealth & Shield Bonus: 30%\nPower Damage Bonus: 80%"},                                   // Rank 4 - Evolution A
+			{Rank: 5, Description: "Health & Shields\n\nIncrease health and shield bonuses by 20%.\n\nHealth & Shield Bonus: 50%\nPower Damage Bonus: 60%"},                  // Rank 4 - Evolution B
+			{Rank: 6, Description: "Weapon Damage\n\nIncrease weapon damage by 20%."},                                                                                        // Rank 5 - Evolution A
+			{Rank: 7, Description: "Tech Damage\n\nIncrease tech power damage by 30%."},                                                                                      // Rank 5 - Evolution B
+			{Rank: 8, Description: "Squad Bonus\n\nIncrease squadmate tech power damage and duration by 10%."},                                                               // Rank 6 - Evolution A
+			{Rank: 9, Description: "Shield Recharge\n\nDecrease shield-recharge delay by 20%."},                                                                              // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_GruntPassive", Name: "Krogan Berserker", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomAction_GruntPassive", Name: "Krogan Berserker (SP)", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost offensive and defensive abilities.\n\nHealth & Shield Bonus: 20%\nWeapon Damage Bonus: 10%"},                                                                                                                         // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 20%.\nIncrease weapon damage bonus by 10%.\n\nHealth & Shield Bonus: 40%\nWeapon Damage Bonus: 20%"},                                                                                 // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 20%.\nIncrease weapon damage bonus by 10%.\n\nHealth & Shield Bonus: 60%\nWeapon Damage Bonus: 30%"},                                                                                 // Rank 3
+			{Rank: 4, Description: "Durability\n\nIncrease health and shield bonuses by 40%.\n\nHealth & Shield Bonus: 100%\nWeapon Damage Bonus: 30%"},                                                                                                        // Rank 4 - Evolution A
+			{Rank: 5, Description: "Weapon Damage\n\nIncrease weapon damage bonus by 20%.\n\nHealth & Shield Bonus: 60%\nWeapon Damage Bonus: 50%"},                                                                                                            // Rank 4 - Evolution B
+			{Rank: 6, Description: "Power Damage\n\nIncrease power damage by 20%."},                                                                                                                                                                            // Rank 5 - Evolution A
+			{Rank: 7, Description: "Shield Recharge\n\nDecrease shield-recharge delay by 20%."},                                                                                                                                                                // Rank 5 - Evolution B
+			{Rank: 8, Description: "Squad Bonus\n\nIncrease squadmate health and shields by 20%.\n\nHealth & Shield Bonus: 120% (Durability), 80% (Weapon Damage)\nWeapon Damage Bonus: 30% (Durability), 50% (Weapon Damage)"},                                // Rank 6 - Evolution A
+			{Rank: 9, Description: "Fortification\n\nIncrease health and shield bonuses by 40%.\nIncrease melee damage by 30%.\n\nHealth & Shield Bonus: 140% (Durability), 100% (Weapon Damage)\nWeapon Damage Bonus: 30% (Durability), 50% (Weapon Damage)"}, // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_KasumiPassive", Name: "Shadow Master", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomAction_KasumiPassive", Name: "Master Thief", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost power damage, shields/barriers, and health.\n\nHealth & Shield Bonus: 10%\nPower Damage Bonus: 20%"},                               // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 10%.\nIncrease power damage bonus by 20%.\n\nHealth & Shield Bonus: 20%\nPower Damage Bonus: 40%"}, // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 10%.\nIncrease power damage bonus by 20%.\n\nHealth & Shield Bonus: 30%\nPower Damage Bonus: 60%"}, // Rank 3
+			{Rank: 4, Description: "Increase power damage by 20%.\n\nHealth & Shield Bonus: 30%\nPower Damage Bonus: 80%"},                                                   // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase health and shield bonuses by 20%.\n\nHealth & Shield Bonus: 50%\nPower Damage Bonus: 60%"},                                      // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase weapon damage by 20%."},                                                                                                         // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increase tech power damage by 30%."},                                                                                                     // Rank 5 - Evolution B
+			{Rank: 8, Description: "Increase squadmate tech power damage and duration by 10%."},                                                                              // Rank 6 - Evolution A
+			{Rank: 9, Description: "Decrease shield-recharge delay by 20%."},                                                                                                 // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_JimmyPassive", Name: "Veteran", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomAction_JimmyPassive", Name: "Arms Master", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost offensive and defensive abilities.\n\nHealth & Shield Bonus: 20%\nWeapon Damage Bonus: 10%"},                                                                                                         // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 20%.\nIncrease weapon damage bonus by 10%.\n\nHealth & Shield Bonus: 40%\nWeapon Damage Bonus: 20%"},                                                                 // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 20%.\nIncrease weapon damage bonus by 10%.\n\nHealth & Shield Bonus: 60%\nWeapon Damage Bonus: 30%"},                                                                 // Rank 3
+			{Rank: 4, Description: "Increase health and shield bonuses by 40%.\n\nHealth & Shield Bonus: 100%\nWeapon Damage Bonus: 30%"},                                                                                                      // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase weapon damage bonus by 20%.\n\nHealth & Shield Bonus: 60%\nWeapon Damage Bonus: 50%"},                                                                                                             // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase power damage by 20%."},                                                                                                                                                                            // Rank 5 - Evolution A
+			{Rank: 7, Description: "Decrease shield-recharge delay by 20%."},                                                                                                                                                                   // Rank 5 - Evolution B
+			{Rank: 8, Description: "Increase squadmate health and shields by 20%.\n\nHealth & Shield Bonus: 120% (Durability), 80% (Weapon Damage)\nWeapon Damage Bonus: 30% (Durability), 50% (Weapon Damage)"},                               // Rank 6 - Evolution A
+			{Rank: 9, Description: "Increase health and shield bonuses by 40%.\nIncrease melee damage by 100%.\n\nHealth & Shield Bonus: 140% (Durability), 100% (Weapon Damage)\nWeapon Damage Bonus: 30% (Durability), 50% (Weapon Damage)"}, // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_ProtheanPassive", Name: "Ancient Knowledge", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomAction_ProtheanPassive", Name: "Vengeful Ancient", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost biotic and offensive abilities.\n\nHealth and Shield Bonus: 10%\nPower Damage Bonus: 20%"},                                                                                              // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 10%.\nIncrease power damage bonus by 20%.\n\nHealth and Shield Bonus: 20%\nPower Damage Bonus: 40%"},                                                    // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 10%.\nIncrease power damage bonus by 20%.\n\nHealth and Shield Bonus: 30%\nPower Damage Bonus: 60%"},                                                    // Rank 3
+			{Rank: 4, Description: "Increase power damage by 40%.\n\nHealth and Shield Bonus: 30%\nPower Damage Bonus: 100%"},                                                                                                     // Rank 4 - Evolution A
+			{Rank: 5, Description: "Increase health and shield bonuses by 20%.\n\nHealth and Shield Bonus: 50%\nPower Damage Bonus: 60%"},                                                                                         // Rank 4 - Evolution B
+			{Rank: 6, Description: "Increase weapon damage by 20%.\n\nHealth and Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 140% (Durability), 100% (Weapon Damage)"},                               // Rank 5 - Evolution A
+			{Rank: 7, Description: "Increase power damage by 40%.\n\nHealth and Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 140% (Durability), 100% (Weapon Damage)"},                                // Rank 5 - Evolution B
+			{Rank: 8, Description: "Increase squadmate power damage, duration, and force by 10%.\n\nHealth and Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 150% (Durability), 110% (Weapon Damage)"}, // Rank 6 - Evolution A
+			{Rank: 9, Description: "Increase squadmate shield-recharge speed by 20%.\n\nHealth and Shield Bonus: 30% (Durability), 50% (Weapon Damage)\nPower Damage Bonus: 150% (Durability), 110% (Weapon Damage)"},             // Rank 6 - Evolution B
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_ZaeedPassive", Name: "Mercenary Training", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		ID: "SFXPowerCustomAction_ZaeedPassive", Name: "Mercenary Veteran", Picture: "MPPassive.webp", Type: PowerTypePassive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
-			{Rank: 1, Description: ""}, // Rank 1
-			{Rank: 2, Description: ""}, // Rank 2
-			{Rank: 3, Description: ""}, // Rank 3
-			{Rank: 4, Description: ""}, // Rank 4 - Evolution A
-			{Rank: 5, Description: ""}, // Rank 4 - Evolution B
-			{Rank: 6, Description: ""}, // Rank 5 - Evolution A
-			{Rank: 7, Description: ""}, // Rank 5 - Evolution B
-			{Rank: 8, Description: ""}, // Rank 6 - Evolution A
-			{Rank: 9, Description: ""}, // Rank 6 - Evolution B
+			{Rank: 1, Description: "Boost weapon damage, health, and shields/barriers.\n\nHealth & Shield Bonus: 15%\nWeapon Damage Bonus: 15%"},                               // Rank 1
+			{Rank: 2, Description: "Increase health and shield bonuses by 15%.\nIncrease weapon damage bonus by 15%.\n\nHealth & Shield Bonus: 30%\nWeapon Damage Bonus: 30%"}, // Rank 2
+			{Rank: 3, Description: "Increase health and shield bonuses by 15%.\nIncrease weapon damage bonus by 15%.\n\nHealth & Shield Bonus: 45%\nWeapon Damage Bonus: 45%"}, // Rank 3
+			{Rank: 4, Description: "Weapon Damage\n\nIncrease weapon damage bonus by 30%.\n\nHealth & Shield Bonus: 45%\nWeapon Damage Bonus: 75%"},                            // Rank 4 - Evolution A
+			{Rank: 5, Description: "Durability\n\nIncrease health and shield bonuses by 30%.\n\nHealth & Shield Bonus: 75%\nWeapon Damage Bonus: 45%"},                         // Rank 4 - Evolution B
+			{Rank: 6, Description: "Power Damage\n\nIncrease power damage by 20%."},                                                                                            // Rank 5 - Evolution A
+			{Rank: 7, Description: "Sniper Rifles\n\nIncrease sniper rifle damage by 45%."},                                                                                    // Rank 5 - Evolution B
+			{Rank: 8, Description: "Squad Bonus\n\nIncrease squadmate weapon damage by 10%."},                                                                                  // Rank 6 - Evolution A
+			{Rank: 9, Description: "Assault Rifles\n\nIncrease assault rifle damage by 60%."},                                                                                  // Rank 6 - Evolution B
 		},
 	},
 	{
 		ID: "SFXPowerCustomAction_WarpAmmo", Name: "Warp Ammo", Picture: "Warp.webp", Type: PowerTypeActive,
-		RootPath:           "SFXGameContent",
-		AmmoPowerSpriteDir: "WarpAmmo/sprites/DefineSprite_181",
+		RootPath:            "SFXGameContent",
+		IndividualSpriteDir: "WarpAmmo/sprites/DefineSprite_181",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Blast vulnerable opponents already lifted by biotics for a damage bonus, and weaken the armor of grounded targets.\n\nHealth Damage Bonus: +15%\nArmor Damage Bonus: +15%\nBarrier Damage: +30%\nArmor Weakening: -25%\nLifted Target Damage: +50%"}, // Rank 1
 			{Rank: 2, Description: "Increase damage to lifted targets by 25%.\n\nLifted Target Damage: +75%"},                                                                                        // Rank 2

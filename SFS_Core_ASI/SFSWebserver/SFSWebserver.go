@@ -16,6 +16,7 @@ import (
 
 	"sfswebserver/controllers"
 	me3integration "sfswebserver/controllers/me3Integration"
+	"sfswebserver/model"
 
 	bolt "go.etcd.io/bbolt"
 )
@@ -197,6 +198,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("[FATAL] fs.Sub static: %v", err)
 	}
+	model.SetStaticFS(staticSub)
 	http.Handle("/static/", http.StripPrefix("/static/", pngStrippedFileServer(staticSub)))
 
 	// GET /spectreportal/
@@ -228,7 +230,7 @@ func main() {
 
 	// Bind to loopback only (local machine).
 	addr := fmt.Sprintf("127.0.0.1:%d", port)
-	log.Printf("[INFO] listening on http://%s", addr)
+	log.Printf("[INFO] listening on http://%s/spectreportal", addr)
 
 	// Start HTTP server (blocks forever unless an error occurs).
 	if err := http.ListenAndServe(addr, nil); err != nil {
