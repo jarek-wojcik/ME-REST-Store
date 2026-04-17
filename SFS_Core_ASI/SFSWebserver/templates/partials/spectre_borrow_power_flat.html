@@ -62,8 +62,12 @@
 
             <!-- Power icon: 64×64 rank-1 tile — identical rendering to spectre_borrow_power.html -->
             <div class="w-16 h-16 flex-shrink-0 rounded-sm bg-[#0a0e1a]
-                        border border-[#1e3a5f] group-hover:border-[#00aaff]/40 transition-colors"
-                 style="background-image:url('{{.Power.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;">
+                        border border-[#1e3a5f] group-hover:border-[#00aaff]/40 transition-colors overflow-hidden"
+                 {{if .Power.UsesIndividualSprites}}
+                 style="background-image:url('{{.Power.IndividualSpriteRankURL 1}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                 {{else}}
+                 style="background-image:url('{{.Power.IconURL}}');background-size:384px 128px;background-position:0px 0px;background-repeat:no-repeat;"
+                 {{end}}>
             </div>
 
             <!-- Power name (source) -->

@@ -2740,7 +2740,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomAction_Cloak_Kasumi", Name: "Tactical Cloak (SMG)", Picture: "Cloak.webp", Type: PowerTypeActive,
+		ID: "SFXPowerCustomAction_Cloak_Kasumi", Name: "Tactical Cloak (SP)", Picture: "Cloak.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContent",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Become invisible.\n\nGain a massive damage bonus when breaking from cloak to attack.\n\nRecharge Speed: 20 sec\nDuration: 8 sec\nDamage Bonus: 50%"},                                                      // Rank 1
@@ -2954,7 +2954,7 @@ var PowerCatalog = []PowerDef{
 	{
 		ID: "SFXPowerCustomAction_WarpAmmo", Name: "Warp Ammo", Picture: "Warp.webp", Type: PowerTypeActive,
 		RootPath:            "SFXGameContent",
-		IndividualSpriteDir: "WarpAmmo/sprites/DefineSprite_181",
+		IndividualSpriteDir: "AmmoPowers/WarpAmmo/sprites/DefineSprite_181",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Blast vulnerable opponents already lifted by biotics for a damage bonus, and weaken the armor of grounded targets.\n\nHealth Damage Bonus: +15%\nArmor Damage Bonus: +15%\nBarrier Damage: +30%\nArmor Weakening: -25%\nLifted Target Damage: +50%"}, // Rank 1
 			{Rank: 2, Description: "Increase damage to lifted targets by 25%.\n\nLifted Target Damage: +75%"},                                                                                        // Rank 2
