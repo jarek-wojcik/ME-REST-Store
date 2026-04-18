@@ -136,12 +136,16 @@ func qualifySpectre(s *model.Spectre) {
 	}
 	for i := range s.Powers {
 		if def := model.PowerByID(s.Powers[i].PowerID); def != nil {
-			s.Powers[i].PowerID = def.RootPath + "." + s.Powers[i].PowerID
+			if def.RootPath != "" {
+				s.Powers[i].PowerID = def.RootPath + "." + s.Powers[i].PowerID
+			}
 		}
 	}
 	if s.BorrowedPower != nil {
 		if def := model.PowerByID(s.BorrowedPower.PowerID); def != nil {
-			s.BorrowedPower.PowerID = def.RootPath + "." + s.BorrowedPower.PowerID
+			if def.RootPath != "" {
+				s.BorrowedPower.PowerID = def.RootPath + "." + s.BorrowedPower.PowerID
+			}
 		}
 	}
 	s.ArmorConsumableID = qualifiedConsumablePath(s.ArmorConsumableID)

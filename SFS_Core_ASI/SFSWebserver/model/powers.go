@@ -92,6 +92,7 @@ type PowerDef struct {
 	IndividualSpriteDir string     // non-empty when the power uses per-rank sprites; path under /static/assets/powers/ containing 1-9 image files
 	IndividualSpriteExt string     // file extension for IndividualSpriteDir sprites (e.g. "webp"); defaults to "png" when empty
 	Type                PowerType  // Passive, Active, or SpectrePassive
+	Disabled            bool       // whether this power is enabled for display; set at startup based on config and BoltDB contents
 }
 
 // IconURL returns the URL for the power's sprite sheet.
@@ -1453,7 +1454,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_BubbleShield", Name: "Barrier Bubbles", Picture: "BubbleShield.webp", Type: PowerTypeActive,
+		ID: "SFXPowerCustomActionMP_BubbleShield", Name: "Biotic Sphere", Picture: "BubbleShield.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP1",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Create a defensive shield that surrounds the caster and nearby allies.\n\nMore damage dealt to enemies entering the shielded area."}, // Rank 1
@@ -2997,6 +2998,79 @@ var PowerCatalog = []PowerDef{
 			{Rank: 7, Description: "Increase headshot damage bonus by 20%."},                                                               // Rank 5 - Evolution B
 			{Rank: 8, Description: "Decrease weight of all weapons by 20%."},                                                               // Rank 6 - Evolution A
 			{Rank: 9, Description: "Increase weapon damage bonus by 10%."},                                                                 // Rank 6 - Evolution B
+		},
+	},
+
+	// Aria / Nyreen Powers -------------------------
+	{
+		ID: "SFXPowerCustomAction_NyreenBubbleShield", Name: "Biotic Protector", Picture: "BubbleShield.webp", Type: PowerTypeActive,
+		Disabled:            true,
+		RootPath:            "",
+		IndividualSpriteDir: "SPPowers/BioticProtector",
+		IndividualSpriteExt: "webp",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Deploy a shield that protects against all damage at the expense of moving, shooting, or using powers while it is enabled.\n\nRecharge Speed: 10 sec\nDuration: 4 sec"},
+			{Rank: 2, Description: "Increase recharge speed by 25%.\n\nRecharge Speed: 8 sec\nDuration: 4 sec"},
+			{Rank: 3, Description: "Increase duration by 25%.\n\nRecharge Speed: 8 sec\nDuration: 5 sec"},
+			{Rank: 4, Description: "Trigger a 3 meter radius blast when deploying the shield, dealing 300 points of damage.\n\nRecharge Speed: 8 sec\nDuration: 5 sec"},
+			{Rank: 5, Description: "Give Biotic Protector a 50% chance of not triggering a cooldown.\n\nRecharge Speed: 8 sec\nDuration: 5 sec"},
+			{Rank: 6, Description: "Increase recharge speed by 30%.\n\nRecharge Speed: 6.45 sec\nDuration: 5 sec"},
+			{Rank: 7, Description: "Increase duration by 30%.\n\nRecharge Speed: 8 sec\nDuration: 6.20 sec"},
+			{Rank: 8, Description: "Deal 50% more weapon damage for 10 seconds after the shield expires.\n\nRecharge Speed: 6.45 sec (Recharge Speed) 8 sec (Duration)\nDuration: 5 sec (Recharge Speed) 6.20 sec (Duration)"},
+			{Rank: 9, Description: "Reduce incoming damage by 50% for 10 seconds after the shield expires.\n\nRecharge Speed: 6.45 sec (Recharge Speed) 8 sec (Duration)\nDuration: 5 sec (Recharge Speed) 6.20 sec (Duration)"},
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_NyreenPassive", Name: "Turian Huntress", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		RootPath: "",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Increase power damage and boost defensive abilities.\n\nHealth and Shield Bonus: 15%\nPower Damage Bonus: 15%"},
+			{Rank: 2, Description: "Increase health and shield bonuses by 15%.\nIncrease power damage bonus by 15%.\n\nHealth and Shield Bonus: 30%\nPower Damage Bonus: 30%"},
+			{Rank: 3, Description: "Increase health and shield bonuses by 15%.\nIncrease power damage bonus by 15%.\n\nHealth and Shield Bonus: 45%\nPower Damage Bonus: 45%"},
+			{Rank: 4, Description: "Increase weapon damage by 30%.\nIncrease health and shield bonuses by 30%.\n\nHealth and Shield Bonus: 75%\nPower Damage Bonus: 45%"},
+			{Rank: 5, Description: "Increase biotic power damage by 30%.\nIncrease tech power damage by 30%."},
+			{Rank: 6, Description: "Increase the damage of the squad's tech and biotic powers by 20%.\nIncrease power damage by 30%.\n\nHealth and Shield Bonus: 45% (Weapon Damage), 75% (Durability)\nPower Damage Bonus: 75%"},
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_AriaLash", Name: "Lash (Aria)", Picture: "Lash.webp", Type: PowerTypeActive,
+		RootPath: "",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Latch this biotic field onto enemies to jerk them towards you, doing massive damage in the process.\n\nRecharge Speed: 6 sec\nDamage: 150\nForce: 1200 N"},
+			{Rank: 2, Description: "Increase recharge speed by 25%.\n\nRecharge Speed: 4.80 sec\nDamage: 150\nForce: 1200 N"},
+			{Rank: 3, Description: "Increase damage by 20%.\n\nRecharge Speed: 4.80 sec\nDamage: 180\nForce: 1200 N"},
+			{Rank: 4, Description: "Increase damage by 30%.\n\nRecharge Speed: 4.80 sec\nDamage: 225\nForce: 1200 N"},
+			{Rank: 5, Description: "Increase recharge speed by 35%.\n\nRecharge Speed: 3.75 sec\nDamage: 225 (Damage), 180 (Detonate)\nForce: 1200 N\n\nDo an additional 100% damage over 10 seconds."},
+			{Rank: 6, Description: "Give the power a 35% chance of not causing a cooldown.\nIncrease the time that lifted targets can be detonated by 100%.\n\nPenetrate through shields and barriers, lifting any target without armor but with reduced force."},
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_BioticFlare", Name: "Biotic Flare", Picture: "BioticFlare.webp", Type: PowerTypeActive,
+		RootPath:            "",
+		IndividualSpriteDir: "SPPowers/BioticFlare",
+		IndividualSpriteExt: "webp",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Focus and expend all biotic energy to unleash a huge flare that throws enemies within its range, causing massive damage.\n\nRecharge Speed: 30 sec\nDamage: 400\nForce: 200 N\nRadius: 6 m"},                                                 // Rank 1
+			{Rank: 2, Description: "Increase recharge speed by 25%.\n\nRecharge Speed: 24 sec\nDamage: 400\nForce: 200 N\nRadius: 6 m"},                                                                                                                                          // Rank 2
+			{Rank: 3, Description: "Increase damage and force by 20%.\n\nRecharge Speed: 24 sec\nDamage: 480\nForce: 240 N\nRadius: 6 m"},                                                                                                                                        // Rank 3
+			{Rank: 4, Description: "Increase damage and force by 30%.\n\nRecharge Speed: 24 sec\nDamage: 600\nForce: 300 N\nRadius: 6 m"},                                                                                                                                        // Rank 4 - Evolution A (Damage & Force)
+			{Rank: 5, Description: "Increase impact radius by 30%.\n\nRecharge Speed: 24 sec\nDamage: 480\nForce: 240 N\nRadius: 7.80 m"},                                                                                                                                        // Rank 4 - Evolution B (Radius)
+			{Rank: 6, Description: "Increase recharge speed by 30%.\n\nRecharge Speed: 19.35 sec\nDamage: 600 (Damage & Force), 480 (Radius)\nForce: 300 N (Damage & Force), 240 N (Radius)\nRadius: 6 m (Damage & Force), 7.80 m (Radius)"},                                     // Rank 5 - Evolution A (Recharge Speed)
+			{Rank: 7, Description: "Increase force, damage, and impact radius of combo detonations by 50%."},                                                                                                                                                                     // Rank 5 - Evolution B (Detonate)
+			{Rank: 8, Description: "Increase impact radius by 50%.\n\nRecharge Speed: 19.35 sec (Recharge Speed), 24 sec (Detonate)\nDamage: 600 (Damage & Force), 480 (Radius)\nForce: 300 N (Damage & Force), 240 N (Radius)\nRadius: 9 m (Damage & Force), 10.80 m (Radius)"}, // Rank 6 - Evolution A (Radius)
+			{Rank: 9, Description: "Increase the damage done to shields and barriers by 75%."},                                                                                                                                                                                   // Rank 6 - Evolution B (Improved Damage)
+		},
+	},
+	{
+		ID: "SFXPowerCustomAction_AriaPassive", Name: "Biotic Boss", Picture: "MPPassive.webp", Type: PowerTypePassive,
+		RootPath: "",
+		RankDescs: []RankDesc{
+			{Rank: 1, Description: "Increase power damage and boost defensive abilities.\n\nHealth and Shield Bonus: 15%\nPower Damage Bonus: 20%"},
+			{Rank: 2, Description: "Increase health and shield bonuses by 15%.\nIncrease power damage bonus by 20%.\n\nHealth and Shield Bonus: 30%\nPower Damage Bonus: 40%"},
+			{Rank: 3, Description: "Increase health and shield bonuses by 15%.\nIncrease power damage bonus by 20%.\n\nHealth and Shield Bonus: 45%\nPower Damage Bonus: 60%"},
+			{Rank: 4, Description: "Increase power damage by 40%.\nIncrease health and shield bonuses by 25%.\n\nHealth and Shield Bonus: 70%\nPower Damage Bonus: 60%"},
+			{Rank: 5, Description: "Increase weapon damage by 20%.\nIncrease power damage by 40%.\n\nHealth and Shield Bonus: 45% (Power Damage), 70% (Durability)\nPower Damage Bonus: 140% (Power Damage), 100% (Durability)"},
+			{Rank: 6, Description: "Increase the entire squad's health and shields by 20%.\nIncrease health and shields by 40%.\n\nHealth and Shield Bonus: 65% (Power Damage), 90% (Durability)\nPower Damage Bonus: 100% (Power Damage), 60% (Durability) [Weapon Damage], 140% (Power Damage), 100% (Durability) [Power Damage]"},
 		},
 	},
 }

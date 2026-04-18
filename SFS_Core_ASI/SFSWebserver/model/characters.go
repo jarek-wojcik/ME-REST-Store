@@ -423,6 +423,18 @@ var CharacterCatalog = []CharacterDef{
 		PowerIDs:    [5]string{"SFXPowerCustomActionMP_Barrier", "SFXPowerCustomActionMP_Reave", "SFXPowerCustomActionMP_Overload", "SFXPowerCustomActionMP_CryoBlast", "SFXPowerCustomAction_KaidenPassive"},
 		HasHeadgear: false, HasHelmet: true,
 		PawnType: PawnTypeHenchman},
+	{ID: "Archetypes.Nyreen_Combat", IDLook: "Nyreen", Name: "Nyreen (No Hood)", SubClass: "Squadmate", Species: []Species{SpeciesHuman}, PictureFile: "/SP/NyreenMassEffect.webp",
+		PowerIDs:    [5]string{"SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_Overload", "SFXPowerCustomActionMP_BubbleShield", "SFXPowerCustomActionMP_BioticGrenade", "SFXPowerCustomAction_NyreenPassive"},
+		HasHeadgear: false, HasHelmet: false,
+		PawnType: PawnTypeHenchman},
+	{ID: "Archetypes.Nyreen_Civilian_Combat", IDLook: "Nyreen_Hooded", Name: "Nyreen (Hood)", SubClass: "Squadmate", Species: []Species{SpeciesHuman}, PictureFile: "/SP/NyreenMassEffectHooded.webp",
+		PowerIDs:    [5]string{"SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_Overload", "SFXPowerCustomAction_NyreenBubbleShield", "SFXPowerCustomActionMP_BioticGrenade", "SFXPowerCustomAction_NyreenPassive"},
+		HasHeadgear: false, HasHelmet: false,
+		PawnType: PawnTypeHenchman},
+	{ID: "Archetypes.Aria_Combat", IDLook: "Aria", Name: "Aria", SubClass: "Squadmate", Species: []Species{SpeciesHuman}, PictureFile: "/SP/AriaMassEffect.webp",
+		PowerIDs:    [5]string{"SFXPowerCustomAction_BioticFlare", "SFXPowerCustomActionMP_Reave", "SFXPowerCustomActionMP_Carnage", "SFXPowerCustomAction_AriaLash", "SFXPowerCustomAction_AriaPassive"},
+		HasHeadgear: false, HasHelmet: false,
+		PawnType: PawnTypeHenchman},
 }
 
 // ---------------------------------------------------------------------------
@@ -616,7 +628,7 @@ func AllPowersWithSourceOfType(t PowerType) []PowerWithSource {
 	full := AllPowersWithSource()
 	result := full[:0:0]
 	for _, p := range full {
-		if p.Power != nil && p.Power.Type == t {
+		if p.Power != nil && p.Power.Type == t && !p.Power.Disabled {
 			result = append(result, p)
 		}
 	}
