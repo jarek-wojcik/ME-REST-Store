@@ -21,7 +21,7 @@ var bool PendingCrossFactionEnemies;
 public event simulated function HandlePostAdd()
 {
     SettingsService = Outer.GetModule(Class'SFSMissionSettingsService');
-    if (SettingsService != None)
+    if (SettingsService != None && !Class'Engine'.static.GetCurrentWorldInfo().bIsLobbyLevel)
     {
         SettingsService.RetrieveSettings(OnSettingsRetrieved);
     }
