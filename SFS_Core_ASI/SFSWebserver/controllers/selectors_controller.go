@@ -70,12 +70,21 @@ func (c *SelectorsController) Register() {
 				"Characters":      model.AppearanceCharacters(species),
 			})
 		} else if kind == "spectre-voice" {
+			// Filter voices to those compatible with the spectre's current appearance.
+			s, err := getSpectre(c.db, entityID)
+			appearanceCharID := ""
+			if err == nil {
+				appearanceCharID = s.AppearanceCharacterID
+				if appearanceCharID == "" {
+					appearanceCharID = s.CharacterID
+				}
+			}
 			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{
 				"Title":           "Select Voice",
 				"CharPostURLBase": charPostURLBase,
 				"TargetID":        targetID,
 				"TargetSwap":      targetSwap,
-				"Characters":      model.AppearanceCharacters(""), // no species filter for voices
+				"Characters":      model.CompatibleVoiceCharsForChar(appearanceCharID),
 			})
 		} else if kind == "spectre-heavy-melee" {
 			_ = c.tmpl.ExecuteTemplate(w, "appearance_selector", map[string]any{

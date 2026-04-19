@@ -351,15 +351,16 @@ func getSpectre(db *bolt.DB, spectreID string) (model.Spectre, error) {
 // createSpectre persists a new spectre with the given name.
 // Power slots are intentionally empty — the user fills them in on the sheet.
 func createSpectre(db *bolt.DB, name string) (model.Spectre, error) {
-	const defaultChar = "AdeptHumanMale"
+	//const defaultChar = "AdeptHumanMale"
 	s := model.Spectre{
-		ID:          newID(),
-		Name:        name,
-		CharacterID: defaultChar,
-		Powers:      []model.PowerSlot{{}, {}, {}, {}, {}},
-		SkillLevels: make(map[string]int),
-		SkillPoints: model.InitialSkillPoints,
-		Level:       1,
+		ID:   newID(),
+		Name: name,
+		//CharacterID:      defaultChar,
+		PreferredSpecies: "Human",
+		Powers:           []model.PowerSlot{{}, {}, {}, {}, {}},
+		SkillLevels:      make(map[string]int),
+		SkillPoints:      model.InitialSkillPoints,
+		Level:            1,
 	}
 	data, err := json.Marshal(s)
 	if err != nil {
@@ -434,15 +435,16 @@ func createTeamSpectre(db *bolt.DB, teamID, charID string) (model.Spectre, error
 		return model.Spectre{}, fmt.Errorf("unknown character: %s", charID)
 	}
 	s := model.Spectre{
-		ID:          newID(),
-		Name:        char.Name,
-		CharacterID: charID,
-		TeamID:      teamID,
-		SortOrder:   time.Now().UnixNano(),
-		Powers:      defaultPowersForChar(charID),
-		SkillLevels: make(map[string]int),
-		SkillPoints: model.InitialSkillPoints,
-		Level:       1,
+		ID:               newID(),
+		Name:             char.Name,
+		CharacterID:      charID,
+		TeamID:           teamID,
+		SortOrder:        time.Now().UnixNano(),
+		PreferredSpecies: "Human",
+		Powers:           defaultPowersForChar(charID),
+		SkillLevels:      make(map[string]int),
+		SkillPoints:      model.InitialSkillPoints,
+		Level:            1,
 	}
 	data, err := json.Marshal(s)
 	if err != nil {
@@ -876,6 +878,8 @@ func updateSpectreDodge(db *bolt.DB, spectreID, charID string) (model.Spectre, e
 
 // updateSpectreAppearance sets the appearance character override without
 // changing the base class, powers, or any other loadout data.
+// If the currently assigned voice is not compatible with the new appearance,
+// it is automatically switched to the first compatible voice.
 func updateSpectreAppearance(db *bolt.DB, spectreID, charID string) (model.Spectre, error) {
 	var s model.Spectre
 	err := db.Update(func(tx *bolt.Tx) error {
@@ -888,6 +892,14 @@ func updateSpectreAppearance(db *bolt.DB, spectreID, charID string) (model.Spect
 			return err
 		}
 		s.AppearanceCharacterID = charID
+		// Auto-switch voice when it is no longer compatible with the new appearance.
+		if !model.IsVoiceCompatibleWithAppearance(s.VoiceCharacterID, charID) {
+			if voices := model.CompatibleVoiceCharsForChar(charID); len(voices) > 0 {
+				if vd := model.VoiceByID(voices[0].ID); vd != nil {
+					s.VoiceCharacterID = vd.KitQualifiedPath()
+				}
+			}
+		}
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err
@@ -1246,8 +1258,9 @@ func updateSpectreShieldType(db *bolt.DB, spectreID, shieldType string) (model.S
 	return s, err
 }
 
-// updateSpectrePreferredSpecies sets the PreferredSpecies field used to filter
-// the appearance character selector.
+// updateSpectrePreferredSpecies sets the PreferredSpecies field and resets the
+// appearance and voice to the hardcoded defaults for that species so all three
+// fields stay consistent.
 func updateSpectrePreferredSpecies(db *bolt.DB, spectreID, species string) (model.Spectre, error) {
 	var s model.Spectre
 	err := db.Update(func(tx *bolt.Tx) error {
@@ -1260,6 +1273,13 @@ func updateSpectrePreferredSpecies(db *bolt.DB, spectreID, species string) (mode
 			return err
 		}
 		s.PreferredSpecies = species
+		// Apply species defaults: reset appearance and voice together.
+		if def, ok := model.SpeciesDefaults[species]; ok {
+			s.AppearanceCharacterID = def.AppearanceCharID
+			if vd := model.VoiceByID(def.VoiceID); vd != nil {
+				s.VoiceCharacterID = vd.KitQualifiedPath()
+			}
+		}
 		data, err := json.Marshal(s)
 		if err != nil {
 			return err
