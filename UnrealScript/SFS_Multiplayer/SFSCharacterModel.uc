@@ -9,6 +9,7 @@ struct SFSCharacterModelStruct
     var string Name;
     var string PreferredSpecies;
     var string VoiceCharId;
+    var string VoiceKitId;
     var string CharacterID;
     var string AppearanceCharID;
     var string AppearancePawnType;
@@ -40,15 +41,6 @@ struct SFSCharacterModelStruct
     var bool bHasBorrowedPower;
     var SFSPowerModelStruct BorrowedPower;
     var SFSInventoryModelStruct Inventory;
-    
-    structdefaultproperties
-    {
-        Weapons[0] = {WeaponID = "", Mod1ID = "", Mod2ID = "", FireMode = ""}
-        Weapons[1] = {WeaponID = "", Mod1ID = "", Mod2ID = "", FireMode = ""}
-        Weapons[2] = {WeaponID = "", Mod1ID = "", Mod2ID = "", FireMode = ""}
-        Weapons[3] = {WeaponID = "", Mod1ID = "", Mod2ID = "", FireMode = ""}
-        Weapons[4] = {WeaponID = "", Mod1ID = "", Mod2ID = "", FireMode = ""}
-    }
 };
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

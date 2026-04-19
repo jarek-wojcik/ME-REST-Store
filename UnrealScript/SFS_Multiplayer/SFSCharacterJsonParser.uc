@@ -44,6 +44,7 @@ static function bool FromSimpleJson(string JsonText, out SFSCharacterModelStruct
     Model.Name = ExtractJsonField(JsonText, "name");
     Model.PreferredSpecies = ExtractJsonField(JsonText, "preferredSpecies");
     Model.VoiceCharId = ExtractJsonField(JsonText, "voiceCharId");
+    Model.VoiceKitId = ExtractJsonField(JsonText, "voiceKitId");
     Model.CharacterID = ExtractJsonField(JsonText, "characterId");
     Model.AppearanceCharID = ExtractJsonField(JsonText, "appearanceCharId");
     Model.AppearancePawnType = ExtractJsonField(JsonText, "appearancePawnType");

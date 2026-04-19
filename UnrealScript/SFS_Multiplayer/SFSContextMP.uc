@@ -22,6 +22,7 @@ defaultproperties
                       Class'SFSSpectreIntegrationService', 
                       Class'SFSMissionSettingsService', 
                       Class'SFSMissionParamsManager', 
+                      Class'SFSPortalIntegrationLobbyManager', 
                       Class'SFSSpectrePortalManager'
                      )
 }

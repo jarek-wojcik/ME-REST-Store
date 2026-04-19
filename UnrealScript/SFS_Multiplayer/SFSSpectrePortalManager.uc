@@ -19,7 +19,7 @@ public event simulated function HandlePostAdd()
     PowerManager = Outer.GetModule(Class'SFSPowerManager');
     ConsumableManager = Outer.GetModule(Class'SFSConsumableManager');
     CustomActionsManager = Outer.GetModule(Class'SFSCustomActionsManager');
-    if (asyncLoader != None)
+    if (asyncLoader != None && !Class'Engine'.static.GetCurrentWorldInfo().bIsLobbyLevel)
     {
         spectreService.RetrieveActiveCharacter(OnCharacterRetrieved);
     }

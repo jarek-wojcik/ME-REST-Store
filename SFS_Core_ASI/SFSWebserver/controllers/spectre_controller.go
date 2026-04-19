@@ -563,22 +563,6 @@ func (c *SpectreController) Register() {
 		c.renderCard(w, s, false)
 	})
 
-	// POST /api/spectres/{id}/weapon/{idx}/scope/toggle
-	// Toggles the removeScope flag for the weapon at the given slot index.
-	http.HandleFunc("POST /api/spectres/{id}/weapon/{idx}/scope/toggle", func(w http.ResponseWriter, r *http.Request) {
-		idx, err := strconv.Atoi(r.PathValue("idx"))
-		if err != nil || idx < 0 {
-			respondText(w, 400, "invalid weapon index\n")
-			return
-		}
-		s, err := toggleSpectreWeaponScope(c.db, r.PathValue("id"), idx)
-		if err != nil {
-			respondText(w, 500, "update failed\n")
-			return
-		}
-		c.renderCard(w, s, false)
-	})
-
 	// POST /api/spectres/{id}/weapon/{idx}/firemode/{mode}
 	// Sets the fire mode (Semi, Burst, FullAuto) for the weapon at the given slot index.
 	http.HandleFunc("POST /api/spectres/{id}/weapon/{idx}/firemode/{mode}", func(w http.ResponseWriter, r *http.Request) {

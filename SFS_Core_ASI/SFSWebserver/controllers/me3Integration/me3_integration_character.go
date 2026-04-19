@@ -247,7 +247,7 @@ func flattenSpectreOrdered(s *model.Spectre, w http.ResponseWriter, status int) 
 
 	// 1. Identity & appearance.
 	for _, k := range []string{
-		"id", "sortOrder", "teamId", "active", "name", "preferredSpecies", "voiceCharId",
+		"id", "sortOrder", "teamId", "active", "name", "preferredSpecies", "voiceCharId", "voiceKitId",
 		"characterId", "appearanceCharId", "appearancePawnType",
 		"appearanceHelmet", "appearanceHeadgear", "dodgeCharId", "heavyMeleeCharId", "lightMeleeCharId",
 	} {
@@ -283,6 +283,7 @@ func flattenSpectreOrdered(s *model.Spectre, w http.ResponseWriter, status int) 
 		"armorConsumableId": true, "weaponConsumableId": true,
 		"ammoConsumableId": true, "gearConsumableId": true, "preferredSpecies": true, "voiceCharId": true, "sortOrder": true, "teamId": true,
 		"borrowedPower": true, "dodgeCharId": true, "heavyMeleeCharId": true, "lightMeleeCharId": true,
+		"voiceKitId": true,
 	}
 	var rest []string
 	for k := range m {
@@ -323,6 +324,9 @@ func (c *Me3IntegrationController) Register() {
 		}
 		spectre.AppearancePawnType = model.PawnType(appearancePawnType(spectre))
 		qualifySpectre(spectre)
+		if voiceDef := model.CharacterByQualifiedPath(spectre.VoiceCharacterID); voiceDef != nil {
+			spectre.VoiceKitID = voiceDef.ID
+		}
 		// Remove skill levels that are 0 — they add noise without meaning.
 		for k, v := range spectre.SkillLevels {
 			if v == 0 {
