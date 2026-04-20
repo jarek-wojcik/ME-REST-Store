@@ -1237,7 +1237,7 @@ var CharacterCatalog = []CharacterDef{ // ---- Human base classes --------------
 		Name:        "Nyreen (Hood)",
 		SubClass:    "Squadmate",
 		Species:     []Species{SpeciesTurian},
-		PictureFile: "/SP/NyreenMassEffectHooded.webp",
+		PictureFile: "/SP/NyreenHooded2.png",
 		PowerIDs:    [5]string{"SFXPowerCustomActionMP_Incinerate", "SFXPowerCustomActionMP_Overload", "SFXPowerCustomAction_NyreenBubbleShield", "SFXPowerCustomActionMP_BioticGrenade", "SFXPowerCustomAction_NyreenPassive"},
 		HasHeadgear: false,
 		HasHelmet:   false,
