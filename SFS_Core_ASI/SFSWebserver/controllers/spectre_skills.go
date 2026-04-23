@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"sfswebserver/model"
 
@@ -11,12 +12,23 @@ import (
 )
 
 // SkillSegment is one of the ten level-block indicators rendered in the UI.
-// Filled is true when this segment is at or below the current skill level.
+// CapstoneChoice is one of the three capstone options shown for a capstone level.
+type CapstoneChoice struct {
+	Selected    bool
+	ChoiceNum   int
+	ChoiceLabel string
+	Description string
+	SelectURL   string
+	Enabled     bool
+}
+
+// SkillSegment is one of the ten level-block indicators rendered in the UI.
 type SkillSegment struct {
-	Filled      bool
-	LevelNum    int    // 1-indexed level this segment represents
-	Description string // tooltip text shown on hover
-	SetLevelURL string // POST: sets skill to exactly this level
+	Filled          bool
+	LevelNum        int    // 1-indexed level this segment represents
+	Description     string // tooltip text shown on hover
+	SetLevelURL     string // POST: sets skill to exactly this level
+	CapstoneChoices []CapstoneChoice
 }
 
 // SkillView is the template-facing view for one skill row on the character sheet.
@@ -48,14 +60,55 @@ func spectreSkillViews(s model.Spectre, spectreID string) []SkillView {
 		}
 
 		level := s.SkillLevels[def.ID]
+		capstoneSelections := s.SkillCapstoneChoices[def.ID]
 		segments := make([]SkillSegment, model.MaxSkillLevel)
 		for j := 0; j < model.MaxSkillLevel; j++ {
-			segments[j] = SkillSegment{
+			levelNum := j + 1
+			segment := SkillSegment{
 				Filled:      j < level,
-				LevelNum:    j + 1,
+				LevelNum:    levelNum,
 				Description: def.Descriptions[j],
-				SetLevelURL: fmt.Sprintf("%s%s/set/%d", base, def.ID, j+1),
+				SetLevelURL: fmt.Sprintf("%s%s/set/%d", base, def.ID, levelNum),
 			}
+			if model.IsCapstoneLevel(levelNum) {
+				segment.CapstoneChoices = make([]CapstoneChoice, model.CapstonesPerLevel)
+				for choiceIndex := 0; choiceIndex < model.CapstonesPerLevel; choiceIndex++ {
+					choiceLabel := fmt.Sprintf("%c", 'A'+choiceIndex)
+					selected := false
+					if capstoneSelections != nil {
+						selectedChoice, ok := capstoneSelections[fmt.Sprint(levelNum)]
+						selected = ok && selectedChoice == choiceIndex
+					}
+					// capstone is enabled when the spectre already has the level,
+					// or when they can afford to raise the skill to that level
+					enabled := false
+					if level >= levelNum {
+						enabled = true
+					} else {
+						need := levelNum - level
+						if s.SkillPoints >= need {
+							enabled = true
+						}
+					}
+					// When a capstone is already selected, clicking it again should
+					// clear the skill (set level to 0). Otherwise it selects the
+					// capstone (and raises the skill to that level if needed).
+					selectURL := fmt.Sprintf("%s%s/capstone/%d/%d", base, def.ID, levelNum, choiceIndex+1)
+					if selected {
+						// toggle-off behavior: clear the skill to level 0
+						selectURL = fmt.Sprintf("%s%s/set/0", base, def.ID)
+					}
+					segment.CapstoneChoices[choiceIndex] = CapstoneChoice{
+						Selected:    selected,
+						ChoiceNum:   choiceIndex + 1,
+						ChoiceLabel: choiceLabel,
+						Description: fmt.Sprintf("Capstone %s for level %d", choiceLabel, levelNum),
+						SelectURL:   selectURL,
+						Enabled:     enabled,
+					}
+				}
+			}
+			segments[j] = segment
 		}
 		views = append(views, SkillView{
 			Def:          def,
@@ -106,6 +159,7 @@ func setSpectreSkillAbsolute(db *bolt.DB, spectreID, skillID string, targetLevel
 		}
 		s.SkillLevels[skillID] = targetLevel
 		s.SkillPoints -= delta // positive spend reduces pool; negative refund increases it
+		clearObsoleteCapstones(&s, skillID, targetLevel)
 
 		data, err := json.Marshal(s)
 		if err != nil {
@@ -156,6 +210,79 @@ func updateSpectreSkillLevel(db *bolt.DB, spectreID, skillID string, delta int) 
 			s.SkillLevels[skillID] = current - 1
 			s.SkillPoints++
 		}
+		clearObsoleteCapstones(&s, skillID, s.SkillLevels[skillID])
+
+		data, err := json.Marshal(s)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(spectreID), data)
+	})
+	return s, err
+}
+
+func clearObsoleteCapstones(s *model.Spectre, skillID string, newLevel int) {
+	if s.SkillCapstoneChoices == nil {
+		return
+	}
+	choices, ok := s.SkillCapstoneChoices[skillID]
+	if !ok {
+		return
+	}
+	for _, capLevel := range model.CapstoneLevels {
+		if capLevel > newLevel {
+			delete(choices, fmt.Sprint(capLevel))
+		}
+	}
+	if len(choices) == 0 {
+		delete(s.SkillCapstoneChoices, skillID)
+	}
+}
+
+func setSpectreCapstoneChoice(db *bolt.DB, spectreID, skillID string, capstoneLevel, choice int) (model.Spectre, error) {
+	if model.SkillByID(skillID) == nil {
+		return model.Spectre{}, fmt.Errorf("unknown skill: %s", skillID)
+	}
+	if !model.IsCapstoneLevel(capstoneLevel) {
+		return model.Spectre{}, fmt.Errorf("invalid capstone level: %d", capstoneLevel)
+	}
+	if choice < 0 || choice >= model.CapstonesPerLevel {
+		return model.Spectre{}, fmt.Errorf("invalid capstone choice: %d", choice)
+	}
+
+	var s model.Spectre
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(spectresBucket))
+		if b == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		v := b.Get([]byte(spectreID))
+		if v == nil {
+			return fmt.Errorf("spectre not found")
+		}
+		if err := json.Unmarshal(v, &s); err != nil {
+			return err
+		}
+		s.MigrateWeapons()
+		s.MigrateSkills()
+
+		current := s.SkillLevels[skillID]
+		if current < capstoneLevel {
+			delta := capstoneLevel - current
+			if s.SkillPoints < delta {
+				return fmt.Errorf("not enough skill points")
+			}
+			s.SkillLevels[skillID] = capstoneLevel
+			s.SkillPoints -= delta
+		}
+		if s.SkillCapstoneChoices == nil {
+			s.SkillCapstoneChoices = make(map[string]map[string]int)
+		}
+		if s.SkillCapstoneChoices[skillID] == nil {
+			s.SkillCapstoneChoices[skillID] = make(map[string]int)
+		}
+		s.SkillCapstoneChoices[skillID][fmt.Sprint(capstoneLevel)] = choice
+		clearObsoleteCapstones(&s, skillID, s.SkillLevels[skillID])
 
 		data, err := json.Marshal(s)
 		if err != nil {
@@ -200,6 +327,27 @@ func (c *SpectreController) RegisterSkillRoutes() {
 			return
 		}
 		s, err := setSpectreSkillAbsolute(c.db, r.PathValue("id"), r.PathValue("skillId"), level)
+		if err != nil {
+			respondText(w, 400, err.Error()+"\n")
+			return
+		}
+		c.renderCard(w, s, false)
+	})
+
+	// POST /api/spectres/{id}/skill/{skillId}/capstone/{level}/{choice}
+	// Selects one of the three capstone options for the given skill capstone level.
+	http.HandleFunc("POST /api/spectres/{id}/skill/{skillId}/capstone/{level}/{choice}", func(w http.ResponseWriter, r *http.Request) {
+		level, err := strconv.Atoi(r.PathValue("level"))
+		if err != nil {
+			respondText(w, 400, "invalid level\n")
+			return
+		}
+		choice, err := strconv.Atoi(r.PathValue("choice"))
+		if err != nil {
+			respondText(w, 400, "invalid choice\n")
+			return
+		}
+		s, err := setSpectreCapstoneChoice(c.db, r.PathValue("id"), r.PathValue("skillId"), level, choice-1)
 		if err != nil {
 			respondText(w, 400, err.Error()+"\n")
 			return

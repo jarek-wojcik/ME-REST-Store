@@ -1,8 +1,14 @@
 {{define "character_card_sheet"}}
 <style>
-  .skill-segment { width: 20px; height: 20px; }  .skill-segment-filled   { background-color: rgb(76,225,125); border-color: rgba(76,225,125,0.6); box-shadow: 0 0 4px rgba(76,225,125,0.45); }
-  .skill-segment-empty    { background-color: #060a12; border-color: rgba(26,45,74,0.8); }
-  .skill-segment-empty:hover { border-color: rgba(76,225,125,0.3); }</style>
+  .skill-segment { width: 20px; height: 20px; }
+  .skill-segment-filled { background-color: rgb(76,225,125); border-color: rgba(76,225,125,0.6); box-shadow: 0 0 4px rgba(76,225,125,0.45); }
+  .skill-segment-empty { background-color: #060a12; border-color: rgba(26,45,74,0.8); }
+  .skill-segment-empty:hover { border-color: rgba(76,225,125,0.3); }
+  .skill-segment-column { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 72px; }
+  .skill-segment-middle-row { display: flex; gap: 2px; align-items: center; justify-content: center; }
+  .skill-capstone-choice { width: 20px; height: 20px; }
+  .skill-capstone-choice.disabled { opacity: 0.35; }
+</style>
 <div id="{{.CardID}}"
      x-data="{ renaming: false }"
      class="w-fit rounded-xl overflow-hidden border border-[#1a2d4a]
@@ -373,18 +379,63 @@
                     <!-- 10 level blocks — click to set level; hover shows $store.tooltip -->
                     <div class="flex gap-px flex-shrink-0">
                         {{range .Segments}}
-                        <button type="button"
-                                class="skill-segment rounded-[2px] border transition-all
-                                       focus:outline-none cursor-pointer
-                                       {{if .Filled}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
-                                hx-post="{{.SetLevelURL}}"
-                                hx-target="#{{$.CardID}}"
-                                hx-swap="outerHTML"
-                                data-tooltip-title="Level {{.LevelNum}}"
-                                data-tooltip-desc="{{.Description}}"
-                                @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
-                                @mouseleave="$store.tooltip.hide()">
-                        </button>
+                        <div class="skill-segment-column">
+                            {{if .CapstoneChoices}}
+                            {{with index .CapstoneChoices 0}}
+                            <button type="button"
+                                    class="skill-capstone-choice rounded-[2px] border transition-all focus:outline-none cursor-pointer
+                                           {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
+                                    {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
+                                    data-tooltip-title="Capstone {{.ChoiceLabel}}"
+                                    data-tooltip-desc="{{.Description}}"
+                                    @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                    @mouseleave="$store.tooltip.hide()">
+                            </button>
+                            {{end}}
+                            {{end}}
+
+                            {{if .CapstoneChoices}}
+                            {{with index .CapstoneChoices 1}}
+                            <button type="button"
+                                    class="skill-segment rounded-[2px] border transition-all
+                                           focus:outline-none cursor-pointer
+                                           {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
+                                    {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
+                                    data-tooltip-title="Capstone {{.ChoiceLabel}}"
+                                    data-tooltip-desc="{{.Description}}"
+                                    @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                    @mouseleave="$store.tooltip.hide()">
+                            </button>
+                            {{end}}
+                            {{else}}
+                            <button type="button"
+                                    class="skill-segment rounded-[2px] border transition-all
+                                           focus:outline-none cursor-pointer
+                                           {{if .Filled}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
+                                    hx-post="{{.SetLevelURL}}"
+                                    hx-target="#{{$.CardID}}"
+                                    hx-swap="outerHTML"
+                                    data-tooltip-title="Level {{.LevelNum}}"
+                                    data-tooltip-desc="{{.Description}}"
+                                    @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                    @mouseleave="$store.tooltip.hide()">
+                            </button>
+                            {{end}}
+
+                            {{if .CapstoneChoices}}
+                            {{with index .CapstoneChoices 2}}
+                            <button type="button"
+                                    class="skill-capstone-choice rounded-[2px] border transition-all focus:outline-none cursor-pointer
+                                           {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
+                                    {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
+                                    data-tooltip-title="Capstone {{.ChoiceLabel}}"
+                                    data-tooltip-desc="{{.Description}}"
+                                    @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                    @mouseleave="$store.tooltip.hide()">
+                            </button>
+                            {{end}}
+                            {{end}}
+                        </div>
                         {{end}}
                     </div>
 

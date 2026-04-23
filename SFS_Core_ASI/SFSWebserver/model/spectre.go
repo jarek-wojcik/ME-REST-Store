@@ -59,8 +59,9 @@ type Spectre struct {
 	Level int `json:"level,omitempty"` // current level (1-based; 0 = not yet levelled)
 
 	// Spectre skill system.
-	SkillLevels map[string]int `json:"skillLevels,omitempty"` // keyed by SkillID; absent key means level 0
-	SkillPoints int            `json:"skillPoints,omitempty"` // unspent skill points
+	SkillLevels          map[string]int            `json:"skillLevels,omitempty"`          // keyed by SkillID; absent key means level 0
+	SkillPoints          int                       `json:"skillPoints,omitempty"`          // unspent skill points
+	SkillCapstoneChoices map[string]map[string]int `json:"skillCapstoneChoices,omitempty"` // keyed by SkillID, then capstone level string
 
 	TeamID    string `json:"teamId,omitempty"`    // non-empty for strike-team members
 	SortOrder int64  `json:"sortOrder,omitempty"` // creation time (unix nanos) for ordering within a team
@@ -114,6 +115,9 @@ func (s *Spectre) MigrateSkills() {
 	if s.SkillLevels == nil {
 		s.SkillLevels = make(map[string]int)
 		s.SkillPoints = InitialSkillPoints
+	}
+	if s.SkillCapstoneChoices == nil {
+		s.SkillCapstoneChoices = make(map[string]map[string]int)
 	}
 	if s.Level == 0 {
 		s.Level = 1

@@ -10,6 +10,14 @@ const (
 	MaxSkillLevel = 10
 )
 
+var CapstoneLevels = []int{1, 5, 10}
+
+const CapstonesPerLevel = 3
+
+func IsCapstoneLevel(level int) bool {
+	return level == 1 || level == 5 || level == 10
+}
+
 // SkillDef is the compile-time static definition of one skill.
 // Descriptions[i] describes what the character gains upon reaching level i+1.
 type SkillDef struct {
