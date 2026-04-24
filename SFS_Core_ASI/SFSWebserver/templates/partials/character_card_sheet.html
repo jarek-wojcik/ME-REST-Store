@@ -386,7 +386,7 @@
                                     class="skill-capstone-choice rounded-[2px] border transition-all focus:outline-none cursor-pointer
                                            {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
                                     {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
-                                    data-tooltip-title="Capstone {{.ChoiceLabel}}"
+                                    data-tooltip-title="{{.ChoiceLabel}}"
                                     data-tooltip-desc="{{.Description}}"
                                     @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
                                     @mouseleave="$store.tooltip.hide()">
@@ -401,7 +401,7 @@
                                            focus:outline-none cursor-pointer
                                            {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
                                     {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
-                                    data-tooltip-title="Capstone {{.ChoiceLabel}}"
+                                    data-tooltip-title="{{.ChoiceLabel}}"
                                     data-tooltip-desc="{{.Description}}"
                                     @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
                                     @mouseleave="$store.tooltip.hide()">
@@ -428,7 +428,7 @@
                                     class="skill-capstone-choice rounded-[2px] border transition-all focus:outline-none cursor-pointer
                                            {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
                                     {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
-                                    data-tooltip-title="Capstone {{.ChoiceLabel}}"
+                                    data-tooltip-title="{{.ChoiceLabel}}"
                                     data-tooltip-desc="{{.Description}}"
                                     @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
                                     @mouseleave="$store.tooltip.hide()">

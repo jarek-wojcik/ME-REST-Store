@@ -74,6 +74,13 @@ func spectreSkillViews(s model.Spectre, spectreID string) []SkillView {
 				segment.CapstoneChoices = make([]CapstoneChoice, model.CapstonesPerLevel)
 				for choiceIndex := 0; choiceIndex < model.CapstonesPerLevel; choiceIndex++ {
 					choiceLabel := fmt.Sprintf("%c", 'A'+choiceIndex)
+					// Prefer a configured short title from the skill definition.
+					if def != nil {
+						title := def.CapstoneTitles[levelNum-1][choiceIndex]
+						if title != "" {
+							choiceLabel = title
+						}
+					}
 					selected := false
 					if capstoneSelections != nil {
 						selectedChoice, ok := capstoneSelections[fmt.Sprint(levelNum)]
@@ -98,11 +105,20 @@ func spectreSkillViews(s model.Spectre, spectreID string) []SkillView {
 						// toggle-off behavior: clear the skill to level 0
 						selectURL = fmt.Sprintf("%s%s/set/0", base, def.ID)
 					}
+					// Prefer stored capstone text from the skill definition; fall
+					// back to a generated string when empty.
+					desc := ""
+					if def != nil {
+						desc = def.CapstoneDescriptions[levelNum-1][choiceIndex]
+					}
+					if desc == "" {
+						desc = fmt.Sprintf("Capstone %s for level %d", choiceLabel, levelNum)
+					}
 					segment.CapstoneChoices[choiceIndex] = CapstoneChoice{
 						Selected:    selected,
 						ChoiceNum:   choiceIndex + 1,
 						ChoiceLabel: choiceLabel,
-						Description: fmt.Sprintf("Capstone %s for level %d", choiceLabel, levelNum),
+						Description: desc,
 						SelectURL:   selectURL,
 						Enabled:     enabled,
 					}
