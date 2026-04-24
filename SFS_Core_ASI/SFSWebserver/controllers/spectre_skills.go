@@ -29,6 +29,7 @@ type SkillSegment struct {
 	Description     string // tooltip text shown on hover
 	SetLevelURL     string // POST: sets skill to exactly this level
 	CapstoneChoices []CapstoneChoice
+	SelectedCapstoneLabel string // short label of selected capstone for quick/condensed UI
 }
 
 // SkillView is the template-facing view for one skill row on the character sheet.
@@ -114,6 +115,9 @@ func spectreSkillViews(s model.Spectre, spectreID string) []SkillView {
 						Description: desc,
 						SelectURL:   selectURL,
 						Enabled:     enabled,
+					}
+					if selected {
+						segment.SelectedCapstoneLabel = choiceLabel
 					}
 				}
 			}
