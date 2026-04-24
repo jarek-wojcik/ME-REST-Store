@@ -70,16 +70,14 @@ func spectreSkillViews(s model.Spectre, spectreID string) []SkillView {
 				Description: def.Descriptions[j],
 				SetLevelURL: fmt.Sprintf("%s%s/set/%d", base, def.ID, levelNum),
 			}
-			if model.IsCapstoneLevel(levelNum) {
-				segment.CapstoneChoices = make([]CapstoneChoice, model.CapstonesPerLevel)
-				for choiceIndex := 0; choiceIndex < model.CapstonesPerLevel; choiceIndex++ {
-					choiceLabel := fmt.Sprintf("%c", 'A'+choiceIndex)
-					// Prefer a configured short title from the skill definition.
-					if def != nil {
-						title := def.CapstoneTitles[levelNum-1][choiceIndex]
-						if title != "" {
-							choiceLabel = title
-						}
+			// Build capstone choices for this level from the skill definition.
+			caps := model.CapstonesForLevel(def, levelNum)
+			if len(caps) > 0 {
+				segment.CapstoneChoices = make([]CapstoneChoice, len(caps))
+				for choiceIndex, cap := range caps {
+					choiceLabel := cap.Title
+					if choiceLabel == "" {
+						choiceLabel = fmt.Sprintf("%c", 'A'+choiceIndex)
 					}
 					selected := false
 					if capstoneSelections != nil {
@@ -105,12 +103,7 @@ func spectreSkillViews(s model.Spectre, spectreID string) []SkillView {
 						// toggle-off behavior: clear the skill to level 0
 						selectURL = fmt.Sprintf("%s%s/set/0", base, def.ID)
 					}
-					// Prefer stored capstone text from the skill definition; fall
-					// back to a generated string when empty.
-					desc := ""
-					if def != nil {
-						desc = def.CapstoneDescriptions[levelNum-1][choiceIndex]
-					}
+					desc := cap.Description
 					if desc == "" {
 						desc = fmt.Sprintf("Capstone %s for level %d", choiceLabel, levelNum)
 					}
@@ -245,9 +238,14 @@ func clearObsoleteCapstones(s *model.Spectre, skillID string, newLevel int) {
 	if !ok {
 		return
 	}
-	for _, capLevel := range model.CapstoneLevels {
-		if capLevel > newLevel {
-			delete(choices, fmt.Sprint(capLevel))
+	def := model.SkillByID(skillID)
+	if def == nil {
+		return
+	}
+	for _, c := range def.Capstones {
+		// c.Level is zero-based; stored choice keys use 1-based UI levels.
+		if c.Level >= newLevel {
+			delete(choices, fmt.Sprint(c.Level+1))
 		}
 	}
 	if len(choices) == 0 {
@@ -256,13 +254,15 @@ func clearObsoleteCapstones(s *model.Spectre, skillID string, newLevel int) {
 }
 
 func setSpectreCapstoneChoice(db *bolt.DB, spectreID, skillID string, capstoneLevel, choice int) (model.Spectre, error) {
-	if model.SkillByID(skillID) == nil {
+	def := model.SkillByID(skillID)
+	if def == nil {
 		return model.Spectre{}, fmt.Errorf("unknown skill: %s", skillID)
 	}
-	if !model.IsCapstoneLevel(capstoneLevel) {
+	caps := model.CapstonesForLevel(def, capstoneLevel)
+	if len(caps) == 0 {
 		return model.Spectre{}, fmt.Errorf("invalid capstone level: %d", capstoneLevel)
 	}
-	if choice < 0 || choice >= model.CapstonesPerLevel {
+	if choice < 0 || choice >= len(caps) {
 		return model.Spectre{}, fmt.Errorf("invalid capstone choice: %d", choice)
 	}
 

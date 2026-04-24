@@ -10,12 +10,17 @@ const (
 	MaxSkillLevel = 10
 )
 
-var CapstoneLevels = []int{1, 5, 10}
+// Capstones are now defined per-skill in SkillDef.Capstones.
+// The old global CapstoneLevels/CapstonesPerLevel/IsCapstoneLevel helpers
+// have been removed in favor of per-skill configuration.
 
-const CapstonesPerLevel = 3
-
-func IsCapstoneLevel(level int) bool {
-	return level == 1 || level == 5 || level == 10
+// Capstone describes one selectable capstone choice for a skill at a
+// particular level. Level is stored zero-based (0 == UI level 1).
+type Capstone struct {
+	ID          string // stable id for this capstone choice (optional)
+	Title       string // short heading shown in the UI
+	Description string // full descriptive tooltip text
+	Level       int    // zero-based level index where this capstone appears
 }
 
 // SkillDef is the compile-time static definition of one skill.
@@ -26,11 +31,7 @@ type SkillDef struct {
 	Descriptions [MaxSkillLevel]string
 	// CapstoneDescriptions[level-1][choiceIndex] holds the descriptive text
 	// for capstone choices. Only entries at capstone levels (1,5,10) are used.
-	CapstoneDescriptions [MaxSkillLevel][CapstonesPerLevel]string
-	// CapstoneTitles[level-1][choiceIndex] is the short heading for each
-	// capstone choice (renders as the tooltip title). Only capstone levels
-	// (1,5,10) need entries.
-	CapstoneTitles [MaxSkillLevel][CapstonesPerLevel]string
+	Capstones []Capstone
 	// BarrierOnly — when true this skill is hidden for Shield-type spectres.
 	BarrierOnly bool
 	// ShieldOnly — when true this skill is hidden for Barrier-type spectres.
@@ -44,60 +45,64 @@ var SkillCatalog = []SkillDef{
 		ID:           "CQC",
 		Name:         "CQC",
 		Descriptions: [MaxSkillLevel]string{},
-		CapstoneDescriptions: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Swift Takedown", "Precise Swipe", "Knockback"},
-			4: {"Momentum Strike", "Staggering Assault", "Unrelenting Combo"},
-			9: {"Champion's Finish", "Opener's Devastation", "Tactical Mastery"},
-		},
-		CapstoneTitles: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Swift", "Precise", "Knockback"},
-			4: {"Momentum", "Stagger", "Combo"},
-			9: {"Champion", "Opener", "Mastery"},
+		Capstones: []Capstone{
+			{ID: "CQC_0_1", Title: "Swift", Description: "Swift Takedown", Level: 0},
+			{ID: "CQC_0_2", Title: "Precise", Description: "Precise Swipe", Level: 0},
+			{ID: "CQC_0_3", Title: "Knockback", Description: "Knockback", Level: 0},
+			{ID: "CQC_4_1", Title: "Momentum", Description: "Momentum Strike", Level: 3},
+			{ID: "CQC_4_2", Title: "Stagger", Description: "Staggering Assault", Level: 3},
+			{ID: "CQC_4_3", Title: "Combo", Description: "Unrelenting Combo", Level: 3},
+			{ID: "CQC_9_1", Title: "Champion", Description: "Champion's Finish", Level: 9},
+			{ID: "CQC_9_2", Title: "Opener", Description: "Opener's Devastation", Level: 9},
+			{ID: "CQC_9_3", Title: "Mastery", Description: "Tactical Mastery", Level: 9},
 		},
 	},
 	{
 		ID:           "AssaultTraining",
 		Name:         "Assaul Training",
 		Descriptions: [MaxSkillLevel]string{},
-		CapstoneDescriptions: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Reinforced Grip", "Quick Aim", "Suppressive Fire"},
-			4: {"Rapid Fire", "Overcharge", "Armor Piercing"},
-			9: {"Assault Mastery", "Barrage", "Tactical Onslaught"},
-		},
-		CapstoneTitles: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Grip", "Quick Aim", "Suppress"},
-			4: {"Rapid", "Overcharge", "AP"},
-			9: {"Mastery", "Barrage", "Onslaught"},
+		Capstones: []Capstone{
+			{ID: "AssaultTraining_0_1", Title: "Grip", Description: "Reinforced Grip", Level: 0},
+			{ID: "AssaultTraining_0_2", Title: "Quick Aim", Description: "Quick Aim", Level: 0},
+			{ID: "AssaultTraining_0_3", Title: "Suppress", Description: "Suppressive Fire", Level: 0},
+			{ID: "AssaultTraining_4_1", Title: "Rapid", Description: "Rapid Fire", Level: 4},
+			{ID: "AssaultTraining_4_2", Title: "Overcharge", Description: "Overcharge", Level: 4},
+			{ID: "AssaultTraining_4_3", Title: "AP", Description: "Armor Piercing", Level: 4},
+			{ID: "AssaultTraining_9_1", Title: "Mastery", Description: "Assault Mastery", Level: 9},
+			{ID: "AssaultTraining_9_2", Title: "Barrage", Description: "Barrage", Level: 9},
+			{ID: "AssaultTraining_9_3", Title: "Onslaught", Description: "Tactical Onslaught", Level: 9},
 		},
 	},
 	{
 		ID:           "Marksmanship",
 		Name:         "Marksmanship",
 		Descriptions: [MaxSkillLevel]string{},
-		CapstoneDescriptions: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Steady Hand", "Focused Aim", "Piercing Shot"},
-			4: {"Deadeye", "Critical Weakness", "Lethal Precision"},
-			9: {"Marksman Legend", "One Shot One Kill", "Eagle Eye"},
-		},
-		CapstoneTitles: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Steady", "Focused", "Pierce"},
-			4: {"Deadeye", "Critical", "Lethal"},
-			9: {"Legend", "OneShot", "Eagle"},
+		Capstones: []Capstone{
+			{ID: "Marksmanship_0_1", Title: "Steady", Description: "Steady Hand", Level: 0},
+			{ID: "Marksmanship_0_2", Title: "Focused", Description: "Focused Aim", Level: 0},
+			{ID: "Marksmanship_0_3", Title: "Pierce", Description: "Piercing Shot", Level: 0},
+			{ID: "Marksmanship_4_1", Title: "Deadeye", Description: "Deadeye", Level: 4},
+			{ID: "Marksmanship_4_2", Title: "Critical", Description: "Critical Weakness", Level: 4},
+			{ID: "Marksmanship_4_3", Title: "Lethal", Description: "Lethal Precision", Level: 4},
+			{ID: "Marksmanship_9_1", Title: "Legend", Description: "Marksman Legend", Level: 9},
+			{ID: "Marksmanship_9_2", Title: "OneShot", Description: "One Shot One Kill", Level: 9},
+			{ID: "Marksmanship_9_3", Title: "Eagle", Description: "Eagle Eye", Level: 9},
 		},
 	},
 	{
 		ID:           "Gadgets",
 		Name:         "Gadgets",
 		Descriptions: [MaxSkillLevel]string{},
-		CapstoneDescriptions: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Deploy Drone", "Tactical Mine", "Recon Beacon"},
-			4: {"Advanced Drone", "Cluster Mines", "Holo Decoy"},
-			9: {"Master Engineer", "Omni-Drone", "Field Overdrive"},
-		},
-		CapstoneTitles: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Drone", "Mine", "Recon"},
-			4: {"Adv Drone", "Cluster", "Decoy"},
-			9: {"Master", "Omni", "Overdrive"},
+		Capstones: []Capstone{
+			{ID: "Gadgets_0_1", Title: "Drone", Description: "Deploy Drone", Level: 0},
+			{ID: "Gadgets_0_2", Title: "Mine", Description: "Tactical Mine", Level: 0},
+			{ID: "Gadgets_0_3", Title: "Recon", Description: "Recon Beacon", Level: 0},
+			{ID: "Gadgets_4_1", Title: "Adv Drone", Description: "Advanced Drone", Level: 4},
+			{ID: "Gadgets_4_2", Title: "Cluster", Description: "Cluster Mines", Level: 4},
+			{ID: "Gadgets_4_3", Title: "Decoy", Description: "Holo Decoy", Level: 4},
+			{ID: "Gadgets_9_1", Title: "Master", Description: "Master Engineer", Level: 9},
+			{ID: "Gadgets_9_2", Title: "Omni", Description: "Omni-Drone", Level: 9},
+			{ID: "Gadgets_9_3", Title: "Overdrive", Description: "Field Overdrive", Level: 9},
 		},
 	},
 	{
@@ -108,30 +113,32 @@ var SkillCatalog = []SkillDef{
 			"B",
 			"C",
 		},
-		CapstoneDescriptions: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Overload Burst", "EMP Pulse", "Static Field"},
-			4: {"Enhanced Overload", "Chain Reaction", "Reactive Shield"},
-			9: {"Tech Ascendancy", "Systemic Shutdown", "Quantum Overload"},
-		},
-		CapstoneTitles: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Burst", "EMP", "Static"},
-			4: {"Enhanced", "Chain", "Reactive"},
-			9: {"Ascend", "Shutdown", "Quantum"},
+		Capstones: []Capstone{
+			{ID: "Engineering_0_1", Title: "Burst", Description: "Overload Burst", Level: 0},
+			{ID: "Engineering_0_2", Title: "EMP", Description: "EMP Pulse", Level: 0},
+			{ID: "Engineering_0_3", Title: "Static", Description: "Static Field", Level: 0},
+			{ID: "Engineering_4_1", Title: "Enhanced", Description: "Enhanced Overload", Level: 4},
+			{ID: "Engineering_4_2", Title: "Chain", Description: "Chain Reaction", Level: 4},
+			{ID: "Engineering_4_3", Title: "Reactive", Description: "Reactive Shield", Level: 4},
+			{ID: "Engineering_9_1", Title: "Ascend", Description: "Tech Ascendancy", Level: 9},
+			{ID: "Engineering_9_2", Title: "Shutdown", Description: "Systemic Shutdown", Level: 9},
+			{ID: "Engineering_9_3", Title: "Quantum", Description: "Quantum Overload", Level: 9},
 		},
 	},
 	{
 		ID:           "Biotics",
 		Name:         "Biotics",
 		Descriptions: [MaxSkillLevel]string{},
-		CapstoneDescriptions: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Nova Push", "Biotic Sting", "Lift Kick"},
-			4: {"Singularity Burst", "Shockwave", "Rift"},
-			9: {"Biotic Mastery", "Void Nova", "Psionic Storm"},
-		},
-		CapstoneTitles: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Nova", "Sting", "Lift"},
-			4: {"Singularity", "Shock", "Rift"},
-			9: {"Mastery", "Void", "Storm"},
+		Capstones: []Capstone{
+			{ID: "Biotics_0_1", Title: "Nova", Description: "Nova Push", Level: 0},
+			{ID: "Biotics_0_2", Title: "Sting", Description: "Biotic Sting", Level: 0},
+			{ID: "Biotics_0_3", Title: "Lift", Description: "Lift Kick", Level: 0},
+			{ID: "Biotics_4_1", Title: "Singularity", Description: "Singularity Burst", Level: 4},
+			{ID: "Biotics_4_2", Title: "Shock", Description: "Shockwave", Level: 4},
+			{ID: "Biotics_4_3", Title: "Rift", Description: "Rift", Level: 4},
+			{ID: "Biotics_9_1", Title: "Mastery", Description: "Biotic Mastery", Level: 9},
+			{ID: "Biotics_9_2", Title: "Void", Description: "Void Nova", Level: 9},
+			{ID: "Biotics_9_3", Title: "Storm", Description: "Psionic Storm", Level: 9},
 		},
 	},
 	{
@@ -139,15 +146,16 @@ var SkillCatalog = []SkillDef{
 		Name:         "Barrier",
 		BarrierOnly:  true,
 		Descriptions: [MaxSkillLevel]string{},
-		CapstoneDescriptions: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Minor Barrier", "Shield Lash", "Fortify"},
-			4: {"Reflective Barrier", "Energy Absorb", "Barrier Surge"},
-			9: {"Aegis", "Impenetrable Shell", "Barrier Overdrive"},
-		},
-		CapstoneTitles: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Minor", "Lash", "Fortify"},
-			4: {"Reflect", "Absorb", "Surge"},
-			9: {"Aegis", "Shell", "Overdrive"},
+		Capstones: []Capstone{
+			{ID: "Barrier_0_1", Title: "Minor", Description: "Minor Barrier", Level: 0},
+			{ID: "Barrier_0_2", Title: "Lash", Description: "Shield Lash", Level: 0},
+			{ID: "Barrier_0_3", Title: "Fortify", Description: "Fortify", Level: 0},
+			{ID: "Barrier_4_1", Title: "Reflect", Description: "Reflective Barrier", Level: 4},
+			{ID: "Barrier_4_2", Title: "Absorb", Description: "Energy Absorb", Level: 4},
+			{ID: "Barrier_4_3", Title: "Surge", Description: "Barrier Surge", Level: 4},
+			{ID: "Barrier_9_1", Title: "Aegis", Description: "Aegis", Level: 9},
+			{ID: "Barrier_9_2", Title: "Shell", Description: "Impenetrable Shell", Level: 9},
+			{ID: "Barrier_9_3", Title: "Overdrive", Description: "Barrier Overdrive", Level: 9},
 		},
 	},
 	{
@@ -155,15 +163,16 @@ var SkillCatalog = []SkillDef{
 		Name:         "Shielding",
 		ShieldOnly:   true,
 		Descriptions: [MaxSkillLevel]string{},
-		CapstoneDescriptions: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Kinetic Shield", "Shield Boost", "Adaptive Shield"},
-			4: {"Regenerative Shield", "Shield Matrix", "Energy Redirect"},
-			9: {"Shield Mastery", "Absolute Protection", "Shield Overdrive"},
-		},
-		CapstoneTitles: [MaxSkillLevel][CapstonesPerLevel]string{
-			0: {"Kinetic", "Boost", "Adaptive"},
-			4: {"Regen", "Matrix", "Redirect"},
-			9: {"Mastery", "Absolute", "Overdrive"},
+		Capstones: []Capstone{
+			{ID: "Shielding_0_1", Title: "Kinetic", Description: "Kinetic Shield", Level: 0},
+			{ID: "Shielding_0_2", Title: "Boost", Description: "Shield Boost", Level: 0},
+			{ID: "Shielding_0_3", Title: "Adaptive", Description: "Adaptive Shield", Level: 0},
+			{ID: "Shielding_4_1", Title: "Regen", Description: "Regenerative Shield", Level: 4},
+			{ID: "Shielding_4_2", Title: "Matrix", Description: "Shield Matrix", Level: 4},
+			{ID: "Shielding_4_3", Title: "Redirect", Description: "Energy Redirect", Level: 4},
+			{ID: "Shielding_9_1", Title: "Mastery", Description: "Shield Mastery", Level: 9},
+			{ID: "Shielding_9_2", Title: "Absolute", Description: "Absolute Protection", Level: 9},
+			{ID: "Shielding_9_3", Title: "Overdrive", Description: "Shield Overdrive", Level: 9},
 		},
 	},
 }
@@ -176,4 +185,21 @@ func SkillByID(id SkillID) *SkillDef {
 		}
 	}
 	return nil
+}
+
+// CapstonesForLevel returns the slice of capstones defined for the given
+// skill definition at the UI level `levelNum` (1-based). Returns nil when
+// no capstones exist for that level.
+func CapstonesForLevel(def *SkillDef, levelNum int) []Capstone {
+	if def == nil {
+		return nil
+	}
+	lvlIdx := levelNum - 1
+	var out []Capstone
+	for _, c := range def.Capstones {
+		if c.Level == lvlIdx {
+			out = append(out, c)
+		}
+	}
+	return out
 }
