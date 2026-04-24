@@ -90,6 +90,22 @@ var SkillCatalog = []SkillDef{
 		},
 	},
 	{
+		ID:           "CovertOps",
+		Name:         "Covert Ops",
+		Descriptions: [MaxSkillLevel]string{},
+		Capstones: []Capstone{
+			{ID: "CovertOps_0_1", Title: "Jika-Tabi", Description: "Sprinting for a short time grants a boost to movement speed for 8 seconds.", Level: 0},
+			{ID: "CovertOps_0_2", Title: "Tactical Advantage", Description: "Whenever you roll, reduce your active cooldown.", Level: 0},
+			{ID: "CovertOps_0_3", Title: "Ambush", Description: "Deal 2x damage to enemies above 75% health.", Level: 0},
+			{ID: "CovertOps_4_1", Title: "Kinetic Converters", Description: "Dodging recharges a portion of the shields.", Level: 4},
+			{ID: "CovertOps_4_2", Title: "Thrill of the hunt", Description: "Hitting enemies with powers, drastically reduces their speed.", Level: 4},
+			{ID: "CovertOps_4_3", Title: "Chameleon", Description: "If you haven't moved in the last 3 seconds, enter cloak.", Level: 4},
+			{ID: "CovertOps_9_1", Title: "Quantum Translocator", Description: "Your dodge now leaves a quantum beacon. Dodge again to teleport back to the beacon.", Level: 9},
+			{ID: "CovertOps_9_2", Title: "Mirror Image", Description: "Dodging leaves behing an invulnerable construct dealing 50% of player damage\n3 decoys can be active at a time, each lasting 10 seconds.", Level: 9},
+			{ID: "CovertOps_9_3", Title: "Impossible Target", Description: "Entering cloak grants invincibility for 3 seconds.\nKilling a nearby enemy while this effect is active, cloaks the operative.", Level: 9},
+		},
+	},
+	{
 		ID:           "Gadgets",
 		Name:         "Gadgets",
 		Descriptions: [MaxSkillLevel]string{},
