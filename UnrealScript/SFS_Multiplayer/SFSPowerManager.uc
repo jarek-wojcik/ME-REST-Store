@@ -31,6 +31,8 @@ public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
         return;
     }
     log(Self.Name, "LoadPowers: " $ Character.PowerCount $ " regular power(s)", Outer);
+    RemoveExistingPowers(SFXPawn_PlayerMP(Pawn));
+    //Need to update this in the future to also handle henchmen.
     for (i = 0; i < Character.PowerCount; i++)
     {
         if (Character.Powers[i].PowerID == "")
@@ -44,6 +46,22 @@ public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
     {
         asyncLoader.LoadPowerClassBlocking(Character.BorrowedPower.PowerID, Character.BorrowedPower, 3, TRUE, OnBorrowedPowerLoaded);
         log(Self.Name, "Queued borrowed power: " $ Character.BorrowedPower.PowerID, Outer);
+    }
+}
+function RemoveExistingPowers(SFXPawn_PlayerMP Pawn)
+{
+    local int nIndex;
+    local Class<SFXPowerCustomActionBase> powerClass;
+    
+    Class'SFSCore'.static.printArrayContents(Self.Name, Outer, Pawn.PlayerClass.SquadScreenPowerOrder, " SquadScreenPowerOrder for class $" $ Pawn.PlayerClassName);
+    for (nIndex = 0; nIndex < Pawn.PlayerClass.SquadScreenPowerOrder.Length; nIndex++)
+    {
+        powerClass = Pawn.PlayerClass.SquadScreenPowerOrder[nIndex];
+        log(Self.Name, "Removing Power: " $ powerClass, Outer);
+        if (powerClass != None)
+        {
+            Outer.PowerManager.RemovePower(powerClass);
+        }
     }
 }
 function OnPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
@@ -72,27 +90,14 @@ function OnPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     // End of Validation.
     ExistingClass = Player.PlayerClass.SquadScreenPowerOrder[load.SlotIndex];
     log(Self.Name, "OnPowerLoaded: Slot " $ load.SlotIndex $ " existing=" $ ExistingClass $ " new=" $ load.LoadedPowerClass, Outer);
-    if (ExistingClass != load.LoadedPowerClass)
+    Player.PlayerClass.SquadScreenPowerOrder.Remove(load.SlotIndex, 1);
+    Player.PlayerClass.SquadScreenPowerOrder.InsertItem(load.SlotIndex, load.LoadedPowerClass);
+    if (load.SlotIndex < Player.PlayerClass.MappedPowers.Length)
     {
-        Power = Owner.PowerManager.GetPowerByClass(ExistingClass);
-        if (Power != None)
-        {
-            Owner.PowerManager.RemovePower(ExistingClass);
-        }
-        Player.PlayerClass.SquadScreenPowerOrder.Remove(load.SlotIndex, 1);
-        Player.PlayerClass.SquadScreenPowerOrder.InsertItem(load.SlotIndex, load.LoadedPowerClass);
-        if (load.SlotIndex < Player.PlayerClass.MappedPowers.Length)
-        {
-            Player.PlayerClass.MappedPowers.Remove(load.SlotIndex, 1);
-            Player.PlayerClass.MappedPowers.InsertItem(load.SlotIndex, load.LoadedPowerClass.Name);
-        }
-        Power = InstantiatePower(load.LoadedPowerClass, load.SlotIndex);
+        Player.PlayerClass.MappedPowers.Remove(load.SlotIndex, 1);
+        Player.PlayerClass.MappedPowers.InsertItem(load.SlotIndex, load.LoadedPowerClass.Name);
     }
-    else
-    {
-        Power = Owner.PowerManager.GetPowerByClass(load.LoadedPowerClass);
-        log(Self.Name, "OnPowerLoaded: Same class at slot " $ load.SlotIndex $ ", refreshing rank/evo", Outer);
-    }
+    Power = InstantiatePower(load.LoadedPowerClass, load.SlotIndex);
     if (Power != None)
     {
         SetPowerRankAndEvolutions(Power, load.PowerModel);
@@ -156,15 +161,6 @@ private final function SFXPowerCustomActionBase InstantiatePower(Class<SFXPowerC
     {
         log(Self.Name, "InstantiatePower: PowerCustomActionID is 0 for " $ powerClass, Outer);
         return None;
-    }
-    for (nIndex = 0; nIndex < Outer.PowerManager.Powers.Length; nIndex++)
-    {
-        PowerInList = Outer.PowerManager.Powers[nIndex];
-        if (PowerInList != None && PowerInList.Class == powerClass)
-        {
-            log(Self.Name, "InstantiatePower: Already instanced: " $ powerClass, Outer);
-            return None;
-        }
     }
     Outer.PowerCustomActionClasses[PowerID] = powerClass;
     Outer.VerifyCAHasBeenInstanced(132, PowerID);
@@ -238,4 +234,5 @@ private final function RemapInputs()
 //class default properties can be edited in the Properties tab for the class's Default__ object.
 defaultproperties
 {
+    bDebug = TRUE
 }

@@ -176,4 +176,5 @@ defaultproperties
 {
     CheckDelay = 1.0
     maxRetries = 10
+    bDebug = TRUE
 }

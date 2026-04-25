@@ -63,6 +63,7 @@ function OnDodgePawnLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
             TargetMP.CustomActionClasses[i] = SourceMP.PlayerClass.CustomActionClasses[i];
             HandleVorchaDodge(TargetMP.CustomActionClasses[i]);
             TargetMP.VerifyCAHasBeenInstanced(i);
+            TargetMP.bCanRoll = TRUE;
         }
     }
     log(Self.Name, "OnDodgePawnLoaded: Done", Outer);

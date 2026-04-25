@@ -78,34 +78,46 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         log(Self.Name, "  GearConsumable: " $ Character.Inventory.GearConsumableID, Outer);
         log(Self.Name, "=== End Character Info ===", Outer);
         // Spectre Loading Methods
-        loadAppearance(Character, Outer);
-        LoadWeapons(Character, Outer);
-        PowerManager.LoadPowers(Character, Outer);
-        LoadConsumables(Character, Outer);
-        CustomActionsManager.MigrateCustomActions(Character, Outer);
+        if (loadAppearance(Character, Outer))
+        {
+            LoadWeapons(Character, Outer);
+            PowerManager.LoadPowers(Character, Outer);
+            LoadConsumables(Character, Outer);
+            CustomActionsManager.MigrateCustomActions(Character, Outer);
+            RemoveWeaponsNotInCharacter(Character, Outer);
+        }
     }
 }
-public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
+public function bool loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
     local array<string> archetypeTokens;
     local string appearanceArchetype;
     local string PawnArchetype;
+    local Name currentKit;
     local EAsyncLoadType LoadType;
     
     //If there's no appareance ID then there's no need to load the appearance class;
     if (Character.AppearanceCharID == "")
     {
-        return;
+        return TRUE;
     }
     Class'SFSArrayUtility'.static.SplitStringIntoParts(Character.AppearanceCharID, ".", archetypeTokens);
     if (archetypeTokens.Length > 0)
     {
         appearanceArchetype = archetypeTokens[archetypeTokens.Length - 1];
         PawnArchetype = string(SFXPawn_PlayerMP(Pawn).ObjectArchetype.Name);
+        currentKit = SFXPRIMP(SFXPawn_PlayerMP(Pawn).PlayerReplicationInfo).GetCharacterKit();
         log(Self.Name, "appearanceArchetype: " $ appearanceArchetype, Outer);
         log(Self.Name, "PawnArchetype: " $ PawnArchetype, Outer);
         if (PawnArchetype != appearanceArchetype)
         {
+            log(Self.Name, "Current Kit: " $ currentKit $ " voice kit: " $ Character.VoiceKitId, Outer);
+            if (string(currentKit) != Character.VoiceKitId)
+            {
+                log(Self.Name, "Calling Set Kit: ", Outer);
+                SFXCheatManagerNonNativeMP(PlayerController(SFXPawn_PlayerMP(Pawn).Controller).CheatManager).SetKit(Character.VoiceKitId);
+                return FALSE;
+            }
             switch (Character.AppearancePawnType)
             {
                 case "PlayerMP":
@@ -122,10 +134,12 @@ public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
             log(Self.Name, "Attempting to load appearance: " $ Character.AppearanceCharID $ " with load type " $ LoadType, Outer);
             asyncLoader.LoadAppearanceAsync(Character.AppearanceCharID, Character.bUseHelmet, Character.bUseHeadgear, LoadType, onAppearanceLoaded);
         }
+        return TRUE;
     }
     else
     {
         log(Self.Name, "Could not parse Character.AppearanceCharID. Won't apply custom appearance", Outer);
+        return TRUE;
     }
 }
 public function onAppearanceLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
@@ -176,7 +190,6 @@ public function LoadWeapons(SFSCharacterModelStruct Character, SFXPawn Pawn)
         log(Self.Name, "Error: weaponManager or asyncLoader is None, cannot load weapons", Outer);
         return;
     }
-    RemoveWeaponsNotInCharacter(Character, Pawn);
     // Load any Character weapons the pawn doesn't already have
     for (i = 0; i < Character.WeaponCount; i++)
     {
