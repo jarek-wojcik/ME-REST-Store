@@ -103,7 +103,7 @@
          THREE-SECTION BODY
          ══════════════════════════════════════════════════════════════ -->
     <div class="grid divide-x divide-[#1a2d4a]"
-         style="grid-template-columns: 240px 400px minmax(0,270px) minmax(0,230px); max-width: 1490px;">
+         style="grid-template-columns: 240px 218px minmax(0,270px) minmax(0,230px); max-width: 1490px;">
 
         <!-- ╔══════════════════════════════╗
              ║  SECTION A — CHARACTER       ║
@@ -360,7 +360,7 @@
             <div class="px-4 py-1.5 bg-[#0a0f1c] border-b border-[#1a2d4a]
                         flex items-center gap-2">
                 <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/50
-                             select-none">◈ Spectre Skills</span>
+                             select-none">◈ Skills (Ignore)</span>
                 <div class="flex-1 h-px bg-[#1a2d4a]"></div>
                 <span class="text-[8px] font-bold tracking-[0.15em] select-none
                              {{if gt .SkillPoints 0}}text-[#00aaff]{{else}}text-gray-600{{end}}">Pts:&nbsp;{{.SkillPoints}}</span>
@@ -371,10 +371,10 @@
                 {{range .SkillViews}}
                 <div class="flex items-center gap-1.5 px-2 py-1.5" x-data="{collapsed:false}">
 
-                    <!-- Skill name + collapse toggle -->
-                    <div class="w-[82px] flex-shrink-0">
-                        <div class="flex items-center gap-1">
-                            <span class="text-[9px] font-semibold text-gray-400 leading-tight truncate"
+                    <!-- Skill name above boxes + collapse toggle -->
+                    <div class="flex-1 flex flex-col">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-semibold tracking-wide text-gray-300 leading-none truncate"
                                   title="{{.Def.Name}}">{{.Def.Name}}</span>
                             <button type="button" @click="collapsed = !collapsed"
                                     class="text-[10px] ml-1 text-gray-500 hover:text-[#00aaff] focus:outline-none">
@@ -382,129 +382,98 @@
                                 <span x-show="collapsed">▴</span>
                             </button>
                         </div>
-                    </div>
 
                         <!-- 10 level blocks — expanded or collapsed view -->
-                        <div class="flex gap-px flex-shrink-0">
-                        <!-- Expanded: original vertical columns per level -->
-                        <div x-show="!collapsed" class="flex">
-                            {{range .Segments}}
-                            <div class="skill-segment-column">
-                            {{if .CapstoneChoices}}
-                            {{with index .CapstoneChoices 0}}
-                            <button type="button"
-                                class="skill-capstone-choice rounded-[2px] border transition-all focus:outline-none cursor-pointer
-                                       {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
-                                {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
-                                data-tooltip-title="{{.ChoiceLabel}}"
-                                data-tooltip-desc="{{.Description}}"
-                                @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
-                                @mouseleave="$store.tooltip.hide()">
-                            </button>
-                            {{end}}
-                            {{end}}
+                        <div class="flex gap-px flex-shrink-0 mt-1">
+                            <!-- Expanded: original vertical columns per level -->
+                            <div x-show="!collapsed" class="flex">
+                                {{range .Segments}}
+                                <div class="skill-segment-column">
+                                    {{if .CapstoneChoices}}
+                                    {{with index .CapstoneChoices 0}}
+                                    <button type="button"
+                                        class="skill-capstone-choice rounded-[2px] border transition-all focus:outline-none cursor-pointer
+                                               {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
+                                        {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
+                                        data-tooltip-title="{{.ChoiceLabel}}"
+                                        data-tooltip-desc="{{.Description}}"
+                                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                        @mouseleave="$store.tooltip.hide()">
+                                    </button>
+                                    {{end}}
+                                    {{end}}
 
-                            {{if .CapstoneChoices}}
-                            {{with index .CapstoneChoices 1}}
-                            <button type="button"
-                                class="skill-segment rounded-[2px] border transition-all
-                                       focus:outline-none cursor-pointer
-                                       {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
-                                {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
-                                data-tooltip-title="{{.ChoiceLabel}}"
-                                data-tooltip-desc="{{.Description}}"
-                                @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
-                                @mouseleave="$store.tooltip.hide()">
-                            </button>
-                            {{end}}
-                            {{else}}
-                            <button type="button"
-                                class="skill-segment rounded-[2px] border transition-all
-                                       focus:outline-none cursor-pointer
-                                       {{if .Filled}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
-                                hx-post="{{.SetLevelURL}}"
-                                hx-target="#{{$.CardID}}"
-                                hx-swap="outerHTML"
-                                data-tooltip-title="Level {{.LevelNum}}"
-                                data-tooltip-desc="{{.Description}}"
-                                @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
-                                @mouseleave="$store.tooltip.hide()">
-                            </button>
-                            {{end}}
+                                    {{if .CapstoneChoices}}
+                                    {{with index .CapstoneChoices 1}}
+                                    <button type="button"
+                                        class="skill-segment rounded-[2px] border transition-all
+                                               focus:outline-none cursor-pointer
+                                               {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
+                                        {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
+                                        data-tooltip-title="{{.ChoiceLabel}}"
+                                        data-tooltip-desc="{{.Description}}"
+                                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                        @mouseleave="$store.tooltip.hide()">
+                                    </button>
+                                    {{end}}
+                                    {{else}}
+                                    <button type="button"
+                                        class="skill-segment rounded-[2px] border transition-all
+                                               focus:outline-none cursor-pointer
+                                               {{if .Filled}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
+                                        hx-post="{{.SetLevelURL}}"
+                                        hx-target="#{{$.CardID}}"
+                                        hx-swap="outerHTML"
+                                        data-tooltip-title="Level {{.LevelNum}}"
+                                        data-tooltip-desc="{{.Description}}"
+                                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                        @mouseleave="$store.tooltip.hide()">
+                                    </button>
+                                    {{end}}
 
-                            {{if .CapstoneChoices}}
-                            {{with index .CapstoneChoices 2}}
-                            <button type="button"
-                                class="skill-capstone-choice rounded-[2px] border transition-all focus:outline-none cursor-pointer
-                                       {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
-                                {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
-                                data-tooltip-title="{{.ChoiceLabel}}"
-                                data-tooltip-desc="{{.Description}}"
-                                @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
-                                @mouseleave="$store.tooltip.hide()">
-                            </button>
-                            {{end}}
-                            {{end}}
+                                    {{if .CapstoneChoices}}
+                                    {{with index .CapstoneChoices 2}}
+                                    <button type="button"
+                                        class="skill-capstone-choice rounded-[2px] border transition-all focus:outline-none cursor-pointer
+                                               {{if .Selected}}skill-segment-filled{{else}}skill-segment-empty{{end}}{{if not .Enabled}} opacity-40 cursor-not-allowed{{end}}"
+                                        {{if .Enabled}}hx-post="{{.SelectURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{else}}disabled{{end}}
+                                        data-tooltip-title="{{.ChoiceLabel}}"
+                                        data-tooltip-desc="{{.Description}}"
+                                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                        @mouseleave="$store.tooltip.hide()">
+                                    </button>
+                                    {{end}}
+                                    {{end}}
+                                </div>
+                                {{end}}
                             </div>
-                            {{end}}
-                        </div>
 
-                        <!-- Collapsed: single horizontal row showing condensed state -->
-                        <div x-show="collapsed" class="flex gap-px">
-                            {{range .Segments}}
-                            <div>
-                            {{if .CapstoneChoices}}
-                            <!-- capstone level: show selected label if present, otherwise empty/disabled box -->
-                                <button type="button"
-                                     class="w-6 h-6 rounded-[2px] border transition-all focus:outline-none cursor-pointer
-                                         {{if .SelectedCapstoneLabel}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
-                                     {{if .SetLevelURL}}hx-post="{{.SetLevelURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{end}}
-                                     title="Level {{.LevelNum}}">
-                                </button>
-                            {{else}}
-                            <!-- normal level box -->
-                            <button type="button"
-                                class="w-6 h-6 rounded-[2px] border transition-all focus:outline-none cursor-pointer {{if .Filled}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
-                                hx-post="{{.SetLevelURL}}"
-                                hx-target="#{{$.CardID}}"
-                                hx-swap="outerHTML"
-                                title="Level {{.LevelNum}}">
-                            </button>
-                            {{end}}
+                            <!-- Collapsed: single horizontal row showing condensed state -->
+                            <div x-show="collapsed" class="flex gap-px">
+                                {{range .Segments}}
+                                <div>
+                                    {{if .CapstoneChoices}}
+                                    <!-- capstone level: show selected label if present, otherwise empty/disabled box -->
+                                    <button type="button"
+                                        class="skill-segment rounded-[2px] border transition-all focus:outline-none cursor-pointer
+                                               {{if .SelectedCapstoneLabel}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
+                                        {{if .SetLevelURL}}hx-post="{{.SetLevelURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{end}}
+                                        title="Level {{.LevelNum}}">
+                                    </button>
+                                    {{else}}
+                                    <!-- normal level box -->
+                                    <button type="button"
+                                        class="skill-segment rounded-[2px] border transition-all focus:outline-none cursor-pointer {{if .Filled}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
+                                        hx-post="{{.SetLevelURL}}"
+                                        hx-target="#{{$.CardID}}"
+                                        hx-swap="outerHTML"
+                                        title="Level {{.LevelNum}}">
+                                    </button>
+                                    {{end}}
+                                </div>
+                                {{end}}
                             </div>
-                            {{end}}
                         </div>
-                        </div>
-
-                    <!-- +/- controls -->
-                    <div class="flex items-center gap-0.5 flex-shrink-0 ml-auto">
-                        {{if .CanLevelDown}}
-                        <button class="w-[18px] h-[18px] flex items-center justify-center
-                                       text-[11px] font-bold rounded
-                                       border border-[#1a2d4a] text-gray-600
-                                       hover:text-[#00aaff] hover:border-[#00aaff]/50
-                                       transition-colors cursor-pointer focus:outline-none"
-                                hx-post="{{.LevelDownURL}}"
-                                hx-target="#{{$.CardID}}"
-                                hx-swap="outerHTML"
-                                title="Refund point">−</button>
-                        {{else}}
-                        <span class="w-[18px] h-[18px]"></span>
-                        {{end}}
-
-                        {{if .CanLevelUp}}
-                        <button class="w-[18px] h-[18px] flex items-center justify-center
-                                       text-[11px] font-bold rounded
-                                       border border-[#1a2d4a] text-[#00aaff]/60
-                                       hover:text-[#00aaff] hover:border-[#00aaff]/50 hover:bg-[#0d1829]
-                                       transition-colors cursor-pointer focus:outline-none"
-                                hx-post="{{.LevelUpURL}}"
-                                hx-target="#{{$.CardID}}"
-                                hx-swap="outerHTML"
-                                title="Spend point">+</button>
-                        {{else}}
-                        <span class="w-[18px] h-[18px]"></span>
-                        {{end}}
                     </div>
 
                 </div>
