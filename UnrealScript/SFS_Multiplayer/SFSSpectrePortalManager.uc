@@ -8,6 +8,7 @@ var SFSWeaponManager weaponManager;
 var SFSPowerManager PowerManager;
 var SFSConsumableManager ConsumableManager;
 var SFSCustomActionsManager CustomActionsManager;
+var SFSMissionParamsManager MissionParamsManager;
 
 public event simulated function HandlePostAdd()
 {
@@ -19,6 +20,7 @@ public event simulated function HandlePostAdd()
     PowerManager = Outer.GetModule(Class'SFSPowerManager');
     ConsumableManager = Outer.GetModule(Class'SFSConsumableManager');
     CustomActionsManager = Outer.GetModule(Class'SFSCustomActionsManager');
+    MissionParamsManager = Outer.GetModule(Class'SFSMissionParamsManager');
     if (asyncLoader != None && !Class'Engine'.static.GetCurrentWorldInfo().bIsLobbyLevel)
     {
         spectreService.RetrieveActiveCharacter(OnCharacterRetrieved);
@@ -80,6 +82,7 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
         // Spectre Loading Methods
         if (loadAppearance(Character, Outer))
         {
+            MissionParamsManager.ApplyMissionSettings();
             LoadWeapons(Character, Outer);
             PowerManager.LoadPowers(Character, Outer);
             LoadConsumables(Character, Outer);
@@ -114,8 +117,7 @@ public function bool loadAppearance(SFSCharacterModelStruct Character, SFXPawn P
             log(Self.Name, "Current Kit: " $ currentKit $ " voice kit: " $ Character.VoiceKitId, Outer);
             if (string(currentKit) != Character.VoiceKitId)
             {
-                log(Self.Name, "Calling Set Kit: ", Outer);
-                SFXCheatManagerNonNativeMP(PlayerController(SFXPawn_PlayerMP(Pawn).Controller).CheatManager).SetKit(Character.VoiceKitId);
+                loadVoiceKit(Character.VoiceKitId, SFXPawn_PlayerMP(Pawn));
                 return FALSE;
             }
             switch (Character.AppearancePawnType)
@@ -141,6 +143,79 @@ public function bool loadAppearance(SFSCharacterModelStruct Character, SFXPawn P
         log(Self.Name, "Could not parse Character.AppearanceCharID. Won't apply custom appearance", Outer);
         return TRUE;
     }
+}
+public function loadVoiceKit(string VoiceKitId, SFXPawn_PlayerMP Pawn)
+{
+    local BioPlayerController PC;
+    
+    log(Self.Name, "Calling Set Kit: ", Outer);
+    if (Pawn == None)
+    {
+        return;
+    }
+    PC = BioPlayerController(Pawn.Controller);
+    if (PC == None || PC.WorldInfo.Game == None)
+    {
+        return;
+    }
+    if (SFXPRIMP(PC.PlayerReplicationInfo) != None)
+    {
+        SFXPRIMP(PC.PlayerReplicationInfo).SetCharacterKit(Name(VoiceKitId));
+        SFXPRIMP(PC.PlayerReplicationInfo).SendCharacterDataToServer();
+        //Outer.WorldInfo.Game.RestartPlayer(PC);
+        RestartPlayerCustom(PC, PC.WorldInfo, PC.WorldInfo.Game);
+        Pawn.SetLocation(Pawn.Anchor.location, );
+        Pawn.SetRotation(Pawn.Anchor.Rotation);
+    }
+}
+public function RestartPlayerCustom(BioPlayerController NewPlayer, WorldInfo WorldInfo, GameInfo GameInfo)
+{
+    local Pawn oPawn;
+    local NavigationPoint StartSpot;
+    local int TeamNum;
+    local int idx;
+    local array<SequenceObject> Events;
+    local SeqEvent_PlayerSpawned SpawnedEvent;
+    
+    if (WorldInfo.NetMode != ENetMode.NM_DedicatedServer && WorldInfo.NetMode != ENetMode.NM_ListenServer)
+    {
+        return;
+    }
+    oPawn = NewPlayer.Pawn;
+    oPawn.SetHidden(TRUE);
+    NewPlayer.UnPossess();
+    oPawn.Destroy();
+    TeamNum = NewPlayer.PlayerReplicationInfo == None || NewPlayer.PlayerReplicationInfo.Team == None ? 255 : NewPlayer.PlayerReplicationInfo.Team.TeamIndex;
+    if (NewPlayer.Pawn == None)
+    {
+        NewPlayer.Pawn = GameInfo.SpawnDefaultPawnFor(NewPlayer, StartSpot);
+    }
+    else
+    {
+        NewPlayer.Pawn.SetAnchor(StartSpot);
+        if (PlayerController(NewPlayer) != None)
+        {
+            PlayerController(NewPlayer).TimeMargin = -0.100000001;
+            StartSpot.AnchoredPawn = None;
+        }
+        NewPlayer.Pawn.LastStartSpot = PlayerStart(StartSpot);
+        NewPlayer.Pawn.LastStartTime = WorldInfo.TimeSeconds;
+        NewPlayer.Possess(NewPlayer.Pawn, FALSE);
+        NewPlayer.Pawn.PlayTeleportEffect(TRUE, TRUE);
+        NewPlayer.ClientSetRotation(NewPlayer.Pawn.Rotation, TRUE);
+        SetPlayerDefaults(NewPlayer.Pawn);
+    }
+}
+public function SetPlayerDefaults(Pawn PlayerPawn)
+{
+    PlayerPawn.AirControl = PlayerPawn.default.AirControl;
+    PlayerPawn.GroundSpeed = PlayerPawn.default.GroundSpeed;
+    PlayerPawn.WaterSpeed = PlayerPawn.default.WaterSpeed;
+    PlayerPawn.AirSpeed = PlayerPawn.default.AirSpeed;
+    PlayerPawn.Acceleration = PlayerPawn.default.Acceleration;
+    PlayerPawn.AccelRate = PlayerPawn.default.AccelRate;
+    PlayerPawn.JumpZ = PlayerPawn.default.JumpZ;
+    PlayerPawn.PhysicsVolume.ModifyPlayer(PlayerPawn);
 }
 public function onAppearanceLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {

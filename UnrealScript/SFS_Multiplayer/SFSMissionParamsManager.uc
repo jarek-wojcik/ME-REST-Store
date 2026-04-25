@@ -18,7 +18,7 @@ var array<string> PendingEnabledEnemyArchetypes;
 var array<int> PendingEnabledEnemyRatios;
 var bool PendingCrossFactionEnemies;
 
-public event simulated function HandlePostAdd()
+public event simulated function ApplyMissionSettings()
 {
     SettingsService = Outer.GetModule(Class'SFSMissionSettingsService');
     if (SettingsService != None && !Class'Engine'.static.GetCurrentWorldInfo().bIsLobbyLevel)
