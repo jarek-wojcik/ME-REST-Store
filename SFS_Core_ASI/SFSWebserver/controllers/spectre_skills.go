@@ -24,12 +24,13 @@ type CapstoneChoice struct {
 
 // SkillSegment is one of the ten level-block indicators rendered in the UI.
 type SkillSegment struct {
-	Filled          bool
-	LevelNum        int    // 1-indexed level this segment represents
-	Description     string // tooltip text shown on hover
-	SetLevelURL     string // POST: sets skill to exactly this level
-	CapstoneChoices []CapstoneChoice
-	SelectedCapstoneLabel string // short label of selected capstone for quick/condensed UI
+	Filled                      bool
+	LevelNum                    int    // 1-indexed level this segment represents
+	Description                 string // tooltip text shown on hover
+	SetLevelURL                 string // POST: sets skill to exactly this level
+	CapstoneChoices             []CapstoneChoice
+	SelectedCapstoneLabel       string // short label of selected capstone for quick/condensed UI
+	SelectedCapstoneDescription string // full description text for the selected capstone (condensed UI)
 }
 
 // SkillView is the template-facing view for one skill row on the character sheet.
@@ -118,6 +119,7 @@ func spectreSkillViews(s model.Spectre, spectreID string) []SkillView {
 					}
 					if selected {
 						segment.SelectedCapstoneLabel = choiceLabel
+						segment.SelectedCapstoneDescription = desc
 					}
 				}
 			}

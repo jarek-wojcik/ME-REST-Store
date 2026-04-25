@@ -103,7 +103,7 @@
          THREE-SECTION BODY
          ══════════════════════════════════════════════════════════════ -->
     <div class="grid divide-x divide-[#1a2d4a]"
-         style="grid-template-columns: 240px 218px minmax(0,270px) minmax(0,230px); max-width: 1490px;">
+         style="grid-template-columns: 240px 224px minmax(0,270px) minmax(0,230px); max-width: 1490px;">
 
         <!-- ╔══════════════════════════════╗
              ║  SECTION A — CHARACTER       ║
@@ -458,6 +458,10 @@
                                         class="skill-segment rounded-[2px] border transition-all focus:outline-none cursor-pointer
                                                {{if .SelectedCapstoneLabel}}skill-segment-filled{{else}}skill-segment-empty{{end}}"
                                         {{if .SetLevelURL}}hx-post="{{.SetLevelURL}}" hx-target="#{{$.CardID}}" hx-swap="outerHTML"{{end}}
+                                        data-tooltip-title="{{if .SelectedCapstoneLabel}}{{.SelectedCapstoneLabel}}{{else}}Level {{.LevelNum}}{{end}}"
+                                        data-tooltip-desc="{{if .SelectedCapstoneDescription}}{{.SelectedCapstoneDescription}}{{else}}{{.Description}}{{end}}"
+                                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                                        @mouseleave="$store.tooltip.hide()"
                                         title="Level {{.LevelNum}}">
                                     </button>
                                     {{else}}
@@ -467,6 +471,10 @@
                                         hx-post="{{.SetLevelURL}}"
                                         hx-target="#{{$.CardID}}"
                                         hx-swap="outerHTML"
+                                        data-tooltip-title="Level {{.LevelNum}}"
+                                        data-tooltip-desc="{{.Description}}"
+                                        @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                                        @mouseleave="$store.tooltip.hide()"
                                         title="Level {{.LevelNum}}">
                                     </button>
                                     {{end}}
@@ -890,7 +898,7 @@
             {{end}}<!-- /range .WeaponViews -->
 
             <!-- Add Weapon button (shown after weapons are added) -->
-            {{if and .WeaponViews .AddWeaponURL}}
+            {{if and (gt (len .WeaponViews) 0) (lt (len .WeaponViews) 5) .AddWeaponURL}}
             <div class="px-3 py-2 border-b border-[#1a2d4a]/50">
                 <button class="w-full px-3 py-2 flex items-center justify-center gap-2
                                rounded border border-dashed border-[#1a2d4a]
