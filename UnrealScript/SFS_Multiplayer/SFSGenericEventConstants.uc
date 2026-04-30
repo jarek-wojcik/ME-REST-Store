@@ -12,7 +12,7 @@ defaultproperties
 {
     ActiveCharacterLoaded_Event = "ActiveCharacterLoaded"
     AppearanceLoaded_Event = "AppearanceLoaded"
-    PowersLoaded_Event = "AppearanceLoaded"
+    PowersLoaded_Event = "PowersLoaded"
     WeaponsLoaded_Event = "WeaponsLoaded"
     ConsumablesLoaded_Event = "ConsumablesLoaded"
     CustomActionsMigrated_Event = "CustomActionsMigrated"

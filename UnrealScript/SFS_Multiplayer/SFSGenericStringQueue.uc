@@ -53,13 +53,13 @@ private final function checkEmpty()
 {
     local SFSEvent queueEmptyEvent;
     
-    if (queue.Length < 0)
+    if (queue.Length <= 0)
     {
         queueEmptyEvent = new (Outer) Class'SFSEvent';
         queueEmptyEvent.sValue = queueEmptyEventString;
         Outer.AddSFSEvent(queueEmptyEvent, Outer.Outer);
+        Outer.Outer.ClearTimer('checkEviction', Self);
     }
-    Outer.Outer.ClearTimer('checkEviction', Self);
 }
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.
