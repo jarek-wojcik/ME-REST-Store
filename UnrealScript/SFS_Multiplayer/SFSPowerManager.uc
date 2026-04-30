@@ -1,13 +1,20 @@
 Class SFSPowerManager extends SFSManager within SFXPawn;
 
 var SFSPortalAsyncLoader asyncLoader;
+var SFSGenericStringQueue powerLoad_queue;
 var BioPlayerController PC;
 var BioPlayerInput BPI;
 var bool bAppliedBorrowedPower;
+var SkeletalMeshSocket FlamerSocket;
+var SkeletalMeshSocket FlamerOmniToolSocket;
+var SkeletalMeshSocket SnapFreezeSocketRight;
+var SkeletalMeshSocket SnapFreezeSocketLeft;
 
 public event simulated function HandlePostAdd()
 {
     asyncLoader = Outer.GetModule(Class'SFSPortalAsyncLoader');
+    powerLoad_queue = new (Self) Class'SFSGenericStringQueue';
+    powerLoad_queue.queueEmptyEventString = Class'SFSGenericEventConstants'.default.PowersLoaded_Event;
     PC = BioPlayerController(Outer.Controller);
     if (PC == None)
     {
@@ -32,6 +39,11 @@ public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
     }
     log(Self.Name, "LoadPowers: " $ Character.PowerCount $ " regular power(s)", Outer);
     RemoveExistingPowers(SFXPawn_PlayerMP(Pawn));
+    //Saturate the queue
+    for (i = 0; i < Character.PowerCount; i++)
+    {
+        powerLoad_queue.addItem(Character.Powers[i].PowerID);
+    }
     //Need to update this in the future to also handle henchmen.
     for (i = 0; i < Character.PowerCount; i++)
     {
@@ -44,6 +56,7 @@ public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
     }
     if (Character.bHasBorrowedPower && Character.BorrowedPower.PowerID != "")
     {
+        powerLoad_queue.addItem(Character.BorrowedPower.PowerID);
         asyncLoader.LoadPowerClassBlocking(Character.BorrowedPower.PowerID, Character.BorrowedPower, 3, TRUE, OnBorrowedPowerLoaded);
         log(Self.Name, "Queued borrowed power: " $ Character.BorrowedPower.PowerID, Outer);
     }
@@ -106,6 +119,7 @@ function OnPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     {
         log(Self.Name, "OnPowerLoaded: No power instance found at slot " $ load.SlotIndex, Outer);
     }
+    powerLoad_queue.popItem(load.AssetToLoad);
     RemapInputs();
 }
 function OnBorrowedPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
@@ -143,6 +157,7 @@ function OnBorrowedPowerLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
     SFXPawn_PlayerMP(Owner).ApplyWeaponEncumbrance();
     bAppliedBorrowedPower = TRUE;
     log(Self.Name, "OnBorrowedPowerLoaded: Done", Outer);
+    powerLoad_queue.popItem(load.AssetToLoad);
     RemapInputs();
 }
 private final function SFXPowerCustomActionBase InstantiatePower(Class<SFXPowerCustomActionBase> powerClass, int SlotIndex)
@@ -179,6 +194,26 @@ private final function SFXPowerCustomActionBase InstantiatePower(Class<SFXPowerC
         log(Self.Name, "InstantiatePower: Instanced " $ Power $ " at slot " $ SlotIndex, Outer);
     }
     return Power;
+}
+public final function AddPowerSockets(SFXPawn Pawn)
+{
+    local SFXPowerCustomActionBase powerI;
+    
+    foreach Pawn.PowerManager.Powers(powerI, )
+    {
+        if (InStr(string(powerI.Name), "Flamer", , TRUE, ) != 0)
+        {
+            log(Self.Name, "Adding Flamer Socket", Outer);
+            Pawn.Mesh.SkeletalMesh.Sockets.AddItem(default.FlamerSocket);
+            Pawn.Mesh.SkeletalMesh.Sockets.AddItem(default.FlamerOmniToolSocket);
+        }
+        if (InStr(string(powerI.Name), "SnapFreeze", , TRUE, ) != 0)
+        {
+            log(Self.Name, "Adding Snap Freeze Socket", Outer);
+            Pawn.Mesh.SkeletalMesh.Sockets.AddItem(default.FlamerSocket);
+            Pawn.Mesh.SkeletalMesh.Sockets.AddItem(default.FlamerOmniToolSocket);
+        }
+    }
 }
 private final function ApplyEvolutions(SFXPowerCustomActionBase Power, SFSPowerModelStruct Model)
 {
@@ -234,5 +269,8 @@ private final function RemapInputs()
 //class default properties can be edited in the Properties tab for the class's Default__ object.
 defaultproperties
 {
-    bDebug = TRUE
+    FlamerSocket = SkeletalMeshSocket'SFSMultiplayer.SFSManagers.FlamerSockets.SkeletalMeshSocket_8'
+    FlamerOmniToolSocket = SkeletalMeshSocket'SFSMultiplayer.SFSManagers.FlamerSockets.SkeletalMeshSocket_2'
+    SnapFreezeSocketRight = SkeletalMeshSocket'SFSMultiplayer.SFSManagers.SnapFreezeSockets.SkeletalMeshSocket_0'
+    SnapFreezeSocketLeft = SkeletalMeshSocket'SFSMultiplayer.SFSManagers.SnapFreezeSockets.SkeletalMeshSocket_1'
 }

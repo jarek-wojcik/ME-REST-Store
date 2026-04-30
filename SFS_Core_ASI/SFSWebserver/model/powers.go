@@ -1484,21 +1484,6 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_CryoCone", Name: "Cryo Cone", Picture: "CryoCone.webp", Type: PowerTypeActive,
-		RootPath: "SFXGameContentDLC_CON_MP3",
-		RankDescs: []RankDesc{
-			{Rank: 1, Description: "Flash-freeze unprotected enemies and slow down the rest with a wave of ice damage.\n\nFrozen targets don't regenerate health.\nWeaken armor by 25%."}, // Rank 1
-			{Rank: 2, Description: "Increase recharge speed by 25%."}, // Rank 2
-			{Rank: 3, Description: "Increase damage by 20%."},         // Rank 3
-			{Rank: 4, Description: "Increase damage by 30%."},         // Rank 4 - Evolution A
-			{Rank: 5, Description: "Increase range by 50%."},          // Rank 4 - Evolution B
-			{Rank: 6, Description: "Increase the duration of freeze effects by 50%.\nDecrease the movement speed of chilled targets by an additional -20%."}, // Rank 5 - Evolution A
-			{Rank: 7, Description: "Increase damage to chilled and frozen targets by 10%."},                                                                  // Rank 5 - Evolution B
-			{Rank: 8, Description: "Increase damage by 40%.\nWeaken armored targets by an additional 25%."},                                                  // Rank 6 - Evolution A
-			{Rank: 9, Description: "Increase the damage of tech combos by 1%."},                                                                              // Rank 6 - Evolution B
-		},
-	},
-	{
 		ID: "SFXPowerCustomActionMP_Damping", Name: "Damping", Picture: "Damping.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP2",
 		RankDescs: []RankDesc{

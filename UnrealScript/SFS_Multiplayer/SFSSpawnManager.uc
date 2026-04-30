@@ -22,13 +22,13 @@ public function SpawnPoint findSpawnPoint(SFXAI_Core AIController, SFXPawn Playe
         {
             if (!isSpawnPointOccupied(SpawnPoint.location))
             {
-                //Class'LoggingUtilsMP'.static.log("Using Spawn Point: " $ SpawnPoint.location);
+                log(Self.Name, "Using Spawn Point: " $ SpawnPoint.location, Outer.Outer);
                 return SpawnPoint;
             }
         }
     }
-    //Class'LoggingUtilsMP'.static.log("No Spawn Container found for map name: " $ MapName);
-    //Class'LoggingUtilsMP'.static.log("No unoccupied spawn points found, falling back on FindPlayerStart()");
+    log(Self.Name, "No Spawn Container found for map name: " $ MapName, Outer.Outer);
+    log(Self.Name, "No unoccupied spawn points found, falling back on FindPlayerStart()", Outer.Outer);
     AlternativeStart = Gimp.FindPlayerStart(AIController, AIController.GetTeamNum());
     if (AlternativeStart != None)
     {
@@ -38,7 +38,7 @@ public function SpawnPoint findSpawnPoint(SFXAI_Core AIController, SFXPawn Playe
     }
     else
     {
-        //Class'LoggingUtilsMP'.static.log("No alternative start found, falling back PlayerLocation");
+        log(Self.Name, "No alternative start found, falling back PlayerLocation", Outer.Outer);
         SpawnPoint.location = Player.location;
         SpawnPoint.Rotation = Player.Rotation;
         return SpawnPoint;
@@ -56,11 +56,11 @@ public function bool isSpawnPointOccupied(Vector SpawnPoint)
     {
         if (isNearby(Bot.location, SpawnPoint))
         {
-            //Class'LoggingUtilsMP'.static.log("Bot " $ Bot.Name $ " is nearby spawn point " $ SpawnPoint);
+            log(Self.Name, "Bot " $ Bot.Name $ " is nearby spawn point " $ SpawnPoint, Outer.Outer);
             Result = TRUE;
         }
     }
-    //Class'LoggingUtilsMP'.static.log("Spawn Point Occupied: " $ SpawnPoint $ " " $ Result);
+    log(Self.Name, "Spawn Point Occupied: " $ SpawnPoint $ " " $ Result, Outer.Outer);
     return Result;
 }
 public function bool isNearby(Vector location1, Vector location2)
@@ -68,7 +68,7 @@ public function bool isNearby(Vector location1, Vector location2)
     local float DistanceXY;
     
     DistanceXY = VSize(location1 - location2);
-    //Class'LoggingUtilsMP'.static.log("Distance between vectors:" $ location1 $ " and " $ location2 $ " is " $ DistanceXY);
+    log(Self.Name, "Distance between vectors:" $ location1 $ " and " $ location2 $ " is " $ DistanceXY, Outer.Outer);
     DistanceXY = Abs(DistanceXY);
     return DistanceXY <= float(default.nearbyDistance);
 }
@@ -116,6 +116,7 @@ public function string GetMapName(SFXGameInfoMP Gimp)
 //class default properties can be edited in the Properties tab for the class's Default__ object.
 defaultproperties
 {
+    bDebug = TRUE
     nearbyDistance = 100
     MapSpawnContainers = (Class'FirebaseWhiteSpawnsContainer', 
                           Class'FireBaseWhiteHazardSpawnsContainer', 
@@ -135,6 +136,7 @@ defaultproperties
                           Class'FirebaseLondonSpawnsContainer', 
                           Class'FirebaseRioSpawnsContainer', 
                           Class'FirebaseGlacierSpawnsContainer', 
-                          Class'FirebaseGlacierHazardSpawnsContainer'
+                          Class'FirebaseGlacierHazardSpawnsContainer', 
+                          Class'MarsArchivesSpawnsContainer'
                          )
 }

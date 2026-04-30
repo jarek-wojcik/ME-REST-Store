@@ -7,6 +7,7 @@ struct SavedOperationWave
 };
 
 var SFSMissionSettingsService SettingsService;
+var BioWorldInfo World;
 var SFXWaveCoordinator_HordeOperation WaveCoordinator;
 var array<SavedOperationWave> SavedOperationWaves;
 var int LastKnownWaveNumber;
@@ -18,9 +19,39 @@ var array<string> PendingEnabledEnemyArchetypes;
 var array<int> PendingEnabledEnemyRatios;
 var bool PendingCrossFactionEnemies;
 
+public event simulated function HandlePostAdd()
+{
+    local array<Actor> Coordinators;
+    local Actor CoordActor;
+    local SFXWaveCoordinator_HordeOperation Coord;
+    
+    //Set SettingsService
+    SettingsService = Outer.GetModule(Class'SFSMissionSettingsService');
+    //Set the world field
+    World = Class'SFXEngine'.static.GetSFXEngine().GetRealWorldInfo();
+    //Find the correct WaveCoordinator
+    World.FindActorsOfClass(Class'SFXWaveCoordinator_HordeOperation', Coordinators);
+    foreach Coordinators(CoordActor, )
+    {
+        Coord = SFXWaveCoordinator_HordeOperation(CoordActor);
+        if (Coord != None)
+        {
+            WaveCoordinator = Coord;
+            break;
+        }
+    }
+}
+function HandleEvent(SFSEvent E)
+{
+    switch (E.sValue)
+    {
+        case Class'SFSGenericEventConstants'.default.ActiveCharacterLoaded_Event:
+            break;
+        default:
+    }
+}
 public event simulated function ApplyMissionSettings()
 {
-    SettingsService = Outer.GetModule(Class'SFSMissionSettingsService');
     if (SettingsService != None && !Class'Engine'.static.GetCurrentWorldInfo().bIsLobbyLevel)
     {
         SettingsService.RetrieveSettings(OnSettingsRetrieved);
@@ -56,10 +87,6 @@ function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
 }
 function ApplyHordeWaveSettings()
 {
-    local BioWorldInfo World;
-    local array<Actor> Coordinators;
-    local Actor CoordActor;
-    local SFXWaveCoordinator_HordeOperation Coord;
     local int WaveIdx;
     local int ArchIdx;
     local int ListIdx;
@@ -74,20 +101,6 @@ function ApplyHordeWaveSettings()
     local int RatioVal;
     local int CopyIdx;
     
-    if (WaveCoordinator == None)
-    {
-        World = Class'SFXEngine'.static.GetSFXEngine().GetRealWorldInfo();
-        World.FindActorsOfClass(Class'SFXWaveCoordinator_HordeOperation', Coordinators);
-        foreach Coordinators(CoordActor, )
-        {
-            Coord = SFXWaveCoordinator_HordeOperation(CoordActor);
-            if (Coord != None)
-            {
-                WaveCoordinator = Coord;
-                break;
-            }
-        }
-    }
     if (WaveCoordinator == None)
     {
         log(Self.Name, "WaveCoordinator not found yet - retrying in 1s", Outer);
@@ -130,7 +143,7 @@ function ApplyHordeWaveSettings()
                 {
                     for (ArchIdx = 0; ArchIdx < PendingEnabledEnemyArchetypes.Length; ArchIdx++)
                     {
-                        if (GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
+                        if (Class'SFSStringUtility'.static.GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == Class'SFSStringUtility'.static.GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
                         {
                             bIsEnabled = TRUE;
                             break;
@@ -153,7 +166,7 @@ function ApplyHordeWaveSettings()
                 bIsEnabled = FALSE;
                 for (ArchIdx = 0; ArchIdx < PendingEnabledEnemyArchetypes.Length; ArchIdx++)
                 {
-                    if (GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
+                    if (Class'SFSStringUtility'.static.GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == Class'SFSStringUtility'.static.GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
                     {
                         bIsEnabled = TRUE;
                         break;
@@ -230,27 +243,14 @@ function ApplyHordeWaveSettings()
     }
     log(Self.Name, "Horde wave settings applied.", Outer);
 }
-private final function string GetLastDotSegment(string S)
-{
-    local int DotPos;
-    
-    DotPos = InStr(S, ".", TRUE, , );
-    if (DotPos >= 0)
-    {
-        return Mid(S, DotPos + 1, );
-    }
-    return S;
-}
 function ApplyObjectiveWaveBypass()
 {
-    local BioWorldInfo World;
     local array<Actor> Coordinators;
     local Actor CoordActor;
     local SFXWaveCoordinator_HordeOperation Coord;
     local int i;
     local SavedOperationWave SavedWave;
     
-    World = Class'SFXEngine'.static.GetSFXEngine().GetRealWorldInfo();
     World.FindActorsOfClass(Class'SFXWaveCoordinator_HordeOperation', Coordinators);
     foreach Coordinators(CoordActor, )
     {
@@ -362,4 +362,5 @@ function OnWaveCompleted(int CompletedWaveNumber)
 //class default properties can be edited in the Properties tab for the class's Default__ object.
 defaultproperties
 {
+    ListenedEventTypes = (SFSEventType.EVT_Generic)
 }

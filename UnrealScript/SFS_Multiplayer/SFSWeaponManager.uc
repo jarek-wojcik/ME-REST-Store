@@ -3,10 +3,13 @@ Class SFSWeaponManager extends SFSManager within SFXPawn;
 var Vector binlocation;
 var Vector tossForce;
 var SFSPortalAsyncLoader asyncLoader;
+var SFSGenericStringQueue weaponLoad_queue;
 
 public event simulated function HandlePostAdd()
 {
     asyncLoader = Outer.GetModule(Class'SFSPortalAsyncLoader');
+    weaponLoad_queue = new (Self) Class'SFSGenericStringQueue';
+    weaponLoad_queue.queueEmptyEventString = Class'SFSGenericEventConstants'.default.WeaponsLoaded_Event;
 }
 function HandleEvent(SFSEvent E)
 {
@@ -19,22 +22,47 @@ function HandleEvent(SFSEvent E)
         default:
     }
 }
-function exchangeWeapons(SFXPawn OtherPawn)
+public function LoadWeapons(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
-    local SFXWeapon otherPawnWeapon;
-    local SFXWeapon outerWeapon;
+    local int i;
+    local array<string> pathTokens;
+    local string WeaponClassName;
+    local SFXWeapon existingWeapon;
+    local bool bAlreadyHasWeapon;
     
-    outerWeapon = SFXWeapon(Outer.Weapon);
-    otherPawnWeapon = SFXWeapon(OtherPawn.Weapon);
-    //Get rid of the weapons
-    OtherPawn.InvManager.RemoveFromInventory(otherPawnWeapon);
-    Outer.InvManager.RemoveFromInventory(outerWeapon);
-    // Add weapons to the pawns
-    Outer.InvManager.AddInventory(otherPawnWeapon);
-    OtherPawn.InvManager.AddInventory(outerWeapon);
-    //Set the weapons    
-    Outer.SetWeaponImmediately(otherPawnWeapon);
-    OtherPawn.SetWeaponImmediately(outerWeapon);
+    // Load any Character weapons the pawn doesn't already have
+    for (i = 0; i < Character.WeaponCount; i++)
+    {
+        if (Character.Weapons[i].WeaponID == "")
+        {
+            continue;
+        }
+        Class'SFSArrayUtility'.static.SplitStringIntoParts(Character.Weapons[i].WeaponID, ".", pathTokens);
+        if (pathTokens.Length == 0)
+        {
+            log(Self.Name, "Error: Could not parse WeaponID: " $ Character.Weapons[i].WeaponID, Outer);
+            continue;
+        }
+        WeaponClassName = pathTokens[pathTokens.Length - 1];
+        bAlreadyHasWeapon = FALSE;
+        foreach Pawn.InvManager.InventoryActors(Class'SFXWeapon', existingWeapon)
+        {
+            log(Self.Name, "Comparing existing: " $ existingWeapon.Class.Name $ " vs target: " $ WeaponClassName, Outer);
+            if (string(existingWeapon.Class.Name) == WeaponClassName)
+            {
+                bAlreadyHasWeapon = TRUE;
+                break;
+            }
+        }
+        if (bAlreadyHasWeapon)
+        {
+            log(Self.Name, "Pawn already has weapon, removing before reload: " $ WeaponClassName, Outer);
+            Pawn.InvManager.RemoveFromInventory(existingWeapon);
+            existingWeapon.Destroy();
+        }
+        log(Self.Name, "Requesting async load for weapon: " $ Character.Weapons[i].WeaponID, Outer);
+        loadAndGiveWeaponAsync(Character.Weapons[i].WeaponID, Character.Weapons[i].Mod1ID, Character.Weapons[i].Mod2ID, Character.Weapons[i].FireMode, Character.Weapons[i].bRemoveScope);
+    }
 }
 function loadAndGiveWeapon(string weaponPath)
 {
@@ -92,6 +120,7 @@ function loadAndGiveWeaponAsync(string weaponPath, string Mod1ID, string Mod2ID,
         return;
     }
     log(Self.Name, "Async loading weapon: " $ weaponPath, Outer);
+    weaponLoad_queue.addItem(weaponPath);
     asyncLoader.LoadWeaponAsync(weaponPath, Mod1ID, Mod2ID, WeaponFireMode, bRemoveScope, OnWeaponLoaded);
 }
 function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
@@ -141,6 +170,7 @@ function OnWeaponLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         log(Self.Name, "Queuing async load for mod2: " $ load.Mod2ID $ " on " $ load.AssetToLoad, Outer);
         asyncLoader.LoadModAsync(load.Mod2ID, NewWeapon, OnWeaponModLoaded);
     }
+    weaponLoad_queue.popItem(load.AssetToLoad);
     Owner.SetWeaponImmediately(NewWeapon);
 }
 function HandleSniperRifles(SFXWeapon_SniperRifle_Base SniperRifle, SFSGenericAsyncLoad load)
@@ -167,6 +197,63 @@ function HandleSniperRifles(SFXWeapon_SniperRifle_Base SniperRifle, SFSGenericAs
         }
         log(Self.Name, "Removed scope (bScoped=false, ZoomFOV reset, reticle=crosshair, bFirstPerson=false) for: " $ load.AssetToLoad, Outer);
     }
+}
+public final function RemoveWeaponsNotInCharacter(SFSCharacterModelStruct Character, SFXPawn Pawn)
+{
+    local int i;
+    local array<string> pathTokens;
+    local SFXWeapon existingWeapon;
+    local bool bWeaponInCharacter;
+    local array<SFXWeapon> weaponsToRemove;
+    
+    foreach Pawn.InvManager.InventoryActors(Class'SFXWeapon', existingWeapon)
+    {
+        bWeaponInCharacter = FALSE;
+        for (i = 0; i < Character.WeaponCount; i++)
+        {
+            if (Character.Weapons[i].WeaponID == "")
+            {
+                continue;
+            }
+            Class'SFSArrayUtility'.static.SplitStringIntoParts(Character.Weapons[i].WeaponID, ".", pathTokens);
+            if (pathTokens.Length > 0 && string(existingWeapon.Class.Name) == pathTokens[pathTokens.Length - 1])
+            {
+                bWeaponInCharacter = TRUE;
+                break;
+            }
+        }
+        if (!bWeaponInCharacter)
+        {
+            if (string(existingWeapon.Class.Name) == "sfxweapon_heavy_consumablerocketlauncher")
+            {
+                continue;
+            }
+            log(Self.Name, "Weapon not in character, queuing for removal: " $ existingWeapon.Class.Name, Outer);
+            weaponsToRemove.AddItem(existingWeapon);
+        }
+    }
+    for (i = 0; i < weaponsToRemove.Length; i++)
+    {
+        Pawn.InvManager.RemoveFromInventory(weaponsToRemove[i]);
+        weaponsToRemove[i].Destroy();
+    }
+}
+function exchangeWeapons(SFXPawn OtherPawn)
+{
+    local SFXWeapon otherPawnWeapon;
+    local SFXWeapon outerWeapon;
+    
+    outerWeapon = SFXWeapon(Outer.Weapon);
+    otherPawnWeapon = SFXWeapon(OtherPawn.Weapon);
+    //Get rid of the weapons
+    OtherPawn.InvManager.RemoveFromInventory(otherPawnWeapon);
+    Outer.InvManager.RemoveFromInventory(outerWeapon);
+    // Add weapons to the pawns
+    Outer.InvManager.AddInventory(otherPawnWeapon);
+    OtherPawn.InvManager.AddInventory(outerWeapon);
+    //Set the weapons    
+    Outer.SetWeaponImmediately(otherPawnWeapon);
+    OtherPawn.SetWeaponImmediately(outerWeapon);
 }
 function OnWeaponModLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {

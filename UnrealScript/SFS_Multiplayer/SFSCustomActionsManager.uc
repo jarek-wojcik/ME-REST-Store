@@ -8,10 +8,13 @@ const LightMeleeRangeStart = 75;
 const LightMeleeRangeEnd = 80;
 
 var SFSPortalAsyncLoader asyncLoader;
+var SFSGenericStringQueue customActionLoad_queue;
 
 public event simulated function HandlePostAdd()
 {
     asyncLoader = Outer.GetModule(Class'SFSPortalAsyncLoader');
+    customActionLoad_queue = new (Self) Class'SFSGenericStringQueue';
+    customActionLoad_queue.queueEmptyEventString = Class'SFSGenericEventConstants'.default.CustomActionsMigrated_Event;
 }
 public function MigrateCustomActions(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
@@ -19,6 +22,18 @@ public function MigrateCustomActions(SFSCharacterModelStruct Character, SFXPawn 
     {
         log(Self.Name, "MigrateCustomActions: asyncLoader is None", Outer);
         return;
+    }
+    if (Character.DodgeCharId != "")
+    {
+        customActionLoad_queue.addItem(Character.DodgeCharId);
+    }
+    if (Character.HeavyMeleeCharId != "")
+    {
+        customActionLoad_queue.addItem(Character.HeavyMeleeCharId);
+    }
+    if (Character.LightMeleeCharId != "")
+    {
+        customActionLoad_queue.addItem(Character.LightMeleeCharId);
     }
     if (Character.DodgeCharId != "")
     {
@@ -67,6 +82,7 @@ function OnDodgePawnLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         }
     }
     log(Self.Name, "OnDodgePawnLoaded: Done", Outer);
+    customActionLoad_queue.popItem(load.AssetToLoad);
 }
 function OnHeavyMeleePawnLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
 {
@@ -99,6 +115,7 @@ function OnHeavyMeleePawnLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         TargetMP.VerifyCAHasBeenInstanced(73);
     }
     log(Self.Name, "OnHeavyMeleePawnLoaded: Done", Outer);
+    customActionLoad_queue.popItem(load.AssetToLoad);
     // TODO: After migrating the heavy melee CA, swap the cast sounds to preserve correct gender voicing.
     // Both source and target CAs have a SFXTimelineData object named Timeline0 which contains an array of
     // TimelineEffect structs in its Timeline array. Iterate over them on both old and new CA instances to
@@ -135,6 +152,7 @@ function OnLightMeleePawnLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
         }
     }
     log(Self.Name, "OnLightMeleePawnLoaded: Done", Outer);
+    customActionLoad_queue.popItem(load.AssetToLoad);
 }
 public function HandleVorchaDodge(Class<BioCustomAction> vorchaDodge)
 {

@@ -1,67 +1,11 @@
 Class SFSConsumableManager extends SFSManager within SFXPawn;
 
-const MAX_CHECK_ATTEMPTS = 40;
-
-var SFSCharacterModelStruct PendingCharacter;
-var SFXPawn PendingPawn;
-var int CheckAttempts;
-
 public function ApplyConsumables(SFSCharacterModelStruct Character, SFXPawn Pawn)
 {
-    PendingCharacter = Character;
-    PendingPawn = Pawn;
-    // If the character carries no weapons there is nothing to wait for.
-    if (Character.WeaponCount == 0)
-    {
-        DoApplyConsumables();
-        return;
-    }
-    CheckAttempts = 0;
-    // Poll every 0.25 s until all async weapon loads have settled in InvManager.
-    Outer.SetTimer(0.25, TRUE, 'CheckWeaponsLoaded', Self);
-}
-function CheckWeaponsLoaded()
-{
-    local SFXWeapon Weapon;
-    local int LoadedCount;
-    
-    CheckAttempts++;
-    if (PendingPawn == None || PendingPawn.InvManager == None)
-    {
-        Outer.ClearTimer('CheckWeaponsLoaded', Self);
-        return;
-    }
-    foreach PendingPawn.InvManager.InventoryActors(Class'SFXWeapon', Weapon)
-    {
-        if (SFXHeavyWeapon(Weapon) == None)
-        {
-            LoadedCount++;
-        }
-    }
-    if (LoadedCount >= PendingCharacter.WeaponCount)
-    {
-        log(Self.Name, "All " $ LoadedCount $ " weapons loaded after " $ CheckAttempts $ " tick(s), applying consumables", Outer);
-        Outer.ClearTimer('CheckWeaponsLoaded', Self);
-        DoApplyConsumables();
-        return;
-    }
-    if (CheckAttempts >= 40)
-    {
-        log(Self.Name, "Warning: Timed out waiting for weapons (" $ LoadedCount $ "/" $ PendingCharacter.WeaponCount $ "), applying consumables anyway", Outer);
-        Outer.ClearTimer('CheckWeaponsLoaded', Self);
-        DoApplyConsumables();
-    }
-}
-private final function DoApplyConsumables()
-{
     local SFXModule_GameEffectManager GEManager;
+    local SFSEvent ConsumablesLoadedEvent;
     
-    if (PendingPawn == None)
-    {
-        log(Self.Name, "Error: Pawn is None, cannot apply consumables", Outer);
-        return;
-    }
-    GEManager = PendingPawn.GetModule(Class'SFXModule_GameEffectManager');
+    GEManager = Pawn.GetModule(Class'SFXModule_GameEffectManager');
     if (GEManager == None)
     {
         log(Self.Name, "Error: GEManager is None, cannot apply consumables", Outer);
@@ -69,29 +13,17 @@ private final function DoApplyConsumables()
     }
     // Remove any previously applied match consumable effects before reapplying.
     GEManager.RemoveEffectsByCategory('MatchConsumableGameEffect');
-    ApplyConsumableSlot(PendingCharacter.Inventory.ArmorConsumableID, GEManager, PendingPawn, 2.0);
+    ApplyConsumableSlot(Character.Inventory.ArmorConsumableID, GEManager, Pawn, 2.0);
     // Tier 3 (index 2)
-    ApplyConsumableSlot(PendingCharacter.Inventory.WeaponConsumableID, GEManager, PendingPawn, 2.0);
+    ApplyConsumableSlot(Character.Inventory.WeaponConsumableID, GEManager, Pawn, 2.0);
     // Tier 3 (index 2)
-    ApplyConsumableSlot(PendingCharacter.Inventory.AmmoConsumableID, GEManager, PendingPawn, 2.0);
+    ApplyConsumableSlot(Character.Inventory.AmmoConsumableID, GEManager, Pawn, 2.0);
     // Tier 3 (index 2)
-    ApplyConsumableSlot(PendingCharacter.Inventory.GearConsumableID, GEManager, PendingPawn, 4.0);
+    ApplyConsumableSlot(Character.Inventory.GearConsumableID, GEManager, Pawn, 4.0);
     // Tier 5 (index 4)
-}
-public function RemoveConsumables(SFXPawn Pawn)
-{
-    local SFXModule_GameEffectManager GEManager;
-    
-    if (Pawn == None)
-    {
-        return;
-    }
-    GEManager = Pawn.GetModule(Class'SFXModule_GameEffectManager');
-    if (GEManager != None)
-    {
-        GEManager.RemoveEffectsByCategory('MatchConsumableGameEffect');
-        log(Self.Name, "Removed all match consumable effects", Outer);
-    }
+    ConsumablesLoadedEvent = new (Outer) Class'SFSEvent';
+    ConsumablesLoadedEvent.sValue = Class'SFSGenericEventConstants'.default.ConsumablesLoaded_Event;
+    AddSFSEvent(ConsumablesLoadedEvent, Outer);
 }
 private final function ApplyConsumableSlot(string EffectClassPath, SFXModule_GameEffectManager GEManager, SFXPawn Pawn, float Tier)
 {

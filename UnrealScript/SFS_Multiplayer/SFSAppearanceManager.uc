@@ -2,7 +2,12 @@ Class SFSAppearanceManager extends SFSManager within SFXPawn;
 
 var AnimTree crouchAnimTree;
 var array<int> idsWithHelmet;
+var SFSPortalAsyncLoader asyncLoader;
 
+public event simulated function HandlePostAdd()
+{
+    asyncLoader = Outer.GetModule(Class'SFSPortalAsyncLoader');
+}
 public function CopyAppearanceSelf(SFXPawn src, string Id, bool b_useHeadgear)
 {
     CopyAppearance(src, Outer, Id, b_useHeadgear);
@@ -66,10 +71,171 @@ public function CopyAppearance(SFXPawn src, SFXPawn trg, string Id, bool b_useHe
         ApplyTinting(trg);
     }
 }
+public function loadAppearance(SFSCharacterModelStruct Character, SFXPawn Pawn)
+{
+    local array<string> archetypeTokens;
+    local string appearanceArchetype;
+    local string PawnArchetype;
+    local Name currentKit;
+    local EAsyncLoadType LoadType;
+    
+    //If there's no appareance ID then there's no need to load the appearance class;
+    if (Character.AppearanceCharID == "")
+    {
+        createAppearanceLoadedEvent();
+    }
+    Class'SFSArrayUtility'.static.SplitStringIntoParts(Character.AppearanceCharID, ".", archetypeTokens);
+    if (archetypeTokens.Length > 0)
+    {
+        appearanceArchetype = archetypeTokens[archetypeTokens.Length - 1];
+        PawnArchetype = string(SFXPawn_PlayerMP(Pawn).ObjectArchetype.Name);
+        currentKit = SFXPRIMP(SFXPawn_PlayerMP(Pawn).PlayerReplicationInfo).GetCharacterKit();
+        log(Self.Name, "appearanceArchetype: " $ appearanceArchetype, Outer);
+        log(Self.Name, "PawnArchetype: " $ PawnArchetype, Outer);
+        if (PawnArchetype != appearanceArchetype)
+        {
+            log(Self.Name, "Current Kit: " $ currentKit $ " voice kit: " $ Character.VoiceKitId, Outer);
+            if (string(currentKit) != Character.VoiceKitId)
+            {
+                loadVoiceKit(Character.VoiceKitId, SFXPawn_PlayerMP(Pawn));
+                createAppearanceLoadedEvent();
+            }
+            switch (Character.AppearancePawnType)
+            {
+                case "PlayerMP":
+                    LoadType = EAsyncLoadType.ALT_PlayerMP;
+                    break;
+                case "Henchman":
+                    LoadType = EAsyncLoadType.ALT_Henchman;
+                    break;
+                case "Pawn":
+                    LoadType = EAsyncLoadType.ALT_Pawn;
+                    break;
+                default:
+            }
+            log(Self.Name, "Attempting to load appearance: " $ Character.AppearanceCharID $ " with load type " $ LoadType, Outer);
+            asyncLoader.LoadAppearanceAsync(Character.AppearanceCharID, Character.bUseHelmet, Character.bUseHeadgear, LoadType, onAppearanceLoaded);
+        }
+    }
+    else
+    {
+        log(Self.Name, "Could not parse Character.AppearanceCharID. Won't apply custom appearance", Outer);
+        createAppearanceLoadedEvent();
+    }
+}
+public function createAppearanceLoadedEvent()
+{
+    local SFSEvent AppearanceLoadedEvent;
+    
+    AppearanceLoadedEvent = new (Outer) Class'SFSEvent';
+    AppearanceLoadedEvent.sValue = Class'SFSGenericEventConstants'.default.AppearanceLoaded_Event;
+    AddSFSEvent(AppearanceLoadedEvent, Outer);
+}
+public function loadVoiceKit(string VoiceKitId, SFXPawn_PlayerMP Pawn)
+{
+    local BioPlayerController PC;
+    
+    log(Self.Name, "Calling Set Kit: ", Outer);
+    if (Pawn == None)
+    {
+        return;
+    }
+    PC = BioPlayerController(Pawn.Controller);
+    if (PC == None || PC.WorldInfo.Game == None)
+    {
+        return;
+    }
+    if (SFXPRIMP(PC.PlayerReplicationInfo) != None)
+    {
+        SFXPRIMP(PC.PlayerReplicationInfo).SetCharacterKit(Name(VoiceKitId));
+        SFXPRIMP(PC.PlayerReplicationInfo).SendCharacterDataToServer();
+        //Outer.WorldInfo.Game.RestartPlayer(PC);
+        RestartPlayerCustom(PC, PC.WorldInfo, PC.WorldInfo.Game);
+        Pawn.SetLocation(Pawn.Anchor.location, );
+        Pawn.SetRotation(Pawn.Anchor.Rotation);
+    }
+}
+public function RestartPlayerCustom(BioPlayerController NewPlayer, WorldInfo WorldInfo, GameInfo GameInfo)
+{
+    local Pawn oPawn;
+    local NavigationPoint StartSpot;
+    local int TeamNum;
+    local int idx;
+    local array<SequenceObject> Events;
+    local SeqEvent_PlayerSpawned SpawnedEvent;
+    
+    if (WorldInfo.NetMode != ENetMode.NM_DedicatedServer && WorldInfo.NetMode != ENetMode.NM_ListenServer)
+    {
+        return;
+    }
+    oPawn = NewPlayer.Pawn;
+    oPawn.SetHidden(TRUE);
+    NewPlayer.UnPossess();
+    oPawn.Destroy();
+    TeamNum = NewPlayer.PlayerReplicationInfo == None || NewPlayer.PlayerReplicationInfo.Team == None ? 255 : NewPlayer.PlayerReplicationInfo.Team.TeamIndex;
+    if (NewPlayer.Pawn == None)
+    {
+        NewPlayer.Pawn = GameInfo.SpawnDefaultPawnFor(NewPlayer, StartSpot);
+    }
+    else
+    {
+        NewPlayer.Pawn.SetAnchor(StartSpot);
+        if (PlayerController(NewPlayer) != None)
+        {
+            PlayerController(NewPlayer).TimeMargin = -0.100000001;
+            StartSpot.AnchoredPawn = None;
+        }
+        NewPlayer.Pawn.LastStartSpot = PlayerStart(StartSpot);
+        NewPlayer.Pawn.LastStartTime = WorldInfo.TimeSeconds;
+        NewPlayer.Possess(NewPlayer.Pawn, FALSE);
+        NewPlayer.Pawn.PlayTeleportEffect(TRUE, TRUE);
+        NewPlayer.ClientSetRotation(NewPlayer.Pawn.Rotation, TRUE);
+        SetPlayerDefaults(NewPlayer.Pawn);
+    }
+}
+public function SetPlayerDefaults(Pawn PlayerPawn)
+{
+    PlayerPawn.AirControl = PlayerPawn.default.AirControl;
+    PlayerPawn.GroundSpeed = PlayerPawn.default.GroundSpeed;
+    PlayerPawn.WaterSpeed = PlayerPawn.default.WaterSpeed;
+    PlayerPawn.AirSpeed = PlayerPawn.default.AirSpeed;
+    PlayerPawn.Acceleration = PlayerPawn.default.Acceleration;
+    PlayerPawn.AccelRate = PlayerPawn.default.AccelRate;
+    PlayerPawn.JumpZ = PlayerPawn.default.JumpZ;
+    PlayerPawn.PhysicsVolume.ModifyPlayer(PlayerPawn);
+}
+public function onAppearanceLoaded(SFSGenericAsyncLoad load, SFXPawn Owner)
+{
+    local SFXPawn appearancePawn;
+    local Vector appearanceCharLocation;
+    
+    appearanceCharLocation = Owner.location;
+    appearanceCharLocation.Z *= 100.0;
+    switch (load.LoadType)
+    {
+        case EAsyncLoadType.ALT_PlayerMP:
+            log(Self.Name, "Spawning: " $ load.LoadedPlayerMP.Class $ " - " $ load.LoadedPlayerMP, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedPlayerMP.Class, , , appearanceCharLocation, , load.LoadedPlayerMP, TRUE);
+            break;
+        case EAsyncLoadType.ALT_Pawn:
+            log(Self.Name, "Spawning: " $ load.LoadedPawn.Class $ " - " $ load.LoadedPawn, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedPawn.Class, , , appearanceCharLocation, , load.LoadedPawn, TRUE);
+            break;
+        case EAsyncLoadType.ALT_Henchman:
+            log(Self.Name, "Spawning: " $ load.LoadedHenchman.Class $ " - " $ load.LoadedHenchman, Outer);
+            appearancePawn = Outer.Spawn(load.LoadedHenchman.Class, , , appearanceCharLocation, , load.LoadedHenchman, TRUE);
+            break;
+        default:
+    }
+    CopyAppearanceWithVisuals(appearancePawn, Owner, load.bUsesHeadgear, load.bUsesHelmet);
+    appearancePawn.Destroy();
+    createAppearanceLoadedEvent();
+}
 public function CopyAppearanceWithVisuals(SFXPawn src, SFXPawn trg, bool b_useHeadgear, bool b_useHelmet)
 {
     local SkeletalMeshComponent srcSkel;
     local SkeletalMeshComponent dstSkel;
+    local SFSPowerManager PowerMan;
     local bool b_crouchMod;
     
     if (src == None || trg == None)
