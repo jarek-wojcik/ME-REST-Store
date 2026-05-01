@@ -1,6 +1,8 @@
 Class SFSPortalAsyncLoader extends SFSManager within SFXPawn;
 
 var array<SFSGenericAsyncLoad> AsyncLoads;
+var array<SFSGenericAsyncLoad> PendingPrimedPowerLoads;
+var array<string> PrimedKits;
 var float CheckDelay;
 var int maxRetries;
 
@@ -61,32 +63,70 @@ public function LoadPowerClassAsync(string AssetPath, SFSPowerModelStruct PowerM
 }
 public function LoadPowerClassBlocking(string AssetPath, SFSPowerModelStruct PowerModel, int SlotIndex, bool bIsBorrowedPower, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
-    local SFSGenericAsyncLoad AsyncLoad;
+    local SFSGenericAsyncLoad PowerLoad;
     
-    // Prime the DLC seek-free package by loading the source character's kit
-    // archetype first. This forces the package stream so that the power class
-    // (which lives in the same DLC package) can be found by LoadSeekFreeObjectBlocking.
-    if (PowerModel.KitID != "")
-    {
-        log(Self.Name, "LoadPowerClassBlocking: Priming DLC via kit: " $ PowerModel.KitID, Outer);
-        Class'SFXEngine'.static.LoadSeekFreeObjectBlocking(PowerModel.KitID, Class'SFXPawn_PlayerMP');
-        log(Self.Name, "LoadPowerClassBlocking: DLC primed for kit: " $ PowerModel.KitID, Outer);
-    }
     log(Self.Name, "LoadPowerClassBlocking: " $ AssetPath, Outer);
-    AsyncLoad = CreateAsyncLoad(AssetPath, 6, Callback);
-    AsyncLoad.PowerModel = PowerModel;
-    AsyncLoad.SlotIndex = SlotIndex;
-    AsyncLoad.bIsBorrowedPower = bIsBorrowedPower;
-    AsyncLoad.LoadedPowerClass = Class<SFXPowerCustomActionBase>(Class'SFXEngine'.static.LoadSeekFreeObjectBlocking(AssetPath, Class'Class'));
-    if (AsyncLoad.LoadedPowerClass != None)
+    if (PowerModel.KitID != "" && InStr(PowerModel.KitID, "BioChar_MPPlayers.Archetypes", , , ) == -1)
     {
-        log(Self.Name, "LoadPowerClassBlocking: Loaded " $ AsyncLoad.LoadedPowerClass, Outer);
-        Callback(AsyncLoad, Outer);
+        log(Self.Name, "LoadPowerClassBlocking: Staging power load, priming kit async: " $ PowerModel.KitID, Outer);
+        PowerLoad = CreateAsyncLoad(AssetPath, 6, Callback);
+        PowerLoad.PowerModel = PowerModel;
+        PowerLoad.SlotIndex = SlotIndex;
+        PowerLoad.bIsBorrowedPower = bIsBorrowedPower;
+        PendingPrimedPowerLoads.AddItem(PowerLoad);
+        LoadAsync(PowerModel.KitID, KitLoadTypeFromPawnType(PowerModel.KitPawnType), OnKitPrimed);
     }
     else
     {
-        log(Self.Name, "LoadPowerClassBlocking: Failed to load " $ AssetPath, Outer);
+        log(Self.Name, "LoadPowerClassBlocking: No kit priming needed, dispatching power load directly: " $ AssetPath, Outer);
+        LoadPowerClassAsync(AssetPath, PowerModel, SlotIndex, bIsBorrowedPower, Callback);
     }
+}
+public function LoadPowerAsyncPrimed(string AssetPath, SFSPowerModelStruct PowerModel, int SlotIndex, bool bIsBorrowedPower, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
+{
+    local int i;
+    
+    for (i = 0; i < PrimedKits.Length; i++)
+    {
+        if (PrimedKits[i] == PowerModel.KitID)
+        {
+            log(Self.Name, "LoadPowerAsyncPrimed: Kit is primed, dispatching async power load: " $ AssetPath, Outer);
+            LoadPowerClassAsync(AssetPath, PowerModel, SlotIndex, bIsBorrowedPower, Callback);
+            return;
+        }
+    }
+    log(Self.Name, "LoadPowerAsyncPrimed: Kit not yet primed, skipping: " $ PowerModel.KitID $ " for " $ AssetPath, Outer);
+}
+private final function OnKitPrimed(SFSGenericAsyncLoad AsyncLoad, SFXPawn Owner)
+{
+    local string KitID;
+    local int i;
+    
+    KitID = AsyncLoad.AssetToLoad;
+    log(Self.Name, "OnKitPrimed: Kit loaded and primed: " $ KitID, Outer);
+    PrimedKits.AddItem(KitID);
+    for (i = PendingPrimedPowerLoads.Length - 1; i >= 0; i--)
+    {
+        if (PendingPrimedPowerLoads[i].PowerModel.KitID == KitID)
+        {
+            log(Self.Name, "OnKitPrimed: Dispatching staged power load: " $ PendingPrimedPowerLoads[i].AssetToLoad, Outer);
+            AsyncLoads.AddItem(PendingPrimedPowerLoads[i]);
+            PendingPrimedPowerLoads.Remove(i, 1);
+        }
+    }
+    StartCheckTimer();
+}
+private final function EAsyncLoadType KitLoadTypeFromPawnType(string PawnType)
+{
+    if (PawnType == "Henchman")
+    {
+        return EAsyncLoadType.ALT_Henchman;
+    }
+    if (PawnType == "Pawn")
+    {
+        return EAsyncLoadType.ALT_Pawn;
+    }
+    return EAsyncLoadType.ALT_PlayerMP;
 }
 private final function SFSGenericAsyncLoad CreateAsyncLoad(string AssetPath, EAsyncLoadType LoadType, delegate<SFSGenericAsyncLoad.OnAssetLoaded> Callback)
 {
@@ -163,7 +203,6 @@ private final function PollLoadStatus(out SFSGenericAsyncLoad AsyncLoad)
             AsyncLoad.LoadedConsumable = Class<SFXGameEffect_MatchConsumableBase>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
         case EAsyncLoadType.ALT_PowerClass:
-            log(Self.Name, "DEBUGGING POWER ASSET NAMES: " $ AsyncLoad.AssetToLoad, Outer);
             AsyncLoad.LoadedPowerClass = Class<SFXPowerCustomActionBase>(Class'SFXEngine'.static.LoadSeekFreeObjectAsync(AsyncLoad.AssetToLoad, Class'Class', AsyncLoad.LoadStatus));
             break;
         default:
@@ -176,5 +215,5 @@ defaultproperties
 {
     CheckDelay = 1.0
     maxRetries = 10
-    bDebug = TRUE
+    bDebug = FALSE
 }

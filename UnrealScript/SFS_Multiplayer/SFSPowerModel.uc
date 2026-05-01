@@ -8,6 +8,7 @@ struct SFSPowerModelStruct
     var string Evo1;
     var string Evo2;
     var string KitID;
+    var string KitPawnType;
 };
 
 static function bool FromToken(string Token, out SFSPowerModelStruct Power)

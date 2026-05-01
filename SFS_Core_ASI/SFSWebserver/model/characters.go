@@ -21,10 +21,11 @@ type Weapon struct {
 // Stored so the ME3 client can prime the correct seek-free package before
 // loading the power class.
 type PowerSlot struct {
-	PowerID   string    `json:"powerId"`
-	Rank      int       `json:"rank"`      // 0–6
-	Evolution [3]string `json:"evolution"` // index 0=rank4, 1=rank5, 2=rank6; each "A" or "B"
-	KitID     string    `json:"kitId,omitempty"`
+	PowerID     string    `json:"powerId"`
+	Rank        int       `json:"rank"`      // 0–6
+	Evolution   [3]string `json:"evolution"` // index 0=rank4, 1=rank5, 2=rank6; each "A" or "B"
+	KitID       string    `json:"kitId,omitempty"`
+	KitPawnType PawnType  `json:"kitPawnType,omitempty"`
 }
 
 // Species identifies the biological or synthetic species of a character.

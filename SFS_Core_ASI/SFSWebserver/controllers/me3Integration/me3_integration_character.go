@@ -140,11 +140,21 @@ func qualifySpectre(s *model.Spectre) {
 				s.Powers[i].PowerID = def.RootPath + "." + s.Powers[i].PowerID
 			}
 		}
+		if s.Powers[i].KitID != "" {
+			if kitChar := model.CharacterByQualifiedPath(s.Powers[i].KitID); kitChar != nil {
+				s.Powers[i].KitPawnType = kitChar.GetPawnType()
+			}
+		}
 	}
 	if s.BorrowedPower != nil {
 		if def := model.PowerByID(s.BorrowedPower.PowerID); def != nil {
 			if def.RootPath != "" {
 				s.BorrowedPower.PowerID = def.RootPath + "." + s.BorrowedPower.PowerID
+			}
+		}
+		if s.BorrowedPower.KitID != "" {
+			if kitChar := model.CharacterByQualifiedPath(s.BorrowedPower.KitID); kitChar != nil {
+				s.BorrowedPower.KitPawnType = kitChar.GetPawnType()
 			}
 		}
 	}

@@ -41,6 +41,58 @@ struct SFSCharacterModelStruct
     var bool bHasBorrowedPower;
     var SFSPowerModelStruct BorrowedPower;
     var SFSInventoryModelStruct Inventory;
+    
+    structdefaultproperties
+    {
+        Powers[0] = {
+                     PowerID = "", 
+                     Rank = 0, 
+                     Evo0 = "", 
+                     Evo1 = "", 
+                     Evo2 = "", 
+                     KitID = ""
+                    }
+        Powers[1] = {
+                     PowerID = "", 
+                     Rank = 0, 
+                     Evo0 = "", 
+                     Evo1 = "", 
+                     Evo2 = "", 
+                     KitID = ""
+                    }
+        Powers[2] = {
+                     PowerID = "", 
+                     Rank = 0, 
+                     Evo0 = "", 
+                     Evo1 = "", 
+                     Evo2 = "", 
+                     KitID = ""
+                    }
+        Powers[3] = {
+                     PowerID = "", 
+                     Rank = 0, 
+                     Evo0 = "", 
+                     Evo1 = "", 
+                     Evo2 = "", 
+                     KitID = ""
+                    }
+        Powers[4] = {
+                     PowerID = "", 
+                     Rank = 0, 
+                     Evo0 = "", 
+                     Evo1 = "", 
+                     Evo2 = "", 
+                     KitID = ""
+                    }
+        BorrowedPower = {
+                         PowerID = "", 
+                         Rank = 0, 
+                         Evo0 = "", 
+                         Evo1 = "", 
+                         Evo2 = "", 
+                         KitID = ""
+                        }
+    }
 };
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

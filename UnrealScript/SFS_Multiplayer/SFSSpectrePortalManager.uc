@@ -188,5 +188,5 @@ public final function logCharacter(SFSCharacterModelStruct Character)
 defaultproperties
 {
     ListenedEventTypes = (SFSEventType.EVT_Generic)
-    bDebug = TRUE
+    bDebug = FALSE
 }

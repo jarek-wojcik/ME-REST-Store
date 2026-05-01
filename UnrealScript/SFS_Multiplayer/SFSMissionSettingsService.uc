@@ -41,5 +41,4 @@ defaultproperties
     SFS_REST_URL = "http://localhost:6060/"
     MISSION_SETTINGS_MAPPING = "missionSettings"
     SIMPLE_JSON_PARAM = "simpleJson"
-    bDebug = TRUE
 }
