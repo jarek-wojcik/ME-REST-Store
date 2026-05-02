@@ -9,6 +9,7 @@ struct SFSQueueItem
 var array<SFSQueueItem> queue;
 var string queueEmptyEventString;
 var float evictionTimerSeconds;
+var delegate<emptyDelegate> queueEmpty_delegate;
 
 public function addItem(string Item)
 {
@@ -59,7 +60,14 @@ private final function checkEmpty()
         queueEmptyEvent.sValue = queueEmptyEventString;
         Outer.AddSFSEvent(queueEmptyEvent, Outer.Outer);
         Outer.Outer.ClearTimer('checkEviction', Self);
+        if (queueEmpty_delegate != None)
+        {
+            queueEmpty_delegate();
+        }
     }
+}
+private final function emptyDelegate()
+{
 }
 
 //class default properties can be edited in the Properties tab for the class's Default__ object.

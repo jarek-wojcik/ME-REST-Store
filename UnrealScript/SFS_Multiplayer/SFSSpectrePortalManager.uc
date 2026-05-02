@@ -10,6 +10,8 @@ var SFSConsumableManager ConsumableManager;
 var SFSCustomActionsManager CustomActionsManager;
 var SFSMissionParamsManager MissionParamsManager;
 var SFSCharacterModelStruct ActiveCharacter;
+var bool bPausedWaveTimer;
+var bool bPausedFirstWave;
 
 public event simulated function HandlePostAdd()
 {
@@ -35,6 +37,23 @@ function OnCharacterRetrieved(SFSCharacterModelStruct Character, bool bSuccess)
     {
         logCharacter(Character);
         ActiveCharacter = Character;
+        if (MissionParamsManager != None && MissionParamsManager.WaveCoordinator != None)
+        {
+            if (MissionParamsManager.WaveCoordinator.IsTimerActive('StartNewWave'))
+            {
+                MissionParamsManager.WaveCoordinator.ClearTimer('StartNewWave');
+                bPausedFirstWave = TRUE;
+                bPausedWaveTimer = TRUE;
+                log(Self.Name, "Paused StartNewWave timer until character load completes", Outer);
+            }
+            else if (MissionParamsManager.WaveCoordinator.IsTimerActive('AdvanceToNextWave'))
+            {
+                MissionParamsManager.WaveCoordinator.ClearTimer('AdvanceToNextWave');
+                bPausedFirstWave = FALSE;
+                bPausedWaveTimer = TRUE;
+                log(Self.Name, "Paused AdvanceToNextWave timer until character load completes", Outer);
+            }
+        }
         //Appearance Manager generates the first event in the chain.
         appearanceManager.loadAppearance(Character, Outer);
     }
@@ -66,6 +85,20 @@ function HandleEvent(SFSEvent E)
             break;
         case Class'SFSGenericEventConstants'.default.CustomActionsMigrated_Event:
             log(Self.Name, "Custom Actions Migrated - Full Character Loaded", Outer);
+            if (bPausedWaveTimer && MissionParamsManager != None && MissionParamsManager.WaveCoordinator != None)
+            {
+                if (bPausedFirstWave)
+                {
+                    MissionParamsManager.WaveCoordinator.SetTimer(0.0100000007, FALSE, 'StartNewWave', );
+                    log(Self.Name, "Resumed StartNewWave timer", Outer);
+                }
+                else
+                {
+                    MissionParamsManager.WaveCoordinator.SetTimer(0.0100000007, FALSE, 'AdvanceToNextWave', );
+                    log(Self.Name, "Resumed AdvanceToNextWave timer", Outer);
+                }
+                bPausedWaveTimer = FALSE;
+            }
             ActiveCharLoadedEvent = new (Outer) Class'SFSEvent';
             ActiveCharLoadedEvent.sValue = Class'SFSGenericEventConstants'.default.ActiveCharacterLoaded_Event;
             AddSFSEvent(ActiveCharLoadedEvent, Outer);

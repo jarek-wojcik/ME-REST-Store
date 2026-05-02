@@ -9,6 +9,9 @@ var SkeletalMeshSocket FlamerSocket;
 var SkeletalMeshSocket FlamerOmniToolSocket;
 var SkeletalMeshSocket SnapFreezeSocketRight;
 var SkeletalMeshSocket SnapFreezeSocketLeft;
+var SFSCharacterModelStruct PendingCharacter;
+var SFXPawn PendingPawn;
+var int CurrentLoadIndex;
 
 public event simulated function HandlePostAdd()
 {
@@ -37,28 +40,76 @@ public function LoadPowers(SFSCharacterModelStruct Character, SFXPawn Pawn)
         log(Self.Name, "LoadPowers: asyncLoader is None", Outer);
         return;
     }
-    log(Self.Name, "LoadPowers: " $ Character.PowerCount $ " regular power(s)", Outer);
+    log(Self.Name, "LoadPowers: " $ Character.PowerCount $ " regular power(s) [serial]", Outer);
+    // Store for serial dispatch.
+    PendingCharacter = Character;
+    PendingPawn = Pawn;
+    CurrentLoadIndex = 0;
     RemoveExistingPowers(SFXPawn_PlayerMP(Pawn));
-    //Saturate the queue
+    // Saturate the queue upfront so PowersLoaded_Event fires correctly
+    // once the last pop occurs in the callbacks.
     for (i = 0; i < Character.PowerCount; i++)
     {
         powerLoad_queue.addItem(Character.Powers[i].PowerID);
     }
-    //Need to update this in the future to also handle henchmen.
-    for (i = 0; i < Character.PowerCount; i++)
-    {
-        if (Character.Powers[i].PowerID == "")
-        {
-            continue;
-        }
-        asyncLoader.LoadPowerClassBlocking(Character.Powers[i].PowerID, Character.Powers[i], i, FALSE, OnPowerLoaded);
-        log(Self.Name, "Queued power: " $ Character.Powers[i].PowerID $ " at slot " $ i, Outer);
-    }
     if (Character.bHasBorrowedPower && Character.BorrowedPower.PowerID != "")
     {
         powerLoad_queue.addItem(Character.BorrowedPower.PowerID);
-        asyncLoader.LoadPowerClassBlocking(Character.BorrowedPower.PowerID, Character.BorrowedPower, 3, TRUE, OnBorrowedPowerLoaded);
-        log(Self.Name, "Queued borrowed power: " $ Character.BorrowedPower.PowerID, Outer);
+    }
+    // Dispatch only the first load; each callback triggers the next.
+    // This prevents simultaneous seek-free package loads that cause
+    // Wwise bank-preparation stalls, which drop weapon and enemy sounds.
+    DispatchNextSerialLoad();
+}
+private final function DispatchNextSerialLoad()
+{
+    // Advance past any empty-PowerID slots.
+    for (; CurrentLoadIndex < PendingCharacter.PowerCount && PendingCharacter.Powers[CurrentLoadIndex].PowerID == ""; CurrentLoadIndex++)
+    {
+    }
+    if (CurrentLoadIndex < PendingCharacter.PowerCount)
+    {
+        log(Self.Name, "DispatchNextSerialLoad: power[" $ CurrentLoadIndex $ "] = " $ PendingCharacter.Powers[CurrentLoadIndex].PowerID, Outer);
+        asyncLoader.LoadPowerClassBlocking(PendingCharacter.Powers[CurrentLoadIndex].PowerID, PendingCharacter.Powers[CurrentLoadIndex], CurrentLoadIndex, FALSE, OnPowerLoadedSerial);
+    }
+    else if (PendingCharacter.bHasBorrowedPower && PendingCharacter.BorrowedPower.PowerID != "")
+    {
+        log(Self.Name, "DispatchNextSerialLoad: borrowed power = " $ PendingCharacter.BorrowedPower.PowerID, Outer);
+        asyncLoader.LoadPowerClassBlocking(PendingCharacter.BorrowedPower.PowerID, PendingCharacter.BorrowedPower, 3, TRUE, OnBorrowedPowerLoadedSerial);
+    }
+    else
+    {
+        log(Self.Name, "DispatchNextSerialLoad: all powers dispatched", Outer);
+        OnAllPowersLoaded();
+    }
+}
+function OnPowerLoadedSerial(SFSGenericAsyncLoad load, SFXPawn Owner)
+{
+    OnPowerLoaded(load, Owner);
+    CurrentLoadIndex++;
+    DispatchNextSerialLoad();
+}
+function OnBorrowedPowerLoadedSerial(SFSGenericAsyncLoad load, SFXPawn Owner)
+{
+    OnBorrowedPowerLoaded(load, Owner);
+    OnAllPowersLoaded();
+}
+private final function OnAllPowersLoaded()
+{
+    log(Self.Name, "OnAllPowersLoaded: scheduling audio recovery", Outer);
+    Outer.SetTimer(0.75, FALSE, 'RecoverPawnAudio', Self);
+}
+public function RecoverPawnAudio()
+{
+    local SFXPawn P;
+    
+    log(Self.Name, "RecoverPawnAudio: restarting ambient sounds on living pawns", Outer);
+    foreach Outer.AllActors(Class'SFXPawn', P, )
+    {
+        if (P != Outer && !P.IsDead())
+        {
+            P.PlayAmbientSound();
+        }
     }
 }
 function RemoveExistingPowers(SFXPawn_PlayerMP Pawn)
