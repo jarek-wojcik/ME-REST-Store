@@ -304,7 +304,7 @@ func powerViews(slots []model.PowerSlot, powerBaseURL string) []PowerSlotView {
 	return views
 }
 
-// listSpectres returns all standalone spectres (TeamID == "") in insertion order.
+// listSpectres returns all standalone spectres (TeamID == "") sorted newest first.
 func listSpectres(db *bolt.DB) ([]model.Spectre, error) {
 	var spectres []model.Spectre
 	err := db.View(func(tx *bolt.Tx) error {
@@ -322,6 +322,9 @@ func listSpectres(db *bolt.DB) ([]model.Spectre, error) {
 			spectres = append(spectres, s)
 			return nil
 		})
+	})
+	sort.Slice(spectres, func(i, j int) bool {
+		return spectres[i].SortOrder > spectres[j].SortOrder
 	})
 	return spectres, err
 }
@@ -381,8 +384,9 @@ func getSpectre(db *bolt.DB, spectreID string) (model.Spectre, error) {
 func createSpectre(db *bolt.DB, name string) (model.Spectre, error) {
 	//const defaultChar = "AdeptHumanMale"
 	s := model.Spectre{
-		ID:   newID(),
-		Name: name,
+		ID:        newID(),
+		Name:      name,
+		SortOrder: time.Now().UnixNano(),
 		//CharacterID:      defaultChar,
 		PreferredSpecies: "Human",
 		Powers:           []model.PowerSlot{{}, {}, {}, {}, {}},

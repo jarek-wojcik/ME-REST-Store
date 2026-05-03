@@ -7,23 +7,78 @@
      hx-target="#bot-panel"
      hx-swap="innerHTML">
 
-    <!-- ── Set Active toggle ── -->
-    {{if .TeamID}}
-    <div class="flex justify-start">
-        <button class="text-[10px] font-semibold tracking-wide uppercase
-                       border rounded px-3 py-1.5 transition-all duration-150 cursor-pointer focus:outline-none
-                       {{if .TeamActive}}bg-[#0a1a0a] text-green-400 border-green-700 hover:bg-[#0d1b0d] hover:text-green-300{{else}}bg-[#0a0e1a] text-gray-400 border-[#1e3a5f] hover:border-[#00aaff] hover:text-green-400{{end}}"
-                hx-post="/api/teams/{{.TeamID}}/active/toggle"
-                hx-target="#bot-panel"
-                hx-swap="innerHTML"
-                title="{{if .TeamActive}}Mark team as inactive{{else}}Set team as active{{end}}">
-            {{if .TeamActive}}&#10003; Active{{else}}Set Active{{end}}
-        </button>
-    </div>
-    {{end}}
-
     <!-- ── Main content: portrait column + inline summary ── -->
-    <div class="flex flex-row items-start gap-4">
+    <div class="flex flex-col gap-2 w-fit">
+
+        <!-- Team header row: spans portrait + overview width -->
+        {{if .TeamID}}
+        <div class="flex items-center gap-3 border-t border-b border-[#1a2d4a] py-2"
+             x-data="{ renaming: false }">
+
+            <!-- Name: display mode -->
+            <div x-show="!renaming" class="flex items-center gap-2 min-w-0 flex-1">
+                <div class="w-1 h-4 rounded-sm bg-[#00aaff] flex-shrink-0"></div>
+                <span class="text-sm font-bold tracking-[0.15em] uppercase text-white truncate">{{.TeamName}}</span>
+            </div>
+
+            <!-- Name: edit mode -->
+            <form x-show="renaming"
+                  hx-post="/api/teams/{{.TeamID}}/rename"
+                  hx-target="#bot-panel"
+                  hx-swap="innerHTML"
+                  @submit="renaming=false"
+                  class="flex items-center gap-1.5 flex-1 min-w-0">
+                <input type="text" name="name" value="{{.TeamName}}"
+                       x-ref="teamNameInput" maxlength="40"
+                       class="flex-1 min-w-0 bg-[#0a0e1a] border border-[#00aaff]/50 rounded
+                              px-2 py-0.5 text-sm text-gray-200 focus:outline-none
+                              focus:border-[#00aaff] transition-colors"/>
+                <button type="submit"
+                        class="text-[10px] font-semibold text-[#00aaff] hover:text-white
+                               cursor-pointer focus:outline-none transition-colors">Save</button>
+                <button type="button" @click="renaming=false"
+                        class="text-[10px] text-gray-600 hover:text-gray-300
+                               cursor-pointer focus:outline-none transition-colors">Cancel</button>
+            </form>
+
+            <!-- Right-side action buttons -->
+            <div class="flex items-center gap-2 flex-shrink-0">
+                <!-- Rename -->
+                <button x-show="!renaming"
+                        @click="renaming=true; $nextTick(() => $refs.teamNameInput.select())"
+                        class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase
+                               rounded border border-[#1a2d4a] text-gray-500
+                               hover:border-[#00aaff]/50 hover:text-[#00aaff]
+                               transition-all cursor-pointer focus:outline-none">Rename</button>
+
+                <!-- Active toggle -->
+                <button class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase
+                               rounded border transition-all cursor-pointer focus:outline-none
+                               {{if .TeamActive}}bg-green-950/60 border-green-700/60 text-green-400{{else}}border-[#1a2d4a] text-gray-500 hover:border-green-700/50 hover:text-green-400{{end}}"
+                        hx-post="/api/teams/{{.TeamID}}/active/toggle"
+                        hx-target="#bot-panel"
+                        hx-swap="innerHTML"
+                        title="{{if .TeamActive}}Mark team as inactive{{else}}Set team as active{{end}}">
+                    {{if .TeamActive}}&#10003; Active{{else}}Set Active{{end}}
+                </button>
+
+                <!-- Dismiss team -->
+                <button class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase
+                               rounded border border-red-900/50 text-red-500
+                               hover:bg-red-950/40 hover:border-red-700/60 hover:text-red-300
+                               transition-all cursor-pointer focus:outline-none"
+                        hx-delete="/api/teams/{{.TeamID}}"
+                        hx-target="#teams-panel"
+                        hx-swap="outerHTML"
+                        hx-confirm="Delete team '{{.TeamName}}'? All members will be unassigned.">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+        {{end}}
+
+        <!-- Columns: portrait stack + overview -->
+        <div class="flex flex-row items-start gap-4">
 
         <!-- Left: vertical portrait stack (fixed width) -->
         <div class="flex flex-col gap-2 flex-shrink-0" style="width:128px;">
@@ -115,7 +170,8 @@
             {{end}}
         </div>
 
-    </div><!-- /main content row -->
+        </div><!-- /columns row -->
+    </div><!-- /main content -->
 
 </div>
 {{end}}

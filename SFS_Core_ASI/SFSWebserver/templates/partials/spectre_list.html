@@ -5,27 +5,22 @@
             <span class="text-xs text-gray-600">{{len .Spectres}}</span>
         </div>
 
-        <!-- Add spectre form -->
-        <form hx-post="/api/spectres"
-              hx-target="#spectres-panel"
-              hx-swap="outerHTML"
-              hx-on::after-request="this.reset()"
-              class="flex flex-col gap-1.5">
-            <input type="text"
-                   name="name"
-                   required
-                   maxlength="40"
-                   placeholder="Operative name"
-                   autocomplete="off"
-                   class="w-full bg-[#0a0e1a] border border-[#1e3a5f] rounded
-                          px-2 py-1 text-xs text-gray-200 placeholder-gray-600
-                          focus:outline-none focus:border-[#00aaff] transition-colors"/>
-            <button type="submit"
-                    class="w-full px-2 py-1 bg-[#0d47a1] hover:bg-[#00aaff] text-white
-                           text-xs font-semibold tracking-wider rounded transition-colors">
-                + Add
-            </button>
-        </form>
+        <!-- Filter + Add row -->
+        <div x-data="{ filter: '', selectedId: '{{.SelectedID}}' }" class="flex flex-col gap-1.5 flex-1 min-h-0">
+            <div class="flex gap-1.5">
+                <input type="text"
+                       x-model="filter"
+                       placeholder="Filter..."
+                       autocomplete="off"
+                       class="flex-1 min-w-0 bg-[#0a0e1a] border border-[#1e3a5f] rounded
+                              px-2 py-1 text-xs text-gray-200 placeholder-gray-600
+                              focus:outline-none focus:border-[#00aaff] transition-colors"/>
+                <button hx-post="/api/spectres"
+                        hx-target="#spectres-panel"
+                        hx-swap="outerHTML"
+                        class="px-2 py-1 bg-[#0d47a1] hover:bg-[#00aaff] text-white
+                               text-xs font-semibold rounded transition-colors flex-shrink-0">+</button>
+            </div>
 
         <!-- Spectre rows -->
         <nav class="flex flex-col gap-0.5 overflow-y-auto flex-1">
@@ -34,6 +29,9 @@
                 <div class="group flex items-center gap-2 px-3 py-2 rounded cursor-pointer
                             border border-transparent hover:border-[#1e3a5f] hover:bg-[#111827]
                             transition-all select-none"
+                     data-name="{{.Spectre.Name}}"
+                     x-show="!filter || $el.dataset.name.toLowerCase().includes(filter.toLowerCase())"
+                     @click="selectedId = '{{.Spectre.ID}}'"
                      hx-get="/api/spectres/{{.Spectre.ID}}/card"
                      hx-target="#spectre-card-panel"
                      hx-swap="innerHTML">
@@ -45,7 +43,8 @@
                     </svg>
                     <!-- Name + class -->
                     <div class="flex-1 min-w-0">
-                        <div class="text-sm truncate {{if .Spectre.Active}}text-green-400{{else}}text-gray-300{{end}}">{{.Spectre.Name}}</div>
+                        <div class="text-sm truncate"
+                             :class="selectedId === '{{.Spectre.ID}}' ? 'text-yellow-400' : '{{if .Spectre.Active}}text-green-400{{else}}text-gray-300{{end}}'">{{.Spectre.Name}}</div>
                     </div>
                     <!-- Delete -->
                     <button class="opacity-0 group-hover:opacity-100 p-0.5 rounded flex-shrink-0
@@ -83,10 +82,11 @@
                 {{end}}
             {{else}}
                 <div class="text-[11px] text-gray-600 text-center py-4 select-none">
-                    No operatives yet
+                    No operatives yet. Click + above.
                 </div>
             {{end}}
         </nav>
+        </div><!-- /filter+list -->
 {{end}}
 
 {{define "spectre_sidebar_oob"}}
@@ -105,6 +105,9 @@
 
     <!-- Right: Single spectre card panel -->
     <div id="spectre-card-panel" class="flex-1 overflow-y-auto">
+        {{if .SelectedView}}
+        {{template "character_card_sheet" .SelectedView}}
+        {{else}}
         <div class="flex flex-col items-center justify-center h-full
                     text-gray-600 text-xs tracking-wide select-none gap-3">
             <svg class="w-10 h-10 text-[#1e3a5f]" fill="none" viewBox="0 0 24 24"
@@ -114,6 +117,7 @@
             </svg>
             <span>Select an operative from the list</span>
         </div>
+        {{end}}
     </div>
 
 </div>

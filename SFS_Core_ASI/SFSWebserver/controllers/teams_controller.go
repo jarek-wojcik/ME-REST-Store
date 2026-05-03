@@ -19,18 +19,41 @@ func NewTeamsController(db *bolt.DB, tmpl *template.Template) *TeamsController {
 }
 
 func (c *TeamsController) renderList(w http.ResponseWriter) {
+	c.renderListWithPanel(w, "")
+}
+
+func (c *TeamsController) renderListWithPanel(w http.ResponseWriter, selectedTeamID string) {
 	teams, err := listTeams(c.db)
 	if err != nil {
 		respondText(w, 500, "db error\n")
 		return
 	}
+	var botPanel map[string]any
+	if selectedTeamID != "" {
+		if team, err := getTeam(c.db, selectedTeamID); err == nil {
+			spectres, _ := listSpectresForTeam(c.db, selectedTeamID)
+			botPanel = map[string]any{
+				"TeamID":     selectedTeamID,
+				"TeamName":   team.Name,
+				"Slots":      buildTeamSlots(selectedTeamID, spectres, GetMaxSquadSize(c.db)),
+				"TeamActive": team.Active,
+			}
+		}
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	_ = c.tmpl.ExecuteTemplate(w, "team_list", map[string]any{"Teams": teams})
+	_ = c.tmpl.ExecuteTemplate(w, "team_list", map[string]any{
+		"Teams":          teams,
+		"BotPanel":       botPanel,
+		"SelectedTeamID": selectedTeamID,
+	})
 }
 
 func (c *TeamsController) renderSidebarOOB(w http.ResponseWriter) {
 	teams, _ := listTeams(c.db)
-	_ = c.tmpl.ExecuteTemplate(w, "team_sidebar_oob", map[string]any{"Teams": teams})
+	_ = c.tmpl.ExecuteTemplate(w, "team_sidebar_oob", map[string]any{
+		"Teams":          teams,
+		"SelectedTeamID": "",
+	})
 }
 
 // Register wires all team-related HTTP routes onto the default mux.
@@ -42,18 +65,18 @@ func (c *TeamsController) Register() {
 	})
 
 	// POST /api/teams
-	// Creates a new team. Form field: name. Returns the updated team list partial.
+	// Creates a new team with a default name. Returns the updated team list with the new team selected.
 	http.HandleFunc("POST /api/teams", func(w http.ResponseWriter, r *http.Request) {
 		name := strings.TrimSpace(r.FormValue("name"))
 		if name == "" {
-			respondText(w, 400, "missing name\n")
-			return
+			name = "New Team"
 		}
-		if _, err := createTeam(c.db, name); err != nil {
+		t, err := createTeam(c.db, name)
+		if err != nil {
 			respondText(w, 500, "create failed\n")
 			return
 		}
-		c.renderList(w)
+		c.renderListWithPanel(w, t.ID)
 	})
 
 	// DELETE /api/teams/{id}
@@ -81,6 +104,31 @@ func (c *TeamsController) Register() {
 			return
 		}
 		c.renderList(w)
+	})
+
+	// POST /api/teams/{id}/rename
+	// Renames a team. Form field: name. Returns the updated bot_panel.
+	http.HandleFunc("POST /api/teams/{id}/rename", func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+		name := strings.TrimSpace(r.FormValue("name"))
+		if name == "" {
+			respondText(w, 400, "missing name\n")
+			return
+		}
+		team, err := renameTeam(c.db, id, name)
+		if err != nil {
+			respondText(w, 500, "rename failed\n")
+			return
+		}
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		spectres, _ := listSpectresForTeam(c.db, id)
+		_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
+			"TeamID":     id,
+			"TeamName":   team.Name,
+			"Slots":      buildTeamSlots(id, spectres, GetMaxSquadSize(c.db)),
+			"TeamActive": team.Active,
+		})
+		c.renderSidebarOOB(w)
 	})
 
 	// POST /api/teams/{id}/active/toggle

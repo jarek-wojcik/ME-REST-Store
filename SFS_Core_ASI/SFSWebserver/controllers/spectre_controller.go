@@ -139,21 +139,79 @@ func (c *SpectreController) renderBotPanel(w http.ResponseWriter, teamID string)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
 		"TeamID":     teamID,
+		"TeamName":   team.Name,
 		"Slots":      buildTeamSlots(teamID, spectres, maxSize),
 		"TeamActive": team.Active,
 	})
 }
 
 func (c *SpectreController) renderList(w http.ResponseWriter) {
+	c.renderListWithCard(w, "")
+}
+
+func (c *SpectreController) renderListWithCard(w http.ResponseWriter, selectedID string) {
 	spectres, err := listSpectres(c.db)
 	if err != nil {
 		respondText(w, 500, "db error\n")
 		return
 	}
+	var selectedView *SpectreView
+	if selectedID != "" {
+		for _, s := range spectres {
+			if s.ID == selectedID {
+				v := c.buildCardSheetView(s)
+				selectedView = &v
+				break
+			}
+		}
+	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "spectre_list", map[string]any{
-		"Spectres": spectreViews(spectres),
+		"Spectres":     spectreViews(spectres),
+		"SelectedView": selectedView,
+		"SelectedID":   selectedID,
 	})
+}
+
+// buildCardSheetView constructs the SpectreView used by the character_card_sheet template.
+func (c *SpectreController) buildCardSheetView(s model.Spectre) SpectreView {
+	def := model.CharacterByID(s.CharacterID)
+	if def == nil {
+		def = &model.CharacterCatalog[0]
+	}
+	urls := spectreURLs(s.ID)
+	urls.HasBorrowedPower = s.BorrowedPower != nil
+	urls.IsActive = s.Active
+	if s.PreferredSpecies != "" {
+		urls.AppearanceSelectorURL += "&species=" + s.PreferredSpecies
+	}
+	appearanceDef := model.CharacterByID(s.AppearanceCharacterID)
+	voiceDef := model.CharacterByQualifiedPath(s.VoiceCharacterID)
+	heavyMeleeDef := model.CharacterByQualifiedPath(s.HeavyMeleeCharID)
+	lightMeleeDef := model.CharacterByQualifiedPath(s.LightMeleeCharID)
+	dodgeDef := model.CharacterByQualifiedPath(s.DodgeCharID)
+	return SpectreView{
+		Spectre:             s,
+		CharDef:             def,
+		AppearanceCharDef:   appearanceDef,
+		VoiceCharDef:        voiceDef,
+		HeavyMeleeCharDef:   heavyMeleeDef,
+		LightMeleeCharDef:   lightMeleeDef,
+		DodgeCharDef:        dodgeDef,
+		ShowHelmetToggle:    def.HasHelmet || (appearanceDef != nil && appearanceDef.HasHelmet),
+		ShowHeadgearToggle:  def.HasHeadgear || (appearanceDef != nil && appearanceDef.HasHeadgear),
+		WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
+		ArmorConsumableDef:  model.ConsumableByID(s.ArmorConsumableID),
+		WeaponConsumableDef: model.ConsumableByID(s.WeaponConsumableID),
+		AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
+		GearConsumableDef:   model.ConsumableByID(s.GearConsumableID),
+		PowerViews:          spectrePowerViews(s, urls),
+		SkillViews:          spectreSkillViews(s, s.ID),
+		XPProgressPct:       xpProgressPct(s.Level, s.XP),
+		XPDisplay:           formatXP(s.XP),
+		XPNextLevelDisplay:  formatXP(model.XPForLevel(s.Level + 1)),
+		CardURLs:            urls,
+	}
 }
 
 // Register wires all spectre-related HTTP routes onto the default mux.
@@ -165,18 +223,18 @@ func (c *SpectreController) Register() {
 	})
 
 	// POST /api/spectres
-	// Creates a new spectre. Form field: name. Returns updated spectre list.
+	// Creates a new spectre with a default name. Returns updated spectre list with the new card selected.
 	http.HandleFunc("POST /api/spectres", func(w http.ResponseWriter, r *http.Request) {
-		name := r.FormValue("name")
+		name := strings.TrimSpace(r.FormValue("name"))
 		if name == "" {
-			respondText(w, 400, "missing name\n")
-			return
+			name = "New Operative"
 		}
-		if _, err := createSpectre(c.db, name); err != nil {
+		s, err := createSpectre(c.db, name)
+		if err != nil {
 			respondText(w, 500, "create failed\n")
 			return
 		}
-		c.renderList(w)
+		c.renderListWithCard(w, s.ID)
 	})
 
 	// POST /api/spectres/{id}/duplicate
@@ -503,7 +561,8 @@ func (c *SpectreController) Register() {
 		// OOB refresh both roster sidebar and team panel (if currently on team)
 		spectres, _ := listSpectres(c.db)
 		_ = c.tmpl.ExecuteTemplate(w, "spectre_sidebar_oob", map[string]any{
-			"Spectres": spectreViews(spectres),
+			"Spectres":   spectreViews(spectres),
+			"SelectedID": "",
 		})
 		if s.TeamID != "" {
 			team, err := getTeam(c.db, s.TeamID)
@@ -947,7 +1006,8 @@ func (c *SpectreController) Register() {
 		c.renderCard(w, s, false)
 		spectres, _ := listSpectres(c.db)
 		_ = c.tmpl.ExecuteTemplate(w, "spectre_sidebar_oob", map[string]any{
-			"Spectres": spectreViews(spectres),
+			"Spectres":   spectreViews(spectres),
+			"SelectedID": "",
 		})
 	})
 

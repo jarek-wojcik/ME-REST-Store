@@ -3,6 +3,8 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
+	"time"
 
 	"sfswebserver/model"
 
@@ -36,12 +38,15 @@ func listTeams(db *bolt.DB) ([]model.Team, error) {
 			return nil
 		})
 	})
+	sort.Slice(teams, func(i, j int) bool {
+		return teams[i].CreatedAt > teams[j].CreatedAt
+	})
 	return teams, err
 }
 
 // createTeam persists a new team and returns it.
 func createTeam(db *bolt.DB, name string) (model.Team, error) {
-	t := model.Team{ID: newID(), Name: name}
+	t := model.Team{ID: newID(), Name: name, CreatedAt: time.Now().UnixNano()}
 	data, err := json.Marshal(t)
 	if err != nil {
 		return model.Team{}, err
@@ -106,6 +111,28 @@ func toggleTeamActive(db *bolt.DB, id string) (model.Team, error) {
 				return err
 			}
 		}
+		data, err := json.Marshal(t)
+		if err != nil {
+			return err
+		}
+		return b.Put([]byte(id), data)
+	})
+	return t, err
+}
+
+// renameTeam updates the Name field of a team.
+func renameTeam(db *bolt.DB, id, name string) (model.Team, error) {
+	var t model.Team
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(teamsBucket))
+		v := b.Get([]byte(id))
+		if v == nil {
+			return fmt.Errorf("team not found")
+		}
+		if err := json.Unmarshal(v, &t); err != nil {
+			return err
+		}
+		t.Name = name
 		data, err := json.Marshal(t)
 		if err != nil {
 			return err
