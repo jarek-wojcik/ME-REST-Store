@@ -52,9 +52,25 @@ function HandleEvent(SFSEvent E)
 }
 public event simulated function ApplyMissionSettings()
 {
+    local SFXGRIMP GRI;
+    local string Faction;
+
     if (SettingsService != None && !Class'Engine'.static.GetCurrentWorldInfo().bIsLobbyLevel)
     {
-        SettingsService.RetrieveSettings(OnSettingsRetrieved);
+        GRI = SFXGRIMP(World.GRI);
+        if (GRI != None)
+        {
+            switch (GRI.EnemySetting)
+            {
+                case 1: Faction = "Cerberus"; break;
+                case 2: Faction = "Geth"; break;
+                case 3: Faction = "Reapers"; break;
+                case 4: Faction = "Collectors"; break;
+                default: Faction = ""; break;
+            }
+        }
+        log(Self.Name, "ApplyMissionSettings: faction=" $ Faction $ " (EnemySetting=" $ (GRI != None ? string(GRI.EnemySetting) : "?") $ ")", Outer);
+        SettingsService.RetrieveSettings(Faction, OnSettingsRetrieved);
     }
     else
     {
@@ -85,22 +101,62 @@ function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
     }
     // Add handlers for future flags here.
 }
+function LogHordeWaveState(string Label)
+{
+    local int WaveIdx;
+    local int DiffIdx;
+    local int EnemyIdx;
+    local int SquadIdx;
+    local int TypeIdx;
+    local SFXWave_Horde HordeWave;
+    local string EnemyLine;
+    local string SquadLine;
+
+    if (!bDebug || WaveCoordinator == None || WaveCoordinator.HordeManager == None)
+    {
+        return;
+    }
+    log(Self.Name, "=== HordeWaveState [" $ Label $ "] ===", Outer);
+    for (WaveIdx = 0; WaveIdx < WaveCoordinator.HordeManager.PotentialWaves.Length; WaveIdx++)
+    {
+        HordeWave = SFXWave_Horde(WaveCoordinator.HordeManager.PotentialWaves[WaveIdx]);
+        if (HordeWave == None)
+        {
+            continue;
+        }
+        log(Self.Name, "  Wave[" $ WaveIdx $ "] MaxEnemies=" $ HordeWave.MaxEnemies $ " MaxPerSpawn=" $ HordeWave.MaxEnemiesPerSpawnPoint, Outer);
+        for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
+        {
+            EnemyLine = "    Diff[" $ DiffIdx $ "]:";
+            for (EnemyIdx = 0; EnemyIdx < HordeWave.Enemies[DiffIdx].Enemies.Length; EnemyIdx++)
+            {
+                EnemyLine = EnemyLine $ " " $ HordeWave.Enemies[DiffIdx].Enemies[EnemyIdx].EnemyType;
+            }
+            log(Self.Name, EnemyLine, Outer);
+        }
+        for (SquadIdx = 0; SquadIdx < HordeWave.EnemySquadList.Length; SquadIdx++)
+        {
+            SquadLine = "    Squad[" $ SquadIdx $ "] cost=" $ HordeWave.EnemySquadList[SquadIdx].WaveCost $ " types:";
+            for (TypeIdx = 0; TypeIdx < HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Length; TypeIdx++)
+            {
+                SquadLine = SquadLine $ " " $ HordeWave.EnemySquadList[SquadIdx].EnemyTypes[TypeIdx];
+            }
+            log(Self.Name, SquadLine, Outer);
+        }
+    }
+    log(Self.Name, "=== End HordeWaveState [" $ Label $ "] ===", Outer);
+}
 function ApplyHordeWaveSettings()
 {
     local int WaveIdx;
     local int ArchIdx;
     local int ListIdx;
     local int DiffIdx;
-    local int EnemyIdx;
-    local int SquadIdx;
-    local int TypeIdx;
+    local int CopyIdx;
     local SFXWave_Horde HordeWave;
-    local bool bIsEnabled;
-    local bool bFound;
     local EnemyWaveInfo InjectedEnemy;
     local int RatioVal;
-    local int CopyIdx;
-    
+
     if (WaveCoordinator == None)
     {
         log(Self.Name, "WaveCoordinator not found yet - retrying in 1s", Outer);
@@ -113,6 +169,7 @@ function ApplyHordeWaveSettings()
         Outer.SetTimer(1.0, FALSE, 'ApplyHordeWaveSettings', Self);
         return;
     }
+    LogHordeWaveState("Before");
     for (WaveIdx = 0; WaveIdx < WaveCoordinator.HordeManager.PotentialWaves.Length; WaveIdx++)
     {
         HordeWave = SFXWave_Horde(WaveCoordinator.HordeManager.PotentialWaves[WaveIdx]);
@@ -120,7 +177,6 @@ function ApplyHordeWaveSettings()
         {
             continue;
         }
-        // --- Spawn limits ---
         if (PendingMaxEnemies > 0)
         {
             HordeWave.MaxEnemies = PendingMaxEnemies;
@@ -129,112 +185,45 @@ function ApplyHordeWaveSettings()
         {
             HordeWave.MaxEnemiesPerSpawnPoint = PendingMaxEnemiesPerSpawnPoint;
         }
-        // --- Enemy filter (enabled whitelist) ---
-        // If non-empty, only the listed types may spawn; everything else is removed.
-        // Enabled types not already in a wave's difficulty array are injected.
-        // When cross-faction is disabled, skip waves whose pool shares no overlap
-        // with the enabled list (i.e. off-faction waves are left untouched).
-        if (PendingEnabledEnemyArchetypes.Length > 0)
+        if (PendingEnabledEnemyArchetypes.Length == 0)
         {
-            if (!PendingCrossFactionEnemies)
-            {
-                bIsEnabled = FALSE;
-                for (ListIdx = 0; ListIdx < HordeWave.EnemyList.Length; ListIdx++)
-                {
-                    for (ArchIdx = 0; ArchIdx < PendingEnabledEnemyArchetypes.Length; ArchIdx++)
-                    {
-                        if (Class'SFSStringUtility'.static.GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == Class'SFSStringUtility'.static.GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
-                        {
-                            bIsEnabled = TRUE;
-                            break;
-                        }
-                    }
-                    if (bIsEnabled)
-                    {
-                        break;
-                    }
-                }
-                if (!bIsEnabled)
-                {
-                    // No enabled enemy belongs to this wave's faction pool - skip it.
-                    log(Self.Name, "Skipping off-faction wave " $ WaveIdx $ " (cross-faction disabled)", Outer);
-                    continue;
-                }
-            }
+            continue;
+        }
+        // Zero all enemy arrays.
+        for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
+        {
+            HordeWave.Enemies[DiffIdx].Enemies.Length = 0;
+        }
+        // Reconstruct from the enabled archetype list.
+        for (ArchIdx = 0; ArchIdx < PendingEnabledEnemyArchetypes.Length; ArchIdx++)
+        {
             for (ListIdx = 0; ListIdx < HordeWave.EnemyList.Length; ListIdx++)
             {
-                bIsEnabled = FALSE;
-                for (ArchIdx = 0; ArchIdx < PendingEnabledEnemyArchetypes.Length; ArchIdx++)
+                if (Class'SFSStringUtility'.static.GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) != Class'SFSStringUtility'.static.GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
                 {
-                    if (Class'SFSStringUtility'.static.GetLastDotSegment(HordeWave.EnemyList[ListIdx].EnemyArchetypeName) == Class'SFSStringUtility'.static.GetLastDotSegment(PendingEnabledEnemyArchetypes[ArchIdx]))
-                    {
-                        bIsEnabled = TRUE;
-                        break;
-                    }
-                }
-                if (!bIsEnabled)
-                {
-                    // Not in the enabled list - remove from all difficulty arrays.
-                    for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
-                    {
-                        for (EnemyIdx = HordeWave.Enemies[DiffIdx].Enemies.Length - 1; EnemyIdx >= 0; EnemyIdx--)
-                        {
-                            if (HordeWave.Enemies[DiffIdx].Enemies[EnemyIdx].EnemyType == HordeWave.EnemyList[ListIdx].EnemyType)
-                            {
-                                HordeWave.Enemies[DiffIdx].Enemies.Remove(EnemyIdx, 1);
-                            }
-                        }
-                    }
-                    // Remove from squad type lists; disable fully-empty squads.
-                    for (SquadIdx = 0; SquadIdx < HordeWave.EnemySquadList.Length; SquadIdx++)
-                    {
-                        for (TypeIdx = HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Length - 1; TypeIdx >= 0; TypeIdx--)
-                        {
-                            if (HordeWave.EnemySquadList[SquadIdx].EnemyTypes[TypeIdx] == HordeWave.EnemyList[ListIdx].EnemyType)
-                            {
-                                HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Remove(TypeIdx, 1);
-                            }
-                        }
-                        if (HordeWave.EnemySquadList[SquadIdx].EnemyTypes.Length == 0)
-                        {
-                            HordeWave.EnemySquadList[SquadIdx].WaveCost = 999999;
-                        }
-                    }
-                    log(Self.Name, "Removed type=" $ HordeWave.EnemyList[ListIdx].EnemyType $ " (not enabled) from wave " $ WaveIdx, Outer);
                     continue;
                 }
-                // Enabled: purge ALL existing copies then re-add RatioVal copies
-                // so the selection weight reflects the configured ratio.
                 RatioVal = PendingEnabledEnemyRatios[ArchIdx];
                 if (RatioVal < 1)
                 {
                     RatioVal = 1;
                 }
+                InjectedEnemy.EnemyType = HordeWave.EnemyList[ListIdx].EnemyType;
+                InjectedEnemy.MinCount = 0;
+                InjectedEnemy.MaxCount = 0;
+                InjectedEnemy.MaxPerWave = 0;
                 for (DiffIdx = 0; DiffIdx < HordeWave.Enemies.Length; DiffIdx++)
                 {
-                    // Remove all existing copies.
-                    for (EnemyIdx = HordeWave.Enemies[DiffIdx].Enemies.Length - 1; EnemyIdx >= 0; EnemyIdx--)
-                    {
-                        if (HordeWave.Enemies[DiffIdx].Enemies[EnemyIdx].EnemyType == HordeWave.EnemyList[ListIdx].EnemyType)
-                        {
-                            HordeWave.Enemies[DiffIdx].Enemies.Remove(EnemyIdx, 1);
-                        }
-                    }
-                    // Add RatioVal copies.
-                    InjectedEnemy.EnemyType = HordeWave.EnemyList[ListIdx].EnemyType;
-                    InjectedEnemy.MinCount = 0;
-                    InjectedEnemy.MaxCount = 0;
-                    InjectedEnemy.MaxPerWave = 0;
                     for (CopyIdx = 0; CopyIdx < RatioVal; CopyIdx++)
                     {
                         HordeWave.Enemies[DiffIdx].Enemies.AddItem(InjectedEnemy);
                     }
                 }
-                log(Self.Name, "Set type=" $ HordeWave.EnemyList[ListIdx].EnemyType $ " ratio=" $ RatioVal $ " in wave " $ WaveIdx, Outer);
+                log(Self.Name, "Added type=" $ HordeWave.EnemyList[ListIdx].EnemyType $ " ratio=" $ RatioVal $ " to wave " $ WaveIdx, Outer);
+                break;
             }
         }
     }
-    // --- Start wave ---
     // StartWave is 1-based (UI); GoToWave expects 0-based. Only act when > 1.
     if (PendingStartWave > 1)
     {
@@ -242,6 +231,7 @@ function ApplyHordeWaveSettings()
         log(Self.Name, "GoToWave(" $ PendingStartWave - 1 $ ") called for StartWave=" $ PendingStartWave, Outer);
     }
     log(Self.Name, "Horde wave settings applied.", Outer);
+    LogHordeWaveState("After");
 }
 function ApplyObjectiveWaveBypass()
 {

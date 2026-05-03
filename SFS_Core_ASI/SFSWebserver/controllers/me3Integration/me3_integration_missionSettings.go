@@ -3,6 +3,7 @@ package me3integration
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"sfswebserver/model"
 
@@ -62,11 +63,16 @@ func (c *Me3MissionSettingsController) Register() {
 	// GET /missionSettings
 	// Returns the current MissionSettings as JSON.
 	// Use ?simpleJson=true for a flat key:value plain-text response.
+	// Use ?faction=Reapers (or Cerberus, Geth, Collectors) to restrict enemy
+	// lists to that faction when crossFactionEnemies is false.
 	http.HandleFunc("GET /missionSettings", func(w http.ResponseWriter, r *http.Request) {
 		ms, err := c.loadMissionSettings()
 		if err != nil {
 			respondJSON(w, http.StatusInternalServerError, map[string]string{"error": "db error"})
 			return
+		}
+		if faction := r.URL.Query().Get("faction"); !ms.CrossFactionEnemies && faction != "" {
+			ms = filterByFaction(ms, faction)
 		}
 		if r.URL.Query().Get("simpleJson") == "true" {
 			respondSimpleJSON(w, http.StatusOK, ms)
@@ -94,4 +100,29 @@ func (c *Me3MissionSettingsController) Register() {
 		}
 		respondJSON(w, http.StatusOK, ms)
 	})
+}
+
+// filterByFaction returns a copy of ms with EnabledEnemies and EnemyRatios
+// restricted to entries whose archetype path contains the faction name.
+// e.g. faction="Reapers" matches "Char_Enemies.Archetypes.Reapers.Husk".
+func filterByFaction(ms model.MissionSettings, faction string) model.MissionSettings {
+	lower := strings.ToLower(faction)
+
+	var enabled []string
+	for _, e := range ms.EnabledEnemies {
+		if strings.Contains(strings.ToLower(e), lower) {
+			enabled = append(enabled, e)
+		}
+	}
+	ms.EnabledEnemies = enabled
+
+	ratios := make(map[string]int)
+	for k, v := range ms.EnemyRatios {
+		if strings.Contains(strings.ToLower(k), lower) {
+			ratios[k] = v
+		}
+	}
+	ms.EnemyRatios = ratios
+
+	return ms
 }

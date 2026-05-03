@@ -3,12 +3,13 @@ Class SFSMissionSettingsService extends SFSManager within SFXPawn;
 var string SFS_REST_URL;
 var string MISSION_SETTINGS_MAPPING;
 var string SIMPLE_JSON_PARAM;
+var string FACTION_PARAM;
 var delegate<OnSettingsRetrieved> PendingCallback;
 
 function OnSettingsRetrieved(SFSMissionSettingsStruct Settings, bool bSuccess)
 {
 }
-public function RetrieveSettings(delegate<OnSettingsRetrieved> Callback)
+public function RetrieveSettings(string Faction, delegate<OnSettingsRetrieved> Callback)
 {
     local SFXOnlineJobHTTPRequest Job;
     
@@ -18,6 +19,10 @@ public function RetrieveSettings(delegate<OnSettingsRetrieved> Callback)
     Job.mRequest.SetBaseURL(SFS_REST_URL);
     Job.mRequest.AddSubURL(MISSION_SETTINGS_MAPPING);
     Job.mRequest.AddParameter(SIMPLE_JSON_PARAM, "true");
+    if (Faction != "")
+    {
+        Job.mRequest.AddParameter(FACTION_PARAM, Faction);
+    }
     Job.__OnJobComplete__Delegate = OnHTTPResponse;
     Class'SFXOnlineSubsystem'.static.GetOnlineSubsystem().GetComponentJobQueue().AddJob(Job);
 }
@@ -41,4 +46,5 @@ defaultproperties
     SFS_REST_URL = "http://localhost:6060/"
     MISSION_SETTINGS_MAPPING = "missionSettings"
     SIMPLE_JSON_PARAM = "simpleJson"
+    FACTION_PARAM = "faction"
 }
