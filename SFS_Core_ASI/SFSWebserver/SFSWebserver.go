@@ -205,8 +205,12 @@ func main() {
 	// Serves the main UI shell with tab navigation.
 	http.HandleFunc("/spectreportal/", func(w http.ResponseWriter, r *http.Request) {
 		scale, _ := controllers.GetSetting(db, "scale", "1")
+		maxSquadSize := controllers.GetMaxSquadSize(db)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		if err := tmpl.ExecuteTemplate(w, "spectreportal", map[string]any{"Scale": scale}); err != nil {
+		if err := tmpl.ExecuteTemplate(w, "spectreportal", map[string]any{
+			"Scale":        scale,
+			"MaxSquadSize": maxSquadSize,
+		}); err != nil {
 			respondText(w, 500, "template error\n")
 		}
 	})

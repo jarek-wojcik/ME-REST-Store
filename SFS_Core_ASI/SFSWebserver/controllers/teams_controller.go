@@ -97,7 +97,7 @@ func (c *TeamsController) Register() {
 		spectres, _ := listSpectresForTeam(c.db, id)
 		_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
 			"TeamID":     id,
-			"Bots":       teamSpectreViews(spectres),
+			"Slots":      buildTeamSlots(id, spectres, GetMaxSquadSize(c.db)),
 			"TeamActive": team.Active,
 		})
 		// OOB: refresh the sidebar so team name colours update.

@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"sfswebserver/model"
 
@@ -134,10 +135,11 @@ func (c *SpectreController) renderBotPanel(w http.ResponseWriter, teamID string)
 		return
 	}
 	spectres, _ := listSpectresForTeam(c.db, teamID)
+	maxSize := GetMaxSquadSize(c.db)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
 		"TeamID":     teamID,
-		"Bots":       teamSpectreViews(spectres),
+		"Slots":      buildTeamSlots(teamID, spectres, maxSize),
 		"TeamActive": team.Active,
 	})
 }
@@ -220,7 +222,7 @@ func (c *SpectreController) Register() {
 	http.HandleFunc("POST /api/teams/{id}/spectres", func(w http.ResponseWriter, r *http.Request) {
 		teamID := r.PathValue("id")
 		const defaultChar = "AdeptHumanMale"
-		if _, err := createTeamSpectre(c.db, teamID, defaultChar); err != nil {
+		if _, err := createTeamSpectre(c.db, teamID, defaultChar, GetMaxSquadSize(c.db)); err != nil {
 			respondText(w, 500, "create failed\n")
 			return
 		}
@@ -297,7 +299,11 @@ func (c *SpectreController) Register() {
 			respondText(w, 400, "unknown character\n")
 			return
 		}
-		if _, err := createTeamSpectre(c.db, teamID, charID); err != nil {
+		if _, err := createTeamSpectre(c.db, teamID, charID, GetMaxSquadSize(c.db)); err != nil {
+			if strings.Contains(err.Error(), "team is full") {
+				respondText(w, 409, err.Error()+"\n")
+				return
+			}
 			respondText(w, 500, "create failed\n")
 			return
 		}
@@ -310,7 +316,11 @@ func (c *SpectreController) Register() {
 	http.HandleFunc("POST /api/teams/{id}/spectres/pick/{spectreId}", func(w http.ResponseWriter, r *http.Request) {
 		teamID := r.PathValue("id")
 		spectreID := r.PathValue("spectreId")
-		if _, err := assignSpectreToTeam(c.db, spectreID, teamID); err != nil {
+		if _, err := assignSpectreToTeam(c.db, spectreID, teamID, GetMaxSquadSize(c.db)); err != nil {
+			if strings.Contains(err.Error(), "team is full") {
+				respondText(w, 409, err.Error()+"\n")
+				return
+			}
 			respondText(w, 500, "assign failed\n")
 			return
 		}

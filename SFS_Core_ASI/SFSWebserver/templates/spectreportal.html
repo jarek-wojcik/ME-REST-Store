@@ -178,6 +178,7 @@
           activeTab: 'spectre',
           scale: {{ .Scale }},
           dragScale: {{ .Scale }},
+          maxSquadSize: {{ .MaxSquadSize }},
           modalOpen: false,
           notifications: [],
           notify(message, type = 'info') {
@@ -326,6 +327,32 @@
                         >
                             Reset to default
                         </button>
+                    </form>
+
+                    <div class="border-t border-me-border pt-4"></div>
+
+                    <!-- Squad Size row -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-gray-200">Max Squad Size</div>
+                            <div class="text-xs text-gray-500 mt-0.5">Maximum operatives per strike team (1–10)</div>
+                        </div>
+                        <span class="text-sm font-mono text-me-blue" x-text="maxSquadSize"></span>
+                    </div>
+
+                    <form hx-post="/api/settings/maxSquadSize" hx-swap="none">
+                        <input type="hidden" name="maxSquadSize" :value="maxSquadSize">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-500 w-4 shrink-0">1</span>
+                            <input
+                                type="range"
+                                min="1" max="10" step="1"
+                                x-model.number="maxSquadSize"
+                                @mouseup="$nextTick(() => $el.closest('form').requestSubmit())"
+                                class="flex-1 accent-[#00aaff] cursor-pointer"
+                            />
+                            <span class="text-xs text-gray-500 w-4 shrink-0 text-right">10</span>
+                        </div>
                     </form>
 
                 </div>

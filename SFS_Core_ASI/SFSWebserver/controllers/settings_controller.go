@@ -35,4 +35,22 @@ func (c *SettingsController) Register() {
 		}
 		w.WriteHeader(http.StatusNoContent)
 	})
+
+	// POST /api/settings/maxSquadSize
+	// Persists the max operatives per strike team. Expects form field "maxSquadSize" (int 1–10).
+	// Returns 204 No Content.
+	http.HandleFunc("POST /api/settings/maxSquadSize", func(w http.ResponseWriter, r *http.Request) {
+		raw := strings.TrimSpace(r.FormValue("maxSquadSize"))
+		n, err := strconv.Atoi(raw)
+		if err != nil || n < 1 || n > 10 {
+			respondText(w, 400, "invalid value: must be 1–10\n")
+			return
+		}
+		if err := SetSetting(c.db, "maxSquadSize", strconv.Itoa(n)); err != nil {
+			respondText(w, 500, "db error\n")
+			return
+		}
+		w.Header().Set("HX-Trigger", "squadSizeChanged")
+		w.WriteHeader(http.StatusNoContent)
+	})
 }

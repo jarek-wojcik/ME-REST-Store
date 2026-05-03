@@ -1,0 +1,489 @@
+{{define "team_spectre_summary"}}
+<style>
+  .tss-skill-segment { width: 20px; height: 20px; }
+  .tss-skill-segment-filled { background-color: rgb(76,225,125); border-color: rgba(1,72,24,0.6); box-shadow: 0 0 4px rgba(76,225,125,0.45); }
+  .tss-skill-segment-empty { background-color: #060a12; border-color: rgba(26,45,74,0.8); }
+  .tss-skill-capstone { width: 20px; height: 20px; }
+  .tss-skill-segment-column { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 72px; }
+</style>
+
+<div class="w-full rounded-xl overflow-hidden border border-[#1a2d4a]
+            bg-[#060910] shadow-[0_0_24px_rgba(0,170,255,0.06)]">
+
+    <!-- ══════════════════════════════════════════════════════════════
+         HEADER — operative name + level (read-only)
+         ══════════════════════════════════════════════════════════════ -->
+    <div class="relative px-5 pt-3 pb-2 bg-[#0a0e1a] border-b-2 border-[#1a2d4a]">
+        <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r
+                    from-transparent via-[#00aaff]/30 to-transparent pointer-events-none"></div>
+        <div class="flex items-center gap-3">
+            <div class="w-1 h-5 rounded-sm bg-[#00aaff] flex-shrink-0"></div>
+            <span class="text-sm font-bold tracking-[0.15em] uppercase text-white truncate">{{.Name}}</span>
+            <span class="text-[11px] font-semibold text-[#00aaff] flex-shrink-0">Level {{.Level}}</span>
+            <span class="text-[10px] text-gray-500 flex-shrink-0">{{.XPDisplay}}</span>
+            <div class="w-24 flex-shrink-0 h-[5px] bg-[#0d1525] border border-[#1a2d4a] rounded-sm overflow-hidden">
+                <div class="h-full bg-[#00aaff] rounded-sm"
+                     style="width: {{.XPProgressPct}}%; box-shadow: 0 0 6px rgba(0,170,255,0.5);"></div>
+            </div>
+            <span class="text-[10px] text-gray-500 flex-shrink-0">{{.XPNextLevelDisplay}}</span>
+            <span class="ml-auto text-[9px] tracking-[0.12em] uppercase text-gray-600
+                         border border-[#1a2d4a] px-2 py-0.5 rounded select-none">Overview</span>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         FOUR-SECTION BODY
+         ══════════════════════════════════════════════════════════════ -->
+    <div class="grid divide-x divide-[#1a2d4a]"
+         style="grid-template-columns: 240px 224px minmax(0,270px) minmax(0,230px); max-width: 1490px;">
+
+        <!-- ╔══════════════════════════════╗
+             ║  SECTION A — CHARACTER       ║
+             ╚══════════════════════════════╝ -->
+        <div class="flex flex-col">
+
+            <!-- Section header -->
+            <div class="px-4 py-1.5 bg-[#0a0f1c] border-b border-[#1a2d4a] flex items-center gap-2">
+                <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/50 select-none">◈ Character</span>
+                <div class="flex-1 h-px bg-[#1a2d4a]"></div>
+            </div>
+
+            <!-- Portrait -->
+            <div class="relative bg-gradient-to-b from-[#0d1829] to-[#060a12]
+                        border-b border-[#1a2d4a] overflow-hidden"
+                 style="height:280px;">
+                <img src="{{if .AppearanceCharDef}}{{.AppearanceCharDef.PictureURL}}{{else}}{{.CharDef.PictureURL}}{{end}}"
+                     alt="{{.CharDef.Name}}"
+                     class="w-full h-full object-cover object-top scale-105"/>
+            </div>
+
+            <!-- Stat block -->
+            <div class="flex flex-col px-4 py-2 gap-0">
+
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Class</span>
+                    <span class="text-[11px] text-gray-400">{{.CharDef.Name}}</span>
+                </div>
+
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Spec</span>
+                    <span class="text-[11px] text-gray-400">{{if eq .CharDef.SubClass "Squadmate"}}Squadmate{{else}}{{.CharDef.SubClass}}{{end}}</span>
+                </div>
+
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Shield</span>
+                    <span class="text-[11px] text-gray-400">{{if eq .ShieldType "Barrier"}}Barrier{{else}}Shield{{end}}</span>
+                </div>
+
+                {{if .DodgeCharDef}}
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Dodge</span>
+                    <span class="text-[11px] text-gray-400 truncate max-w-[140px]">{{.DodgeCharDef.Name}}</span>
+                </div>
+                {{end}}
+
+                {{if .LightMeleeCharDef}}
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Light Melee</span>
+                    <span class="text-[11px] text-gray-400 truncate max-w-[140px]">{{.LightMeleeCharDef.Name}}</span>
+                </div>
+                {{end}}
+
+                {{if .HeavyMeleeCharDef}}
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Heavy Melee</span>
+                    <span class="text-[11px] text-gray-400 truncate max-w-[140px]">{{.HeavyMeleeCharDef.Name}}</span>
+                </div>
+                {{end}}
+
+                {{if .VoiceCharDef}}
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Voice</span>
+                    <span class="text-[11px] text-gray-400 truncate max-w-[140px]">{{.VoiceCharDef.Name}}</span>
+                </div>
+                {{end}}
+
+                {{if .ShowHelmetToggle}}
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Helmet</span>
+                    <span class="text-[11px] {{if .UseHelmet}}text-green-400{{else}}text-gray-600{{end}}">{{if .UseHelmet}}On{{else}}Off{{end}}</span>
+                </div>
+                {{end}}
+
+                {{if .ShowHeadgearToggle}}
+                <div class="flex items-center justify-between py-1.5 border-b border-[#1a2d4a]/60">
+                    <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/50 select-none">Headgear</span>
+                    <span class="text-[11px] {{if .UseHeadgear}}text-green-400{{else}}text-gray-600{{end}}">{{if .UseHeadgear}}On{{else}}Off{{end}}</span>
+                </div>
+                {{end}}
+
+            </div>
+        </div>
+
+        <!-- ╔══════════════════════════════╗
+             ║  SECTION B — SPECTRE SKILLS  ║
+             ╚══════════════════════════════╝ -->
+        <div class="flex flex-col">
+
+            <div class="px-4 py-1.5 bg-[#0a0f1c] border-b border-[#1a2d4a] flex items-center gap-2">
+                <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/50 select-none">◈ Skills</span>
+                <div class="flex-1 h-px bg-[#1a2d4a]"></div>
+                <span class="text-[8px] font-bold tracking-[0.15em] select-none text-gray-600">Pts:&nbsp;{{.SkillPoints}}</span>
+            </div>
+
+            <!-- Skill rows — read-only (div segments, no hx-post) -->
+            <div class="flex flex-col divide-y divide-[#1a2d4a]/30 overflow-y-auto flex-1">
+                {{range .SkillViews}}
+                <div class="flex items-center gap-1.5 px-2 py-1.5">
+                    <div class="flex-1 flex flex-col">
+                        <span class="text-[11px] font-semibold tracking-wide text-gray-300 leading-none truncate"
+                              title="{{.Def.Name}}">{{.Def.Name}}</span>
+
+                        <!-- Read-only segments -->
+                        <div class="flex gap-px flex-shrink-0 mt-1">
+                            {{range .Segments}}
+                            <div class="tss-skill-segment-column">
+                                {{if .CapstoneChoices}}
+                                {{with index .CapstoneChoices 0}}
+                                <div class="tss-skill-capstone rounded-[2px] border
+                                            {{if .Selected}}tss-skill-segment-filled{{else}}tss-skill-segment-empty opacity-40{{end}}"
+                                     data-tooltip-title="{{.ChoiceLabel}}"
+                                     data-tooltip-desc="{{.Description}}"
+                                     @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                     @mouseleave="$store.tooltip.hide()"></div>
+                                {{end}}
+                                {{end}}
+
+                                {{if .CapstoneChoices}}
+                                {{with index .CapstoneChoices 1}}
+                                <div class="tss-skill-segment rounded-[2px] border
+                                            {{if .Selected}}tss-skill-segment-filled{{else}}tss-skill-segment-empty opacity-40{{end}}"
+                                     data-tooltip-title="{{.ChoiceLabel}}"
+                                     data-tooltip-desc="{{.Description}}"
+                                     @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                     @mouseleave="$store.tooltip.hide()"></div>
+                                {{end}}
+                                {{else}}
+                                <div class="tss-skill-segment rounded-[2px] border
+                                            {{if .Filled}}tss-skill-segment-filled{{else}}tss-skill-segment-empty{{end}}"
+                                     data-tooltip-title="Level {{.LevelNum}}"
+                                     data-tooltip-desc="{{.Description}}"
+                                     @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                     @mouseleave="$store.tooltip.hide()"></div>
+                                {{end}}
+
+                                {{if .CapstoneChoices}}
+                                {{with index .CapstoneChoices 2}}
+                                <div class="tss-skill-capstone rounded-[2px] border
+                                            {{if .Selected}}tss-skill-segment-filled{{else}}tss-skill-segment-empty opacity-40{{end}}"
+                                     data-tooltip-title="{{.ChoiceLabel}}"
+                                     data-tooltip-desc="{{.Description}}"
+                                     @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc, $el)"
+                                     @mouseleave="$store.tooltip.hide()"></div>
+                                {{end}}
+                                {{end}}
+                            </div>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+                {{end}}
+            </div>
+
+        </div><!-- /section B skills -->
+
+        <!-- ╔══════════════════════════════╗
+             ║  SECTION C — POWERS          ║
+             ╚══════════════════════════════╝ -->
+        <div class="flex flex-col">
+
+            <div class="px-4 py-1.5 bg-[#0a0f1c] border-b border-[#1a2d4a] flex items-center gap-2">
+                <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/50 select-none">◈ Powers</span>
+                <div class="flex-1 h-px bg-[#1a2d4a]"></div>
+            </div>
+
+            <!-- Power entries — active powers first, then passive powers -->
+            <div class="flex flex-col divide-y divide-[#1a2d4a]/50">
+                {{range $i, $pv := .PowerViews}}
+                {{if $pv.IsFirstPassive}}
+                <div class="px-4 py-1 bg-[#060a14]">
+                    <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/40 select-none">Passive Powers</span>
+                </div>
+                {{end}}
+                <div class="px-3 py-2.5">
+
+                    <!-- Power name row (no action buttons) -->
+                    <div class="flex items-center gap-1.5 mb-2">
+                        {{if $pv.IsBorrowSlotPlaceholder}}
+                        <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-700 leading-none italic">Power 3</span>
+                        {{else if $pv.PowerDef}}
+                        <span class="text-[11px] font-semibold tracking-wide text-gray-300 leading-none">{{$pv.PowerDef.Name}}</span>
+                        {{else}}
+                        <span class="text-[10px] font-semibold tracking-widest uppercase text-gray-700 leading-none italic">Power {{$i}}</span>
+                        {{end}}
+                    </div>
+
+                    {{if $pv.PowerDef}}
+                    <!-- Read-only rank row — divs instead of buttons, same visual -->
+                    <div class="flex items-start gap-0.5">
+
+                        <!-- Rank 1 -->
+                        <div class="relative w-10 h-10 rounded-sm flex-shrink-0"
+                             {{if $pv.PowerDef.UsesIndividualSprites}}
+                             style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 1}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                             {{else}}
+                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:0px 0px;background-repeat:no-repeat;"
+                             {{end}}
+                             data-tooltip-title="{{$pv.PowerDef.Name}}"
+                             data-tooltip-desc="{{$pv.PowerDef.DescForRank 1}}"
+                             @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                             @mouseleave="$store.tooltip.hide()">
+                            {{if lt $pv.Rank 1}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                        </div>
+
+                        <!-- Rank 2 -->
+                        <div class="relative w-10 h-10 rounded-sm flex-shrink-0"
+                             {{if $pv.PowerDef.UsesIndividualSprites}}
+                             style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 2}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                             {{else}}
+                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:-40px 0px;background-repeat:no-repeat;"
+                             {{end}}
+                             data-tooltip-title="{{$pv.PowerDef.Name}}"
+                             data-tooltip-desc="{{$pv.PowerDef.DescForRank 2}}"
+                             @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                             @mouseleave="$store.tooltip.hide()">
+                            {{if lt $pv.Rank 2}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                        </div>
+
+                        <!-- Rank 3 -->
+                        <div class="relative w-10 h-10 rounded-sm flex-shrink-0"
+                             {{if $pv.PowerDef.UsesIndividualSprites}}
+                             style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 3}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                             {{else}}
+                             style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:-80px 0px;background-repeat:no-repeat;"
+                             {{end}}
+                             data-tooltip-title="{{$pv.PowerDef.Name}}"
+                             data-tooltip-desc="{{$pv.PowerDef.DescForRank 3}}"
+                             @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                             @mouseleave="$store.tooltip.hide()">
+                            {{if lt $pv.Rank 3}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                        </div>
+
+                        <!-- Evo Rank 4 (A top / B bottom) -->
+                        <div class="flex flex-col gap-0.5 flex-shrink-0">
+                            <div class="relative w-10 h-10 rounded-sm"
+                                 {{if $pv.PowerDef.UsesIndividualSprites}}
+                                 style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 4}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                                 {{else}}
+                                 style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:-120px 0px;background-repeat:no-repeat;"
+                                 {{end}}
+                                 data-tooltip-title="{{$pv.PowerDef.Name}}"
+                                 data-tooltip-desc="{{$pv.PowerDef.DescForRank 4}}"
+                                 @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                                 @mouseleave="$store.tooltip.hide()">
+                                {{if or (lt $pv.Rank 4) (ne $pv.Evo0 "A")}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                            </div>
+                            <div class="relative w-10 h-10 rounded-sm"
+                                 {{if $pv.PowerDef.UsesIndividualSprites}}
+                                 style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 5}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                                 {{else}}
+                                 style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:-120px -40px;background-repeat:no-repeat;"
+                                 {{end}}
+                                 data-tooltip-title="{{$pv.PowerDef.Name}}"
+                                 data-tooltip-desc="{{$pv.PowerDef.DescForRank 5}}"
+                                 @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                                 @mouseleave="$store.tooltip.hide()">
+                                {{if or (lt $pv.Rank 4) (ne $pv.Evo0 "B")}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                            </div>
+                        </div>
+
+                        <!-- Evo Rank 5 (A top / B bottom) -->
+                        <div class="flex flex-col gap-0.5 flex-shrink-0">
+                            <div class="relative w-10 h-10 rounded-sm"
+                                 {{if $pv.PowerDef.UsesIndividualSprites}}
+                                 style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 6}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                                 {{else}}
+                                 style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:-160px 0px;background-repeat:no-repeat;"
+                                 {{end}}
+                                 data-tooltip-title="{{$pv.PowerDef.Name}}"
+                                 data-tooltip-desc="{{$pv.PowerDef.DescForRank 6}}"
+                                 @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                                 @mouseleave="$store.tooltip.hide()">
+                                {{if or (lt $pv.Rank 5) (ne $pv.Evo1 "A")}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                            </div>
+                            <div class="relative w-10 h-10 rounded-sm"
+                                 {{if $pv.PowerDef.UsesIndividualSprites}}
+                                 style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 7}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                                 {{else}}
+                                 style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:-160px -40px;background-repeat:no-repeat;"
+                                 {{end}}
+                                 data-tooltip-title="{{$pv.PowerDef.Name}}"
+                                 data-tooltip-desc="{{$pv.PowerDef.DescForRank 7}}"
+                                 @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                                 @mouseleave="$store.tooltip.hide()">
+                                {{if or (lt $pv.Rank 5) (ne $pv.Evo1 "B")}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                            </div>
+                        </div>
+
+                        <!-- Evo Rank 6 (A top / B bottom) -->
+                        <div class="flex flex-col gap-0.5 flex-shrink-0">
+                            <div class="relative w-10 h-10 rounded-sm"
+                                 {{if $pv.PowerDef.UsesIndividualSprites}}
+                                 style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 8}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                                 {{else}}
+                                 style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:-200px 0px;background-repeat:no-repeat;"
+                                 {{end}}
+                                 data-tooltip-title="{{$pv.PowerDef.Name}}"
+                                 data-tooltip-desc="{{$pv.PowerDef.DescForRank 8}}"
+                                 @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                                 @mouseleave="$store.tooltip.hide()">
+                                {{if or (lt $pv.Rank 6) (ne $pv.Evo2 "A")}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                            </div>
+                            <div class="relative w-10 h-10 rounded-sm"
+                                 {{if $pv.PowerDef.UsesIndividualSprites}}
+                                 style="background-image:url('{{$pv.PowerDef.IndividualSpriteRankURL 9}}');background-size:contain;background-position:center;background-repeat:no-repeat;"
+                                 {{else}}
+                                 style="background-image:url('{{$pv.PowerDef.IconURL}}');background-size:240px 80px;background-position:-200px -40px;background-repeat:no-repeat;"
+                                 {{end}}
+                                 data-tooltip-title="{{$pv.PowerDef.Name}}"
+                                 data-tooltip-desc="{{$pv.PowerDef.DescForRank 9}}"
+                                 @mouseenter="$store.tooltip.show($el.dataset.tooltipTitle, $el.dataset.tooltipDesc.replace(/\\n/g, '\n'), $el)"
+                                 @mouseleave="$store.tooltip.hide()">
+                                {{if or (lt $pv.Rank 6) (ne $pv.Evo2 "B")}}<div class="absolute inset-0 bg-[#060910]/75 pointer-events-none rounded-sm"></div>{{end}}
+                            </div>
+                        </div>
+
+                    </div><!-- /rank row -->
+                    {{else}}
+                    <!-- Empty slot placeholder (no action) -->
+                    <div class="min-h-[103px] flex items-center justify-center">
+                        <span class="text-[10px] text-gray-700 italic">{{if $pv.IsBorrowSlotPlaceholder}}No borrowed power{{else}}No power equipped{{end}}</span>
+                    </div>
+                    {{end}}
+
+                </div><!-- /power entry -->
+                {{end}}<!-- /range .PowerViews -->
+            </div>
+
+        </div><!-- /section C powers -->
+
+        <!-- ╔══════════════════════════════╗
+             ║  SECTION D — LOADOUT         ║
+             ╚══════════════════════════════╝ -->
+        <div class="flex flex-col">
+
+            <div class="px-4 py-1.5 bg-[#0a0f1c] border-b border-[#1a2d4a] flex items-center gap-2">
+                <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/50 select-none">◈ Loadout</span>
+                <div class="flex-1 h-px bg-[#1a2d4a]"></div>
+            </div>
+
+            <!-- Weapons (read-only) -->
+            {{if not .WeaponViews}}
+            <div class="px-4 py-6 text-center">
+                <span class="text-[10px] text-gray-700 italic">No weapons equipped</span>
+            </div>
+            {{end}}
+
+            {{range .WeaponViews}}
+            <div class="px-3 py-2 border-b border-[#1a2d4a]/50">
+
+                <!-- Weapon name + fire mode (display only) -->
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-[11px] font-semibold tracking-wide text-gray-300 leading-none">{{.WeaponDef.Name}}</span>
+                    <span class="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded border
+                                 bg-[#0d3a5f]/80 text-[#00aaff] border-[#00aaff]/50">{{.FireMode}}</span>
+                </div>
+
+                <!-- Weapon image + mods (display only) -->
+                <div class="flex gap-1.5 items-start">
+
+                    <!-- Weapon image -->
+                    <div class="flex items-center justify-center flex-1 min-w-0 h-20 px-3 rounded-lg
+                                border border-[#1a2d4a] bg-[#0a0f1c]">
+                        {{if .WeaponDef}}
+                        <img src="{{.WeaponDef.PictureURL}}" alt="{{.WeaponDef.Name}}"
+                             class="h-[5.5rem] w-auto max-w-[12rem] object-contain flex-shrink-0" style="padding-top:0.75rem"/>
+                        {{end}}
+                    </div>
+
+                    <!-- Mods (display only) -->
+                    <div class="flex flex-col gap-1.5 flex-shrink-0">
+                        <div class="flex items-center justify-center w-14 h-[46px] rounded-lg
+                                    border border-[#1a2d4a] bg-[#0a0f1c]">
+                            {{if .Mod1Def}}
+                            <img src="{{.Mod1Def.PictureURL}}" alt="{{.Mod1Def.Name}}" class="h-8 w-8 object-contain"
+                                 title="{{.Mod1Def.Name}}"/>
+                            {{else}}
+                            <span class="text-[8px] text-gray-700 font-bold">M1</span>
+                            {{end}}
+                        </div>
+                        <div class="flex items-center justify-center w-14 h-[46px] rounded-lg
+                                    border border-[#1a2d4a] bg-[#0a0f1c]">
+                            {{if .Mod2Def}}
+                            <img src="{{.Mod2Def.PictureURL}}" alt="{{.Mod2Def.Name}}" class="h-8 w-8 object-contain"
+                                 title="{{.Mod2Def.Name}}"/>
+                            {{else}}
+                            <span class="text-[8px] text-gray-700 font-bold">M2</span>
+                            {{end}}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            {{end}}<!-- /range .WeaponViews -->
+
+            <!-- Consumables (display only) -->
+            {{if or .ArmorConsumableDef .WeaponConsumableDef .AmmoConsumableDef .GearConsumableDef}}
+            <div class="px-4 py-1.5 border-b border-[#1a2d4a]/50">
+                <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-[#00aaff]/30 select-none">Consumables</span>
+            </div>
+            <div class="grid grid-cols-2 gap-px px-3 py-2">
+
+                {{if .ArmorConsumableDef}}
+                <div class="flex flex-col gap-1 pr-2">
+                    <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Armor</span>
+                    <div class="flex items-center justify-center h-16 rounded border border-[#1a2d4a] bg-[#0a0f1c]">
+                        <img src="{{.ArmorConsumableDef.PictureURL}}" class="h-14 w-14 object-contain flex-shrink-0"/>
+                    </div>
+                    <span class="text-[9px] text-gray-400 truncate font-semibold text-center">{{.ArmorConsumableDef.Name}}</span>
+                </div>
+                {{end}}
+
+                {{if .WeaponConsumableDef}}
+                <div class="flex flex-col gap-1">
+                    <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Weapon</span>
+                    <div class="flex items-center justify-center h-16 rounded border border-[#1a2d4a] bg-[#0a0f1c]">
+                        <img src="{{.WeaponConsumableDef.PictureURL}}" class="h-14 w-14 object-contain flex-shrink-0"/>
+                    </div>
+                    <span class="text-[9px] text-gray-400 truncate font-semibold text-center">{{.WeaponConsumableDef.Name}}</span>
+                </div>
+                {{end}}
+
+                {{if .AmmoConsumableDef}}
+                <div class="flex flex-col gap-1 pr-2">
+                    <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Ammo</span>
+                    <div class="flex items-center justify-center h-16 rounded border border-[#1a2d4a] bg-[#0a0f1c]">
+                        <img src="{{.AmmoConsumableDef.PictureURL}}" class="h-14 w-14 object-contain flex-shrink-0"/>
+                    </div>
+                    <span class="text-[9px] text-gray-400 truncate font-semibold text-center">{{.AmmoConsumableDef.Name}}</span>
+                </div>
+                {{end}}
+
+                {{if .GearConsumableDef}}
+                <div class="flex flex-col gap-1">
+                    <span class="text-[8px] font-bold tracking-wider uppercase text-gray-700">Gear</span>
+                    <div class="flex items-center justify-center h-16 rounded border border-[#1a2d4a] bg-[#0a0f1c]">
+                        <img src="{{.GearConsumableDef.PictureURL}}" class="h-14 w-14 object-contain flex-shrink-0"/>
+                    </div>
+                    <span class="text-[9px] text-gray-400 truncate font-semibold text-center">{{.GearConsumableDef.Name}}</span>
+                </div>
+                {{end}}
+
+            </div>
+            {{end}}
+
+        </div><!-- /section D loadout -->
+
+    </div><!-- /grid -->
+</div>
+{{end}}

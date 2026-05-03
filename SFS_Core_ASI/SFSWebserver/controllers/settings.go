@@ -2,11 +2,29 @@ package controllers
 
 import (
 	"fmt"
+	"strconv"
 
 	bolt "go.etcd.io/bbolt"
 )
 
 const settingsBucket = "settings"
+
+// DefaultMaxSquadSize is the default maximum number of operatives per strike team.
+const DefaultMaxSquadSize = 4
+
+// GetMaxSquadSize reads the persisted maxSquadSize setting, falling back to
+// DefaultMaxSquadSize if it has not been set or cannot be parsed.
+func GetMaxSquadSize(db *bolt.DB) int {
+	raw, err := GetSetting(db, "maxSquadSize", strconv.Itoa(DefaultMaxSquadSize))
+	if err != nil {
+		return DefaultMaxSquadSize
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 1 || n > 10 {
+		return DefaultMaxSquadSize
+	}
+	return n
+}
 
 // EnsureSettingsBucket creates the settings bucket if it does not already exist.
 func EnsureSettingsBucket(db *bolt.DB) error {

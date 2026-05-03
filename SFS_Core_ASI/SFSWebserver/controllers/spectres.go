@@ -117,6 +117,34 @@ type SpectreView struct {
 	CardURLs
 }
 
+// TeamSlotView represents one of the configurable member slots in a strike team.
+// When Filled is false, the slot is empty and only TeamID is meaningful.
+type TeamSlotView struct {
+	Filled bool
+	TeamID string
+	View   SpectreView
+}
+
+// buildTeamSlots pads a list of team spectres to maxSize TeamSlotView entries.
+// If the team already has more members than maxSize (from a previous higher setting),
+// all existing members are still shown — the limit only prevents adding new ones.
+func buildTeamSlots(teamID string, spectres []model.Spectre, maxSize int) []TeamSlotView {
+	views := teamSpectreViews(spectres)
+	slotCount := maxSize
+	if len(views) > slotCount {
+		slotCount = len(views)
+	}
+	slots := make([]TeamSlotView, slotCount)
+	for i := 0; i < slotCount; i++ {
+		slots[i].TeamID = teamID
+		if i < len(views) {
+			slots[i].Filled = true
+			slots[i].View = views[i]
+		}
+	}
+	return slots
+}
+
 // spectreURLs returns pre-computed CardURLs for a standalone spectre.
 func spectreURLs(spectreID string) CardURLs {
 	base := "/api/spectres/" + spectreID
@@ -429,7 +457,15 @@ func duplicateSpectre(db *bolt.DB, spectreID string) (model.Spectre, error) {
 }
 
 // createTeamSpectre persists a new spectre as a member of the given team.
-func createTeamSpectre(db *bolt.DB, teamID, charID string) (model.Spectre, error) {
+// Returns an error if the team already has maxSize members.
+func createTeamSpectre(db *bolt.DB, teamID, charID string, maxSize int) (model.Spectre, error) {
+	existing, err := listSpectresForTeam(db, teamID)
+	if err != nil {
+		return model.Spectre{}, err
+	}
+	if len(existing) >= maxSize {
+		return model.Spectre{}, fmt.Errorf("team is full (max %d members)", maxSize)
+	}
 	char := model.CharacterByID(charID)
 	if char == nil {
 		return model.Spectre{}, fmt.Errorf("unknown character: %s", charID)
@@ -486,9 +522,17 @@ func unassignSpectreFromTeam(db *bolt.DB, spectreID string) (model.Spectre, erro
 
 // assignSpectreToTeam moves a standalone spectre into the given team by setting
 // its TeamID and a SortOrder based on the current time.
-func assignSpectreToTeam(db *bolt.DB, spectreID, teamID string) (model.Spectre, error) {
+// Returns an error if the team already has maxSize members.
+func assignSpectreToTeam(db *bolt.DB, spectreID, teamID string, maxSize int) (model.Spectre, error) {
+	existing, err := listSpectresForTeam(db, teamID)
+	if err != nil {
+		return model.Spectre{}, err
+	}
+	if len(existing) >= maxSize {
+		return model.Spectre{}, fmt.Errorf("team is full (max %d members)", maxSize)
+	}
 	var s model.Spectre
-	err := db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(spectresBucket))
 		if b == nil {
 			return fmt.Errorf("spectre not found")
@@ -1499,6 +1543,7 @@ func spectreViews(spectres []model.Spectre) []SpectreView {
 
 // teamSpectreViews resolves catalog definitions for strike-team spectres.
 // It uses teamSpectreURLs (no active toggle, delete targets #bot-panel).
+// SkillViews and XP fields are populated so the read-only summary can display them.
 func teamSpectreViews(spectres []model.Spectre) []SpectreView {
 	views := make([]SpectreView, 0, len(spectres))
 	for _, s := range spectres {
@@ -1509,10 +1554,16 @@ func teamSpectreViews(spectres []model.Spectre) []SpectreView {
 		urls := teamSpectreURLs(s.ID)
 		urls.HasBorrowedPower = s.BorrowedPower != nil
 		appearanceDef3 := model.CharacterByID(s.AppearanceCharacterID)
+		heavyMeleeDef := model.CharacterByQualifiedPath(s.HeavyMeleeCharID)
+		lightMeleeDef := model.CharacterByQualifiedPath(s.LightMeleeCharID)
+		dodgeDef := model.CharacterByQualifiedPath(s.DodgeCharID)
 		views = append(views, SpectreView{
 			Spectre:             s,
 			CharDef:             def,
 			AppearanceCharDef:   appearanceDef3,
+			HeavyMeleeCharDef:   heavyMeleeDef,
+			LightMeleeCharDef:   lightMeleeDef,
+			DodgeCharDef:        dodgeDef,
 			ShowHelmetToggle:    def.HasHelmet || (appearanceDef3 != nil && appearanceDef3.HasHelmet),
 			ShowHeadgearToggle:  def.HasHeadgear || (appearanceDef3 != nil && appearanceDef3.HasHeadgear),
 			WeaponViews:         weaponSlotViews(s.ID, s.Weapons),
@@ -1521,6 +1572,10 @@ func teamSpectreViews(spectres []model.Spectre) []SpectreView {
 			AmmoConsumableDef:   model.ConsumableByID(s.AmmoConsumableID),
 			GearConsumableDef:   model.ConsumableByID(s.GearConsumableID),
 			PowerViews:          spectrePowerViews(s, urls),
+			SkillViews:          spectreSkillViews(s, s.ID),
+			XPProgressPct:       xpProgressPct(s.Level, s.XP),
+			XPDisplay:           formatXP(s.XP),
+			XPNextLevelDisplay:  formatXP(model.XPForLevel(s.Level + 1)),
 			CardURLs:            urls,
 		})
 	}
