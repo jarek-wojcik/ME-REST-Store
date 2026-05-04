@@ -206,10 +206,12 @@ func main() {
 	http.HandleFunc("/spectreportal/", func(w http.ResponseWriter, r *http.Request) {
 		scale, _ := controllers.GetSetting(db, "scale", "1")
 		maxSquadSize := controllers.GetMaxSquadSize(db)
+		hideSkills := controllers.GetHideSkills(db)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := tmpl.ExecuteTemplate(w, "spectreportal", map[string]any{
 			"Scale":        scale,
 			"MaxSquadSize": maxSquadSize,
+			"HideSkills":   hideSkills,
 		}); err != nil {
 			respondText(w, 500, "template error\n")
 		}

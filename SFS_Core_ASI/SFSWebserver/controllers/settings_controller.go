@@ -36,6 +36,21 @@ func (c *SettingsController) Register() {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
+	// POST /api/settings/hideSkills
+	// Persists the hide-skills preference. Expects form field "hideSkills" ("true"/"false").
+	// Returns 204 No Content.
+	http.HandleFunc("POST /api/settings/hideSkills", func(w http.ResponseWriter, r *http.Request) {
+		val := "false"
+		if strings.TrimSpace(r.FormValue("hideSkills")) == "true" {
+			val = "true"
+		}
+		if err := SetSetting(c.db, "hideSkills", val); err != nil {
+			respondText(w, 500, "db error\n")
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	})
+
 	// POST /api/settings/maxSquadSize
 	// Persists the max operatives per strike team. Expects form field "maxSquadSize" (int 1–10).
 	// Returns 204 No Content.

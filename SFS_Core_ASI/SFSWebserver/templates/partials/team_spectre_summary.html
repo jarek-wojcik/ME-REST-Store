@@ -35,7 +35,8 @@
          FOUR-SECTION BODY
          ══════════════════════════════════════════════════════════════ -->
     <div class="grid divide-x divide-[#1a2d4a]"
-         style="grid-template-columns: 240px 224px minmax(0,270px) minmax(0,230px); max-width: 1490px;">
+         style="grid-template-columns: 240px minmax(0,270px) minmax(0,230px); max-width: 1490px;"
+         :style="'grid-template-columns: 240px ' + ($store.settings.hideSkills ? '' : '224px ') + 'minmax(0,270px) minmax(0,230px); max-width: 1490px;'">
 
         <!-- ╔══════════════════════════════╗
              ║  SECTION A — CHARACTER       ║
@@ -123,7 +124,7 @@
         <!-- ╔══════════════════════════════╗
              ║  SECTION B — SPECTRE SKILLS  ║
              ╚══════════════════════════════╝ -->
-        <div class="flex flex-col">
+        <div class="flex flex-col" x-show="!$store.settings.hideSkills">
 
             <div class="px-4 py-1.5 bg-[#0a0f1c] border-b border-[#1a2d4a] flex items-center gap-2">
                 <span class="text-[8px] font-bold tracking-[0.25em] uppercase text-[#00aaff]/50 select-none">◈ Skills</span>

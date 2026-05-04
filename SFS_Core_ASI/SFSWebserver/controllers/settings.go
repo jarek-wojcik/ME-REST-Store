@@ -54,6 +54,12 @@ func GetSetting(db *bolt.DB, key, fallback string) (string, error) {
 	return val, err
 }
 
+// GetHideSkills returns true if the skills column should be hidden (default: true).
+func GetHideSkills(db *bolt.DB) bool {
+	raw, _ := GetSetting(db, "hideSkills", "true")
+	return raw == "true"
+}
+
 // SetSetting stores a setting value by key.
 func SetSetting(db *bolt.DB, key, value string) error {
 	return db.Update(func(tx *bolt.Tx) error {

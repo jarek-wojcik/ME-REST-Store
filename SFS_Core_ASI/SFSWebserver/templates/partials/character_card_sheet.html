@@ -103,7 +103,8 @@
          THREE-SECTION BODY
          ══════════════════════════════════════════════════════════════ -->
     <div class="grid divide-x divide-[#1a2d4a]"
-         style="grid-template-columns: 240px 224px minmax(0,270px) minmax(0,230px); max-width: 1490px;">
+         style="grid-template-columns: 240px minmax(0,270px) minmax(0,230px); max-width: 1490px;"
+         :style="'grid-template-columns: 240px ' + ($store.settings.hideSkills ? '' : '224px ') + 'minmax(0,270px) minmax(0,230px); max-width: 1490px;'">
 
         <!-- ╔══════════════════════════════╗
              ║  SECTION A — CHARACTER       ║
@@ -116,12 +117,16 @@
                const setPortraitH = () => {
                  portrait.style.height = '0px';
                  void portrait.offsetHeight;
-                 const powersCol = $el.nextElementSibling;
-                 const available = powersCol.offsetHeight - hdr.offsetHeight - stats.offsetHeight;
+                 let refCol = $el.nextElementSibling;
+                 while (refCol && getComputedStyle(refCol).display === 'none') {
+                   refCol = refCol.nextElementSibling;
+                 }
+                 if (!refCol) return;
+                 const available = refCol.offsetHeight - hdr.offsetHeight - stats.offsetHeight;
                  portrait.style.height = Math.max(0, available) + 'px';
                };
                const ro = new ResizeObserver(setPortraitH);
-               ro.observe($el.nextElementSibling);
+               ro.observe($el.parentElement);
                requestAnimationFrame(() => requestAnimationFrame(setPortraitH));
              ">
 
@@ -354,7 +359,7 @@
         <!-- ╔══════════════════════════════╗
              ║  SECTION B — SPECTRE SKILLS  ║
              ╚══════════════════════════════╝ -->
-        <div class="flex flex-col">
+        <div class="flex flex-col" x-show="!$store.settings.hideSkills">
 
             <!-- Section header with points pool -->
             <div class="px-4 py-1.5 bg-[#0a0f1c] border-b border-[#1a2d4a]

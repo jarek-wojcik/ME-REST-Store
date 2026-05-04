@@ -28,6 +28,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.store('botPanel', { openBotId: null });
+            Alpine.store('settings', { hideSkills: {{ .HideSkills }} });
             Alpine.store('tooltip', {
                 visible: false, text: '', subtext: '', x: 0, y: 0,
                 show(text, subtext, el) {
@@ -353,6 +354,24 @@
                             />
                             <span class="text-xs text-gray-500 w-4 shrink-0 text-right">10</span>
                         </div>
+                    </form>
+
+                    <div class="border-t border-me-border pt-4"></div>
+
+                    <!-- Skills column row -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="text-sm font-semibold text-gray-200">Skills Column</div>
+                            <div class="text-xs text-gray-500 mt-0.5">Show the skills section on operative cards</div>
+                        </div>
+                        <button @click="$store.settings.hideSkills = !$store.settings.hideSkills; $nextTick(() => $refs.hideSkillsForm.requestSubmit())"
+                                class="px-3 py-1 text-[9px] font-bold tracking-[0.15em] uppercase rounded border transition-all cursor-pointer focus:outline-none"
+                                :class="$store.settings.hideSkills ? 'border-[#1a2d4a] text-gray-500 hover:border-[#00aaff]/50 hover:text-[#00aaff]' : 'bg-green-950/60 border-green-700/60 text-green-400'">
+                            <span x-text="$store.settings.hideSkills ? 'Hidden' : 'Visible'"></span>
+                        </button>
+                    </div>
+                    <form x-ref="hideSkillsForm" hx-post="/api/settings/hideSkills" hx-swap="none">
+                        <input type="hidden" name="hideSkills" :value="$store.settings.hideSkills">
                     </form>
 
                 </div>
