@@ -35,7 +35,7 @@ func (c *TeamsController) renderListWithPanel(w http.ResponseWriter, selectedTea
 			botPanel = map[string]any{
 				"TeamID":     selectedTeamID,
 				"TeamName":   team.Name,
-				"Slots":      buildTeamSlots(selectedTeamID, spectres, GetMaxSquadSize(c.db)),
+				"Slots":      buildTeamSlots(selectedTeamID, spectres, GetMaxSquadSize(c.db), GetEditOperativesFromTeam(c.db)),
 				"TeamActive": team.Active,
 			}
 		}
@@ -125,7 +125,7 @@ func (c *TeamsController) Register() {
 		_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
 			"TeamID":     id,
 			"TeamName":   team.Name,
-			"Slots":      buildTeamSlots(id, spectres, GetMaxSquadSize(c.db)),
+			"Slots":      buildTeamSlots(id, spectres, GetMaxSquadSize(c.db), GetEditOperativesFromTeam(c.db)),
 			"TeamActive": team.Active,
 		})
 		c.renderSidebarOOB(w)
@@ -145,7 +145,7 @@ func (c *TeamsController) Register() {
 		spectres, _ := listSpectresForTeam(c.db, id)
 		_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
 			"TeamID":     id,
-			"Slots":      buildTeamSlots(id, spectres, GetMaxSquadSize(c.db)),
+			"Slots":      buildTeamSlots(id, spectres, GetMaxSquadSize(c.db), GetEditOperativesFromTeam(c.db)),
 			"TeamActive": team.Active,
 		})
 		// OOB: refresh the sidebar so team name colours update.

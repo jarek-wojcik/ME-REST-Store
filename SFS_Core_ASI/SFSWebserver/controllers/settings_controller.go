@@ -68,4 +68,20 @@ func (c *SettingsController) Register() {
 		w.Header().Set("HX-Trigger", "squadSizeChanged")
 		w.WriteHeader(http.StatusNoContent)
 	})
+
+	// POST /api/settings/editOperativesFromTeam
+	// Persists the edit-operatives-from-team preference. Expects form field "editOperativesFromTeam" ("true"/"false").
+	// Fires HX-Trigger: editOperativesChanged so any open bot panel re-renders.
+	http.HandleFunc("POST /api/settings/editOperativesFromTeam", func(w http.ResponseWriter, r *http.Request) {
+		val := "false"
+		if strings.TrimSpace(r.FormValue("editOperativesFromTeam")) == "true" {
+			val = "true"
+		}
+		if err := SetSetting(c.db, "editOperativesFromTeam", val); err != nil {
+			respondText(w, 500, "db error\n")
+			return
+		}
+		w.Header().Set("HX-Trigger", "editOperativesChanged")
+		w.WriteHeader(http.StatusNoContent)
+	})
 }

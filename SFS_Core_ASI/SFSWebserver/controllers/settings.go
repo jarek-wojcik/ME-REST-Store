@@ -60,6 +60,13 @@ func GetHideSkills(db *bolt.DB) bool {
 	return raw == "true"
 }
 
+// GetEditOperativesFromTeam returns true if operative cards in the Strike Teams
+// view should be rendered in editable ("Operative") mode (default: false).
+func GetEditOperativesFromTeam(db *bolt.DB) bool {
+	raw, _ := GetSetting(db, "editOperativesFromTeam", "false")
+	return raw == "true"
+}
+
 // SetSetting stores a setting value by key.
 func SetSetting(db *bolt.DB, key, value string) error {
 	return db.Update(func(tx *bolt.Tx) error {

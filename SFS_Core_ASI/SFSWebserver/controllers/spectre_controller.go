@@ -104,6 +104,7 @@ func (c *SpectreController) renderCardSheet(w http.ResponseWriter, s model.Spect
 	dodgeDef := model.CharacterByQualifiedPath(s.DodgeCharID)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_ = c.tmpl.ExecuteTemplate(w, "character_card_sheet", SpectreView{
+		Mode:                "Operative",
 		Spectre:             s,
 		CharDef:             def,
 		AppearanceCharDef:   appearanceDef,
@@ -140,7 +141,7 @@ func (c *SpectreController) renderBotPanel(w http.ResponseWriter, teamID string)
 	_ = c.tmpl.ExecuteTemplate(w, "bot_panel", map[string]any{
 		"TeamID":     teamID,
 		"TeamName":   team.Name,
-		"Slots":      buildTeamSlots(teamID, spectres, maxSize),
+		"Slots":      buildTeamSlots(teamID, spectres, maxSize, GetEditOperativesFromTeam(c.db)),
 		"TeamActive": team.Active,
 	})
 }
@@ -191,6 +192,7 @@ func (c *SpectreController) buildCardSheetView(s model.Spectre) SpectreView {
 	lightMeleeDef := model.CharacterByQualifiedPath(s.LightMeleeCharID)
 	dodgeDef := model.CharacterByQualifiedPath(s.DodgeCharID)
 	return SpectreView{
+		Mode:                "Operative",
 		Spectre:             s,
 		CharDef:             def,
 		AppearanceCharDef:   appearanceDef,
@@ -570,7 +572,7 @@ func (c *SpectreController) Register() {
 				teamSpectres, _ := listSpectresForTeam(c.db, s.TeamID)
 				_ = c.tmpl.ExecuteTemplate(w, "bot_panel_oob", map[string]any{
 					"TeamID":     s.TeamID,
-					"Bots":       teamSpectreViews(teamSpectres),
+					"Bots":       teamSpectreViews(teamSpectres, GetEditOperativesFromTeam(c.db)),
 					"TeamActive": team.Active,
 				})
 			}

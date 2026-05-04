@@ -207,11 +207,13 @@ func main() {
 		scale, _ := controllers.GetSetting(db, "scale", "1")
 		maxSquadSize := controllers.GetMaxSquadSize(db)
 		hideSkills := controllers.GetHideSkills(db)
+		editOperativesFromTeam := controllers.GetEditOperativesFromTeam(db)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := tmpl.ExecuteTemplate(w, "spectreportal", map[string]any{
-			"Scale":        scale,
-			"MaxSquadSize": maxSquadSize,
-			"HideSkills":   hideSkills,
+			"Scale":                  scale,
+			"MaxSquadSize":           maxSquadSize,
+			"HideSkills":             hideSkills,
+			"EditOperativesFromTeam": editOperativesFromTeam,
 		}); err != nil {
 			respondText(w, 500, "template error\n")
 		}

@@ -96,6 +96,10 @@ type WeaponSlotView struct {
 // bot-specific routing was replaced by the embedded CardURLs fields.
 type SpectreView struct {
 	model.Spectre
+	// Mode controls which variant of the unified operative_card template is
+	// rendered. "Operative" shows the full editable RPG sheet; "Strike_Team"
+	// shows the read-only team overview.
+	Mode                string
 	CharDef             *model.CharacterDef
 	AppearanceCharDef   *model.CharacterDef // visual override portrait; nil means use CharDef image
 	VoiceCharDef        *model.CharacterDef // voice archetype; nil means no voice override
@@ -128,8 +132,9 @@ type TeamSlotView struct {
 // buildTeamSlots pads a list of team spectres to maxSize TeamSlotView entries.
 // If the team already has more members than maxSize (from a previous higher setting),
 // all existing members are still shown — the limit only prevents adding new ones.
-func buildTeamSlots(teamID string, spectres []model.Spectre, maxSize int) []TeamSlotView {
-	views := teamSpectreViews(spectres)
+// editMode passes through to teamSpectreViews: true renders operative cards in editable mode.
+func buildTeamSlots(teamID string, spectres []model.Spectre, maxSize int, editMode bool) []TeamSlotView {
+	views := teamSpectreViews(spectres, editMode)
 	slotCount := maxSize
 	if len(views) > slotCount {
 		slotCount = len(views)
@@ -1548,7 +1553,8 @@ func spectreViews(spectres []model.Spectre) []SpectreView {
 // teamSpectreViews resolves catalog definitions for strike-team spectres.
 // It uses teamSpectreURLs (no active toggle, delete targets #bot-panel).
 // SkillViews and XP fields are populated so the read-only summary can display them.
-func teamSpectreViews(spectres []model.Spectre) []SpectreView {
+// When editMode is true, Mode is set to "Operative" so cards render in editable mode.
+func teamSpectreViews(spectres []model.Spectre, editMode bool) []SpectreView {
 	views := make([]SpectreView, 0, len(spectres))
 	for _, s := range spectres {
 		def := model.CharacterByID(s.CharacterID)
@@ -1561,7 +1567,12 @@ func teamSpectreViews(spectres []model.Spectre) []SpectreView {
 		heavyMeleeDef := model.CharacterByQualifiedPath(s.HeavyMeleeCharID)
 		lightMeleeDef := model.CharacterByQualifiedPath(s.LightMeleeCharID)
 		dodgeDef := model.CharacterByQualifiedPath(s.DodgeCharID)
+		mode := "Strike_Team"
+		if editMode {
+			mode = "Operative"
+		}
 		views = append(views, SpectreView{
+			Mode:                mode,
 			Spectre:             s,
 			CharDef:             def,
 			AppearanceCharDef:   appearanceDef3,
