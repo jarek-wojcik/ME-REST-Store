@@ -1861,7 +1861,7 @@ var PowerCatalog = []PowerDef{
 		},
 	},
 	{
-		ID: "SFXPowerCustomActionMP_ShieldBoost", Name: "Shield Boost (Volus)", Picture: "ShieldBoost.webp", Type: PowerTypeActive,
+		ID: "SFXPowerCustomActionMP_ShieldBoost", Name: "Shield Boost", Picture: "ShieldBoost.webp", Type: PowerTypeActive,
 		RootPath: "SFXGameContentDLC_CON_MP4",
 		RankDescs: []RankDesc{
 			{Rank: 1, Description: "Repair your shields and those of nearby allies, providing a large initial boost to shields, and then restoring shields every second for 3 seconds."}, // Rank 1
